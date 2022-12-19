@@ -6,17 +6,17 @@
 
 |  General Info  | |
 | ---|---|
-| Working Title | `Edit me!` |
+| Working Title | `Code Explorinator` |
 | Final Title | `Edit me!` |
-| Student | `Name`, `edit-me`@stud-mail.uni-wuerzburg.de, `s######` |
-| Target Platform(s) | `Edit me!` |
+| Student | `Yannik Stamm`, `yannik.stamm`@stud-mail.uni-wuerzburg.de, `s431656`; `Veronika Strümper`, `veronika.struemper`@stud-mail.uni-wuerzburg.de, `s427038` |
+| Target Platform(s) | `Windows` `MacOS` `Linux` |
 | Start Date | 21.10.2019 |
 | Study Program | Games Engineering B.Sc.|
 | Engine Version | Unity 2021.3.11f1 or Unreal 5.0.3 |
 
 ### Abstract
 
-`Insert your project description here, and keep it up-to-date.`
+`Code Explorinator is a Unity Plugin that helps you visually explore code. The of days spaghetti code are numbered! It uses the C# Roslyn compiler to analyze the code and display it as an interactive UML Diagram.`
 
 `--- 8< --- READ, THEN REPLACE WITH CUSTOM CONTENT BELOW HERE --- 8< ---`
 
