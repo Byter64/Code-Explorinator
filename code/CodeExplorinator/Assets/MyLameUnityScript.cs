@@ -5,6 +5,7 @@ using UnityEngine;
 namespace HelloWorld {
     public class MyLameUnityScript : MonoBehaviour
     {
+        int deineMutter = 3;
         // Start is called before the first frame update
         void Start()
         {
@@ -16,6 +17,8 @@ namespace HelloWorld {
         {
         
         }
+
+        public void Laina() { }
     }
 }
 

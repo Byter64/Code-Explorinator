@@ -8,16 +8,19 @@ public static class CanIUseRoslyn
 {
     [MenuItem("Test/GO BRR")]
     public static void ItJustWorks() {
-        var tree = CSharpSyntaxTree.ParseText(@"");
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(@"");
 
         var allAssemblies = System.AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => !a.IsDynamic && a.Location.Length > 0) // Note: This might exclude unexpected stuff
             .Select(a => MetadataReference.CreateFromFile(a.Location));
         
-        var compilation = CSharpCompilation.Create("MyCompilation", syntaxTrees: new[] { tree }, references: allAssemblies);
+        CSharpCompilation compilation = CSharpCompilation.Create("MyCompilation", syntaxTrees: new[] { tree }, references: allAssemblies);
 
-        var typeByName = compilation.GetTypeByMetadataName("HelloWorld.MyLameUnityScript");
+        INamedTypeSymbol typeByName = compilation.GetTypeByMetadataName("HelloWorld.MyLameUnityScript");
+        
+        SemanticModel sem = compilation.GetSemanticModel(tree, true);
         
         Debug.Log(string.Join(", ", typeByName.MemberNames));
+        //Debug.Log(sem.GetConstantValue();
     }
 }
