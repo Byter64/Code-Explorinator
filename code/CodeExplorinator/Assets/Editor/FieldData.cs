@@ -11,12 +11,12 @@ namespace CodeExplorinator
         
         public IFieldSymbol fieldSymbol { get; private set; }
         public ClassData ContainingClass { get; private set; }
-        public List<MethodInvocationData> Accesses { get; private set; }
+        public List<FieldAccessData> Accesses { get; private set; }
         public FieldData(IFieldSymbol fieldSymbol, ClassData containingClass)
         {
             this.fieldSymbol = fieldSymbol;
             ContainingClass = containingClass;
-            Accesses = new List<MethodInvocationData>();
+            Accesses = new List<FieldAccessData>();
         }
     }
 }

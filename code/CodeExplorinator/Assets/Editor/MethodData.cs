@@ -8,8 +8,17 @@ namespace CodeExplorinator
 {
     public class MethodData
     {
+        /// <summary>
+        /// The underlying IMethodSymbol which contains all important information about the method itself
+        /// </summary>
         public  IMethodSymbol MethodSymbol { get; private set; }
+        /// <summary>
+        /// The class in which this method is defined and declared in
+        /// </summary>
         public ClassData ContainingClass { get; private set;}
+        /// <summary>
+        /// All invocations to this method within the project
+        /// </summary>
         public List<MethodInvocationData> Invocations { get; private set; }
 
 
@@ -18,7 +27,7 @@ namespace CodeExplorinator
         public MethodData(IMethodSymbol symbol, ClassData containingClass)
         {
             MethodSymbol = symbol;
-            this.ContainingClass = containingClass;
+            ContainingClass = containingClass;
             Invocations = new List<MethodInvocationData>();
         }
 

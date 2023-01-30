@@ -6,16 +6,30 @@ using UnityEngine;
 
 namespace CodeExplorinator
 {
+    /// <summary>
+    /// Class that represents the invocation of a method
+    /// </summary>
     public class MethodInvocationData
     {
-        public ClassData containingClass { get; private set; }
-        public MethodData referencedMethod { get; private set; }
+        /// <summary>
+        /// The method in which this invocation takes place
+        /// </summary>
+        public MethodData ContainingMethod { get; private set; }
 
+        /// <summary>
+        /// The method that is called by this invocation
+        /// </summary>
+        public MethodData ReferencedMethod { get; private set; }
 
-        public MethodInvocationData(ClassData containingClass, MethodData referencedMethod)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="containingMethod">The method in which this invocation takes place</param>
+        /// <param name="referencedMethod">The method that is called by this invocation</param>
+        public MethodInvocationData(MethodData containingMethod, MethodData referencedMethod)
         {
-            this.containingClass = containingClass;
-            this.referencedMethod = referencedMethod;
+            ContainingMethod = containingMethod;
+            ReferencedMethod = referencedMethod;
         }
 
     }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using UnityEngine;
 
 namespace CodeExplorinator
@@ -21,6 +22,22 @@ namespace CodeExplorinator
             PublicMethods = new List<MethodData>();
             PrivateMethods = new List<MethodData>();
             ClassInformation = classInformation;
+        }
+
+        public void ClearAllPublicMethodInvocations()
+        {
+            foreach(MethodData method in PublicMethods)
+            {
+                method.Invocations.Clear();
+            }
+        }
+
+        public void ClearAllPublicFieldAccesses()
+        {
+            foreach (FieldData field in PublicVariables)
+            {
+                field.Accesses.Clear();
+            }
         }
     }
 }
