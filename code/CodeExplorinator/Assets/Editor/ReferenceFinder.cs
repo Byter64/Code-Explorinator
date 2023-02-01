@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 using System;
+using UnityEngine.Assertions.Must;
 
 namespace CodeExplorinator
 {
@@ -24,7 +25,7 @@ namespace CodeExplorinator
         /// Clears all references in all ClassData, 
         ///  generates MethodInvocationData for all accesses in the whole compilation and sorts them into all ClassDatas.
         /// </summary>
-        public void ReFillAllPublicReferences()
+        public void ReFillAllPublicMethodReferences()
         {
             foreach(ClassData classData in allClassesInCompilation)
             {
@@ -33,7 +34,7 @@ namespace CodeExplorinator
 
             IEnumerable<MethodInvocationData> allinvocations = GenerateAllInvocationDataForCompilation();
 
-            //Add the accesses to the correct MethodData
+            //Add the invocation to the correct MethodData
             foreach(MethodInvocationData invocation in allinvocations)
             {
                 foreach (ClassData classData in allClassesInCompilation)
@@ -42,7 +43,14 @@ namespace CodeExplorinator
                     {
                         if (invocation.ReferencedMethod == methodData)
                         {
-                            methodData.Invocations.Add(invocation);
+                            if(invocation.ContainingMethod.ContainingClass == invocation.ReferencedMethod.ContainingClass)
+                            {
+                                methodData.InternalInvocations.Add(invocation);
+                            }
+                            else
+                            {
+                                methodData.ExternalInvocations.Add(invocation);
+                            }
                         }
                     }
                 }
@@ -57,7 +65,7 @@ namespace CodeExplorinator
             {
                 allInvocations.AddRange(GenerateAllInvocationDataForSyntaxTree(syntaxTree));
             }
-
+            allInvocations.RemoveAll(invocations => invocations == null);
             return allInvocations;
         }
 
@@ -68,7 +76,7 @@ namespace CodeExplorinator
 
             List<MethodInvocationData> allInvocations = new List<MethodInvocationData>();
 
-            IEnumerable<InvocationExpressionSyntax> invocations = syntaxTree.GetRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
+            IEnumerable<InvocationExpressionSyntax> invocations = syntaxTree.GetCompilationUnitRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach(InvocationExpressionSyntax invocation in invocations)
             {
                 allInvocations.Add(GenerateMethodInvocationData(semanticModel, invocation));
@@ -92,7 +100,7 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
-            IMethodSymbol invocator = semanticModel.GetSymbolInfo(syntaxNode).Symbol as IMethodSymbol;
+            IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(invocator);
 
             //███████████████████████████████████████████████████████████████████████████████
@@ -127,7 +135,7 @@ namespace CodeExplorinator
         {
             foreach (ClassData classData in allClassesInCompilation)
             {
-                classData.ClearAllPublicMethodInvocations();
+                classData.ClearAllPublicFieldAccesses();
             }
 
             IEnumerable<FieldAccessData> allAccesses = GenerateAllFieldAccessDataForCompilation();
@@ -139,9 +147,16 @@ namespace CodeExplorinator
                 {
                     foreach (FieldData fieldData in classData.PublicVariables)
                     {
-                        if (access.referencedField == fieldData)
+                        if (access.ReferencedField == fieldData)
                         {
-                            fieldData.Accesses.Add(access);
+                            if (access.ContainingMethod.ContainingClass == access.ReferencedField.ContainingClass)
+                            {
+                                fieldData.InternalAccesses.Add(access);
+                            }
+                            else
+                            {
+                                fieldData.ExternalAccesses.Add(access);
+                            }
                         }
                     }
                 }
@@ -150,14 +165,14 @@ namespace CodeExplorinator
 
         private IEnumerable<FieldAccessData> GenerateAllFieldAccessDataForCompilation()
         {
-            List<FieldAccessData> allInvocations = new List<FieldAccessData>();
+            List<FieldAccessData> allAccesses = new List<FieldAccessData>();
 
             foreach (SyntaxTree syntaxTree in compilation.SyntaxTrees)
             {
-                allInvocations.AddRange(GenerateAllFieldAccessDataForSyntaxTree(syntaxTree));
+                allAccesses.AddRange(GenerateAllFieldAccessDataForSyntaxTree(syntaxTree));
             }
-
-            return allInvocations;
+            allAccesses.RemoveAll(invocations => invocations == null);
+            return allAccesses;
         }
 
         private IEnumerable<FieldAccessData> GenerateAllFieldAccessDataForSyntaxTree(SyntaxTree syntaxTree)
@@ -195,7 +210,7 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
-            IMethodSymbol accessor = semanticModel.GetSymbolInfo(syntaxNode).Symbol as IMethodSymbol;
+            IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(accessor);
 
             //███████████████████████████████████████████████████████████████████████████████
@@ -205,7 +220,7 @@ namespace CodeExplorinator
             {
                 foreach (FieldData fieldData in classData.PublicVariables)
                 {
-                    if (fieldData.fieldSymbol == field)
+                    if (fieldData.FieldSymbol == field)
                     {
                         referencedField = fieldData;
                         goto EndOfGenerateFieldAccessData;

@@ -8,14 +8,14 @@ namespace CodeExplorinator
 {
     public class FieldAccessData
     {
-        public MethodData containingMethod { get; private set; }
-        public FieldData referencedField { get; private set; }
+        public MethodData ContainingMethod { get; private set; }
+        public FieldData ReferencedField { get; private set; }
 
 
         public FieldAccessData(MethodData containingMethod, FieldData referencedField)
         {
-            this.containingMethod = containingMethod;
-            this.referencedField = referencedField;
+            ContainingMethod = containingMethod;
+            ReferencedField = referencedField;
         }
 
     }

@@ -28,7 +28,8 @@ namespace CodeExplorinator
         {
             foreach(MethodData method in PublicMethods)
             {
-                method.Invocations.Clear();
+                method.InternalInvocations.Clear();
+                method.ExternalInvocations.Clear();
             }
         }
 
@@ -36,8 +37,14 @@ namespace CodeExplorinator
         {
             foreach (FieldData field in PublicVariables)
             {
-                field.Accesses.Clear();
+                field.InternalAccesses.Clear();
+                field.ExternalAccesses.Clear();
             }
+        }
+
+        public override string ToString()
+        {
+            return ClassInformation.Name;
         }
     }
 }

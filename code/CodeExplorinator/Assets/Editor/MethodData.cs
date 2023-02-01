@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using UnityEngine;
 
 namespace CodeExplorinator
@@ -17,9 +18,25 @@ namespace CodeExplorinator
         /// </summary>
         public ClassData ContainingClass { get; private set;}
         /// <summary>
-        /// All invocations to this method within the project
+        /// All invocations to this method within the project (Concatination of in and external invocations)
         /// </summary>
-        public List<MethodInvocationData> Invocations { get; private set; }
+        public List<MethodInvocationData> AllInvocations
+        {
+            get
+            {
+                return ExternalInvocations.Concat(InternalInvocations).ToList();
+            }
+        }
+
+        /// <summary>
+        /// All invocations to this method outside of the class it is declared in within the project
+        /// </summary>
+        public List<MethodInvocationData> ExternalInvocations { get; private set; }
+
+        /// <summary>
+        /// All invocations to this method inside the class it is declared in within the project
+        /// </summary>
+        public List<MethodInvocationData> InternalInvocations { get; private set; }
 
 
         //to be implemented: get modifiers
@@ -28,17 +45,18 @@ namespace CodeExplorinator
         {
             MethodSymbol = symbol;
             ContainingClass = containingClass;
-            Invocations = new List<MethodInvocationData>();
+            ExternalInvocations = new List<MethodInvocationData>();
+            InternalInvocations = new List<MethodInvocationData>();
         }
 
         public void AddInvocation(MethodInvocationData invocation)
         {
-            Invocations.Add(invocation);
+            AllInvocations.Add(invocation);
         }
 
         public MethodInvocationData[] GetAllInvocations()
         {
-            return Invocations.ToArray();
+            return AllInvocations.ToArray();
         }
 
         public string GetName()
@@ -65,5 +83,10 @@ namespace CodeExplorinator
         {
             return MethodSymbol;
         }
-    };
+
+        public override string ToString()
+        {
+            return MethodSymbol.Name;
+        }
+    }
 }
