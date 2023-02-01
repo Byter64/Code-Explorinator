@@ -21,15 +21,17 @@ namespace CodeExplorinator
                 Directory.GetFiles(Application.dataPath, "*.cs",
                     SearchOption.AllDirectories); //maybe searching all directories not needed?
 
+            CSharpCompilation compilation = CSharpCompilation.Create("myAssembly")
+                .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location));
+
+            //goes through all files and generates the syntax trees and the semantic model
             foreach (var cSharpScript in allCSharpScripts)
             {
                 StreamReader streamReader = new StreamReader(cSharpScript);
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(streamReader.ReadToEnd());
                 streamReader.Close();
-
-                CSharpCompilation compilation = CSharpCompilation.Create("myAssembly")
-                    .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location))
-                    .AddSyntaxTrees(syntaxTree);
+                
+                compilation = compilation.AddSyntaxTrees(syntaxTree);
 
                 SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
 
@@ -57,30 +59,33 @@ namespace CodeExplorinator
 
         private static ClassData GenerateClassInfo(ClassDeclarationSyntax root, SemanticModel model)
         {
-            //finds all variable and method declarations, saves them as FieldData/MethodData and sorts them for Accessibility
+            //finds all variable and method declarations, saves them as FieldData/MethodData and sorts them for Accessibility,
+            //generates a ClassData
             ClassData classData = new ClassData(model.GetDeclaredSymbol(root));
             Debug.Log("CLASS NAME IS:" + classData.ClassInformation.Name);
 
-            List<IFieldSymbol> allVariables = FindAllVariables(root, model); // PROPERTY DECLARATIONS MISSING!!! CONTINUE CODING HERE!!
-            List<FieldData> publicVariables = getAllPublicFieldSymbols(allVariables, classData); 
+            List<IFieldSymbol>
+                allVariables = FindAllVariables(root, model); // PROPERTY DECLARATIONS MISSING!!! CONTINUE CODING HERE!!
+            List<FieldData> publicVariables = getAllPublicFieldSymbols(allVariables, classData);
             List<FieldData> privateVariables = getAllPrivateFieldSymbols(allVariables, classData);
 
             List<IMethodSymbol> allMethods = FindAllMethods(root, model);
             List<MethodData> publicMethods = getAllPublicMethodSymbols(allMethods, classData);
             List<MethodData> privateMethods = getAllPrivateMethodSymbols(allMethods, classData);
-            
+
             classData.PublicVariables.AddRange(publicVariables);
             classData.PrivateVariables.AddRange(privateVariables);
             classData.PublicMethods.AddRange(publicMethods);
             classData.PrivateMethods.AddRange(privateMethods);
-            
-           
 
+            classData.ReadOutMyInformation(); //for debugging purposes
+            
             return classData;
         }
 
 
-        private static List<MethodData> getAllPublicMethodSymbols(List<IMethodSymbol> methodSymbols, ClassData classData)
+        private static List<MethodData> getAllPublicMethodSymbols(List<IMethodSymbol> methodSymbols,
+            ClassData classData)
         {
             //select all public, protected, internal and friend methods and display them 
             try
@@ -96,7 +101,7 @@ namespace CodeExplorinator
                     methodDatas.Add(temp);
                 }
 
-                
+
                 //remover later!!
                 IEnumerable<string> distinctPublicMethods = publicMethods.Select(m => m.Name);
 
@@ -104,7 +109,7 @@ namespace CodeExplorinator
                 {
                     Debug.Log("this method is public: " + method);
                 }
-                
+
                 return methodDatas;
             }
             catch (NullReferenceException e)
@@ -115,7 +120,8 @@ namespace CodeExplorinator
             return null;
         }
 
-        private static List<MethodData> getAllPrivateMethodSymbols(List<IMethodSymbol> methodSymbols, ClassData classData)
+        private static List<MethodData> getAllPrivateMethodSymbols(List<IMethodSymbol> methodSymbols,
+            ClassData classData)
         {
             //select all private methods and display them 
             try
@@ -123,7 +129,7 @@ namespace CodeExplorinator
                 IEnumerable<IMethodSymbol> privateMethods = methodSymbols
                     .Where(m => m.DeclaredAccessibility == Accessibility.Private);
 
-                
+
                 List<MethodData> methodDatas = new List<MethodData>();
 
                 foreach (var publicMethod in privateMethods)
@@ -131,8 +137,8 @@ namespace CodeExplorinator
                     MethodData temp = new MethodData(publicMethod, classData);
                     methodDatas.Add(temp);
                 }
-                
-                
+
+
                 //remove later!!
                 IEnumerable<string> distinctPrivateMethods = privateMethods.Select(m => m.Name);
 
@@ -153,7 +159,6 @@ namespace CodeExplorinator
 
         private static List<IMethodSymbol> FindAllMethods(ClassDeclarationSyntax root, SemanticModel model)
         {
-            //return methoddata or i method symbols
 
             // Use the syntax model to find all methoddeclarations:
             IEnumerable<MethodDeclarationSyntax> methodDeclarations = root.DescendantNodes()
@@ -180,7 +185,7 @@ namespace CodeExplorinator
                 //select all public, protected, internal and friend vars and display them 
                 IEnumerable<IFieldSymbol> publicVariables = fieldSymbols
                     .Where(m => m.DeclaredAccessibility != Accessibility.Private);
-                
+
 
                 List<FieldData> fieldDatas = new List<FieldData>();
 
@@ -189,7 +194,7 @@ namespace CodeExplorinator
                     FieldData temp = new FieldData(publicVariable, classData);
                     fieldDatas.Add(temp);
                 }
-                
+
                 //remove later!!
                 IEnumerable<string> distinctPublicVariables = publicVariables.Select(m => m.Name);
 
@@ -215,7 +220,7 @@ namespace CodeExplorinator
                 //select all private vars and display them 
                 IEnumerable<IFieldSymbol> privateVariables = fieldSymbols
                     .Where(m => m.DeclaredAccessibility == Accessibility.Private);
-                
+
                 List<FieldData> fieldDatas = new List<FieldData>();
 
                 foreach (var privateVariable in privateVariables)
@@ -223,7 +228,7 @@ namespace CodeExplorinator
                     FieldData temp = new FieldData(privateVariable, classData);
                     fieldDatas.Add(temp);
                 }
-                
+
                 //remove later!!
                 IEnumerable<string> distinctPrivateVariables = privateVariables.Select(m => m.Name);
 

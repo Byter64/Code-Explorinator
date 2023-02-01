@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using System;
+using Microsoft.CodeAnalysis;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -40,6 +41,9 @@ namespace CodeExplorinator
 
 
         //to be implemented: get modifiers
+        public List<MethodInvocationData> Invocations { get; private set; }
+        public List<MethodModifiers> MethodModifiersList { get; private set; }
+        
 
         public MethodData(IMethodSymbol symbol, ClassData containingClass)
         {
@@ -47,6 +51,9 @@ namespace CodeExplorinator
             ContainingClass = containingClass;
             ExternalInvocations = new List<MethodInvocationData>();
             InternalInvocations = new List<MethodInvocationData>();
+            Invocations = new List<MethodInvocationData>();
+            MethodModifiersList = new List<MethodModifiers>();
+            DetermineModifiers();
         }
 
         public void AddInvocation(MethodInvocationData invocation)
@@ -67,6 +74,21 @@ namespace CodeExplorinator
         public Accessibility GetAccessibility()
         {
             return MethodSymbol.DeclaredAccessibility;
+        }
+        
+        public string GetAccessibilityAsString()
+        {
+            if (MethodSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
+            {
+                return "protected internal";
+            }
+
+            if (MethodSymbol.DeclaredAccessibility == Accessibility.ProtectedAndInternal)
+            {
+                return "private protected";
+            }
+
+            return MethodSymbol.DeclaredAccessibility.ToString().ToLower();
         }
 
         public ImmutableArray<IParameterSymbol> GetParameters()
@@ -89,4 +111,73 @@ namespace CodeExplorinator
             return MethodSymbol.Name;
         }
     }
+        private void DetermineModifiers()
+        {
+            if (MethodSymbol.IsStatic)
+            {
+                MethodModifiersList.Add(MethodModifiers.STATIC);
+            }
+            
+            if (MethodSymbol.IsAbstract)
+            {
+                MethodModifiersList.Add(MethodModifiers.ABSTRACT);
+            }
+
+            if (MethodSymbol.IsAsync)
+            {
+                MethodModifiersList.Add(MethodModifiers.ASYNC);
+            }
+
+            if (MethodSymbol.IsExtern)
+            {
+                MethodModifiersList.Add(MethodModifiers.EXTERN);
+            }
+
+            if ( MethodSymbol.IsOverride)
+            {
+                MethodModifiersList.Add(MethodModifiers.OVERRIDE);
+            }
+
+            if (MethodSymbol.IsSealed)
+            {
+                MethodModifiersList.Add(MethodModifiers.SEALED);
+            }
+
+            if (MethodSymbol.IsVirtual)
+            {
+                MethodModifiersList.Add(MethodModifiers.VIRTUAL);
+            }
+
+
+            if ( MethodSymbol.IsReadOnly)
+            {
+                MethodModifiersList.Add(MethodModifiers.READONLY);
+            }
+
+            //dunno what this does but it sounds like we could use it:
+            //MethodSymbol.IsConditional;
+            //MethodSymbol.IsVararg;
+            //MethodSymbol.IsExtensionMethod;
+        }
+
+        public enum MethodModifiers
+        {
+            STATIC,
+            ABSTRACT,
+            ASYNC,
+            EXTERN,
+            OVERRIDE,
+            SEALED,
+            VIRTUAL,
+            READONLY,
+            
+            RECORD, //not implemented
+            NEW, //not implemented
+            UNSAFE, //not implemented
+            
+            //not sure if this counts:
+            DELEGATE //not implemented
+
+        }
+    };
 }
