@@ -110,7 +110,7 @@ namespace CodeExplorinator
         {
             return MethodSymbol.Name;
         }
-    }
+
         private void DetermineModifiers()
         {
             if (MethodSymbol.IsStatic)

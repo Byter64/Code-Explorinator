@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -28,7 +29,7 @@ namespace CodeExplorinator
         }
 
         //braucht noch vererbung
-        
+
         public string GetName()
         {
             return ClassInformation.Name;
@@ -52,51 +53,6 @@ namespace CodeExplorinator
             }
 
             return ClassInformation.DeclaredAccessibility.ToString().ToLower();
-        }
-
-        private void DetermineModifiers()
-        {
-            if (ClassInformation.IsStatic)
-            {
-                ClassModifiersList.Add(ClassModifiers.STATIC);
-            }
-
-            if (ClassInformation.IsAbstract)
-            {
-                ClassModifiersList.Add(ClassModifiers.ABSTRACT);
-            }
-
-            if (ClassInformation.IsSealed)
-            {
-                ClassModifiersList.Add(ClassModifiers.SEALED);
-            }
-
-            /*
-            if (ClassInformation.IsVirtual)
-            {
-                ClassModifiersList.Add(ClassModifiers.VIRTUAL);
-            }
-
-            if (ClassInformation.IsReadOnly)
-            {
-                ClassModifiersList.Add(ClassModifiers.READONLY);
-            }
-
-            if (ClassInformation.IsExtern)
-            {
-                ClassModifiersList.Add(ClassModifiers.EXTERN);
-            }
-
-            if (ClassInformation.IsOverride)
-            {
-                ClassModifiersList.Add(ClassModifiers.OVERRIDE);
-            }
-            //dunno what this does but it sounds like we could use it:
-            //MethodSymbol.IsConditional;
-            //MethodSymbol.IsVararg;
-            //MethodSymbol.IsExtensionMethod;
-            
-            */
         }
 
         public void ReadOutMyInformation()
@@ -211,6 +167,50 @@ namespace CodeExplorinator
         public override string ToString()
         {
             return ClassInformation.Name;
+        }
+        private void DetermineModifiers()
+        {
+            if (ClassInformation.IsStatic)
+            {
+                ClassModifiersList.Add(ClassModifiers.STATIC);
+            }
+
+            if (ClassInformation.IsAbstract)
+            {
+                ClassModifiersList.Add(ClassModifiers.ABSTRACT);
+            }
+
+            if (ClassInformation.IsSealed)
+            {
+                ClassModifiersList.Add(ClassModifiers.SEALED);
+            }
+
+            /*
+            if (ClassInformation.IsVirtual)
+            {
+                ClassModifiersList.Add(ClassModifiers.VIRTUAL);
+            }
+
+            if (ClassInformation.IsReadOnly)
+            {
+                ClassModifiersList.Add(ClassModifiers.READONLY);
+            }
+
+            if (ClassInformation.IsExtern)
+            {
+                ClassModifiersList.Add(ClassModifiers.EXTERN);
+            }
+
+            if (ClassInformation.IsOverride)
+            {
+                ClassModifiersList.Add(ClassModifiers.OVERRIDE);
+            }
+            //dunno what this does but it sounds like we could use it:
+            //MethodSymbol.IsConditional;
+            //MethodSymbol.IsVararg;
+            //MethodSymbol.IsExtensionMethod;
+            
+            */
         }
     }
 }

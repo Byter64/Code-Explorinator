@@ -8,36 +8,30 @@ using UnityEngine.Assertions.Must;
 
 namespace CodeExplorinator
 {
-    public class ReferenceFinder
+    /// <summary>
+    ///!!!THIS CLASS SHOULD PROBABLY BE IN CLASSDATA!!!
+    /// </summary>
+    public static class ReferenceFinder
     {
-        private List<ClassData> allClassesInCompilation;
-        private Compilation compilation; 
-
-        public ReferenceFinder(List<ClassData> allClassesInCompilation, Compilation compilation)
-        {
-            this.allClassesInCompilation = allClassesInCompilation;
-            this.compilation = compilation;
-        }
 
         #region MethodReferences
         /// <summary>
-        /// !!THIS METHOD SHOULD PROBABLY BE IN ANOTHER CLASS AND NOT HERE!!!
         /// Clears all references in all ClassData, 
-        ///  generates MethodInvocationData for all accesses in the whole compilation and sorts them into all ClassDatas.
+        /// generates MethodInvocationData for all accesses in the whole compilation and sorts them into all ClassDatas.
         /// </summary>
-        public void ReFillAllPublicMethodReferences()
+        public static void ReFillAllPublicMethodReferences(IEnumerable<ClassData> classDatas, Compilation compilation)
         {
-            foreach(ClassData classData in allClassesInCompilation)
+            foreach(ClassData classData in classDatas)
             {
                 classData.ClearAllPublicMethodInvocations();
             }
 
-            IEnumerable<MethodInvocationData> allinvocations = GenerateAllInvocationDataForCompilation();
+            IEnumerable<MethodInvocationData> allinvocations = GenerateAllInvocationDataForCompilation(classDatas, compilation);
 
-            //Add the invocation to the correct MethodData
+            //Add the invocation data to the correct MethodData
             foreach(MethodInvocationData invocation in allinvocations)
             {
-                foreach (ClassData classData in allClassesInCompilation)
+                foreach (ClassData classData in classDatas)
                 {
                     foreach (MethodData methodData in classData.PublicMethods)
                     {
@@ -57,19 +51,19 @@ namespace CodeExplorinator
             }
         }
 
-        private IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation()
+        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation(IEnumerable<ClassData> classDatas, Compilation compilation)
         {
             List<MethodInvocationData> allInvocations = new List<MethodInvocationData>();
 
             foreach(SyntaxTree syntaxTree in compilation.SyntaxTrees)
             {
-                allInvocations.AddRange(GenerateAllInvocationDataForSyntaxTree(syntaxTree));
+                allInvocations.AddRange(GenerateAllInvocationDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
             allInvocations.RemoveAll(invocations => invocations == null);
             return allInvocations;
         }
 
-        private IEnumerable<MethodInvocationData> GenerateAllInvocationDataForSyntaxTree(SyntaxTree syntaxTree)
+        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForSyntaxTree(IEnumerable<ClassData> classDatas, Compilation compilation, SyntaxTree syntaxTree)
         {
             SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
             if(semanticModel== null) { return null; }
@@ -79,13 +73,13 @@ namespace CodeExplorinator
             IEnumerable<InvocationExpressionSyntax> invocations = syntaxTree.GetCompilationUnitRoot().DescendantNodes().OfType<InvocationExpressionSyntax>();
             foreach(InvocationExpressionSyntax invocation in invocations)
             {
-                allInvocations.Add(GenerateMethodInvocationData(semanticModel, invocation));
+                allInvocations.Add(GenerateMethodInvocationData(classDatas, semanticModel, invocation));
             }
 
             return allInvocations;
         }
 
-        private MethodInvocationData GenerateMethodInvocationData(SemanticModel semanticModel, InvocationExpressionSyntax invocation)
+        private static MethodInvocationData GenerateMethodInvocationData(IEnumerable<ClassData> classDatas, SemanticModel semanticModel, InvocationExpressionSyntax invocation)
         {
             IMethodSymbol method = semanticModel.GetSymbolInfo(invocation).Symbol as IMethodSymbol;
             MethodData referencedMethod = null;
@@ -101,12 +95,12 @@ namespace CodeExplorinator
             }
 
             IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
-            containingMethod = FindMethodData(invocator);
+            containingMethod = FindMethodData(classDatas,invocator);
 
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the invoked method
             //███████████████████████████████████████████████████████████████████████████████
-            foreach (ClassData classData in allClassesInCompilation)
+            foreach (ClassData classData in classDatas)
             {
                 IEnumerable<MethodData> combinedList = classData.PublicMethods.Concat(classData.PrivateMethods);
                 foreach (MethodData methodData in combinedList)
@@ -131,19 +125,19 @@ namespace CodeExplorinator
         /// Clears all accesses in all ClassData, 
         ///  generates FieldAccessData for all accesses in the whole compilation and sorts them into all ClassDatas.
         /// </summary>
-        public void ReFillAllPublicAccesses()
+        public static void ReFillAllPublicAccesses(IEnumerable<ClassData> classDatas, Compilation compilation)
         {
-            foreach (ClassData classData in allClassesInCompilation)
+            foreach (ClassData classData in classDatas)
             {
                 classData.ClearAllPublicFieldAccesses();
             }
 
-            IEnumerable<FieldAccessData> allAccesses = GenerateAllFieldAccessDataForCompilation();
+            IEnumerable<FieldAccessData> allAccesses = GenerateAllFieldAccessDataForCompilation(classDatas, compilation);
 
             //Add the accesses to the correct FieldData
             foreach (FieldAccessData access in allAccesses)
             {
-                foreach (ClassData classData in allClassesInCompilation)
+                foreach (ClassData classData in classDatas)
                 {
                     foreach (FieldData fieldData in classData.PublicVariables)
                     {
@@ -163,19 +157,19 @@ namespace CodeExplorinator
             }
         }
 
-        private IEnumerable<FieldAccessData> GenerateAllFieldAccessDataForCompilation()
+        private static IEnumerable<FieldAccessData> GenerateAllFieldAccessDataForCompilation(IEnumerable<ClassData> classDatas, Compilation compilation)
         {
             List<FieldAccessData> allAccesses = new List<FieldAccessData>();
 
             foreach (SyntaxTree syntaxTree in compilation.SyntaxTrees)
             {
-                allAccesses.AddRange(GenerateAllFieldAccessDataForSyntaxTree(syntaxTree));
+                allAccesses.AddRange(GenerateAllFieldAccessDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
             allAccesses.RemoveAll(invocations => invocations == null);
             return allAccesses;
         }
 
-        private IEnumerable<FieldAccessData> GenerateAllFieldAccessDataForSyntaxTree(SyntaxTree syntaxTree)
+        private static IEnumerable<FieldAccessData> GenerateAllFieldAccessDataForSyntaxTree(IEnumerable<ClassData> classDatas, Compilation compilation, SyntaxTree syntaxTree)
         {
             SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
             if (semanticModel == null) { return null; }
@@ -185,14 +179,14 @@ namespace CodeExplorinator
             IEnumerable<IdentifierNameSyntax> accesses = syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>();
             foreach (IdentifierNameSyntax access in accesses)
             {
-                FieldAccessData accessData = TryGenerateFieldAccessData(semanticModel, access);
+                FieldAccessData accessData = TryGenerateFieldAccessData(classDatas, compilation, semanticModel, access);
                 if (accessData != null) { allAccesses.Add(accessData); }
             }
 
             return allAccesses;
         }
 
-        private FieldAccessData TryGenerateFieldAccessData(SemanticModel semanticModel, IdentifierNameSyntax access)
+        private static FieldAccessData TryGenerateFieldAccessData(IEnumerable<ClassData> classDatas, Compilation compilation, SemanticModel semanticModel, IdentifierNameSyntax access)
         {
             IFieldSymbol field = semanticModel.GetSymbolInfo(access).Symbol as IFieldSymbol;
             if (field == null) { return null; }
@@ -211,12 +205,12 @@ namespace CodeExplorinator
             }
 
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
-            containingMethod = FindMethodData(accessor);
+            containingMethod = FindMethodData(classDatas, accessor);
 
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the accessed field
             //███████████████████████████████████████████████████████████████████████████████
-            foreach (ClassData classData in allClassesInCompilation)
+            foreach (ClassData classData in classDatas)
             {
                 foreach (FieldData fieldData in classData.PublicVariables)
                 {
@@ -235,9 +229,9 @@ namespace CodeExplorinator
         #endregion
 
 
-        private MethodData FindMethodData(IMethodSymbol method)
+        private static MethodData FindMethodData(IEnumerable<ClassData> classDatas, IMethodSymbol method)
         {
-            foreach (ClassData classData in allClassesInCompilation)
+            foreach (ClassData classData in classDatas)
             {
                 IEnumerable<MethodData> combinedList = classData.PublicMethods.Concat(classData.PrivateMethods);
                 foreach (MethodData methodData in combinedList)
