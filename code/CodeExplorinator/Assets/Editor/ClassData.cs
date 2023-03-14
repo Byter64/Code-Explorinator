@@ -13,6 +13,8 @@ namespace CodeExplorinator
         public INamedTypeSymbol ClassInformation { get; private set; }
         public List<FieldData> PublicVariables { get; private set; }
         public List<FieldData> PrivateVariables { get; private set; }
+        public List<PropertyData> PublicProperties { get; private set; }
+        public List<PropertyData> PrivateProperties { get; private set; }
         public List<MethodData> PublicMethods { get; private set; }
         public List<MethodData> PrivateMethods { get; private set; }
         public List<ClassModifiers> ClassModifiersList { get; private set; }
@@ -21,6 +23,8 @@ namespace CodeExplorinator
         {
             PublicVariables = new List<FieldData>();
             PrivateVariables = new List<FieldData>();
+            PublicProperties = new List<PropertyData>();
+            PrivateProperties = new List<PropertyData>();
             PublicMethods = new List<MethodData>();
             PrivateMethods = new List<MethodData>();
             ClassModifiersList = new List<ClassModifiers>();
@@ -57,7 +61,7 @@ namespace CodeExplorinator
 
         public void ReadOutMyInformation()
         {
-            string classString = "Class: " + GetAccessibilityAsString() + " ";
+            string classString = "Class: ".ToUpper() + GetAccessibilityAsString() + " ";
             
             foreach (var classModifier in ClassModifiersList)
             {
@@ -66,7 +70,7 @@ namespace CodeExplorinator
 
             classString += GetName() + "\n";
             
-            string publicVariableString = "has out of class accessible Variables:\n";
+            string publicVariableString = "has out of class accessible Variables:\n".ToUpper();
             foreach (var publicVariable in PublicVariables)
             {
                 publicVariableString += publicVariable.GetAccessibilityAsString() + " ";
@@ -76,10 +80,10 @@ namespace CodeExplorinator
                     publicVariableString += fieldModifier.ToString().ToLower() + " ";
                 }
 
-                publicVariableString += publicVariable.FieldSymbol.Type.Name.ToLower() + " " + publicVariable.GetName() + "\n";
+                publicVariableString += publicVariable.FieldSymbol.Type.Name + " " + publicVariable.GetName() + "\n";
             }
             
-            string privateVariableString = "has private Variables:\n";
+            string privateVariableString = "has private Variables:\n".ToUpper();
             foreach (var privateVariable in PrivateVariables)
             {
                 privateVariableString += privateVariable.GetAccessibilityAsString() + " ";
@@ -89,10 +93,10 @@ namespace CodeExplorinator
                     privateVariableString += fieldModifier.ToString().ToLower() + " ";
                 }
 
-                privateVariableString += privateVariable.FieldSymbol.Type.Name.ToLower() + " " + privateVariable.GetName() + "\n";
+                privateVariableString += privateVariable.FieldSymbol.Type.Name + " " + privateVariable.GetName() + "\n";
             }
             
-            string publicMethodString = "has out of class accessible Methods:\n";
+            string publicMethodString = "has out of class accessible Methods:\n".ToUpper();
             foreach (var publicMethod in PublicMethods)
             {
                 publicMethodString += publicMethod.GetAccessibilityAsString() + " ";
@@ -102,17 +106,22 @@ namespace CodeExplorinator
                     publicMethodString += methodModifier.ToString().ToLower() + " ";
                 }
 
-                publicMethodString += publicMethod.GetReturnType().Name.ToLower() + " " + publicMethod.GetName() + " (";
+                publicMethodString += publicMethod.GetReturnType().Name + " " + publicMethod.GetName() + " (";
 
                 foreach (var parameter in publicMethod.GetParameters())
                 {
-                    publicMethodString += parameter.Name.ToLower() + ", ";
+                    publicMethodString += parameter.Type.Name + " " + parameter.Name + ", ";
                 }
-                
+
+                if (publicMethod.GetParameters().Length > 0)
+                {
+                    publicMethodString = publicMethodString.Remove(publicMethodString.Length - 2);
+                }
+
                 publicMethodString +=  ")\n";
             }
             
-            string privateMethodString = "has private Methods:\n";
+            string privateMethodString = "has private Methods:\n".ToUpper();
             foreach (var privateMethod in PrivateMethods)
             {
                 privateMethodString += privateMethod.GetAccessibilityAsString() + " ";
@@ -122,12 +131,17 @@ namespace CodeExplorinator
                     privateMethodString += methodModifier.ToString().ToLower() + " ";
                 }
 
-                privateMethodString += privateMethod.GetReturnType().Name.ToLower() + " " + privateMethod.GetName() + " (";
+                privateMethodString += privateMethod.GetReturnType().Name + " " + privateMethod.GetName() + " (";
 
                 foreach (var parameter in privateMethod.GetParameters())
                 {
-                    privateMethodString += parameter.Name.ToLower() + ", ";
+                    privateMethodString += parameter.Type.Name + " " + parameter.Name + ", ";
                 }
+                if (privateMethod.GetParameters().Length > 0)
+                {
+                    privateMethodString = privateMethodString.Remove(privateMethodString.Length - 2);
+                }
+                
                 
                 privateMethodString +=  ")\n";
             }

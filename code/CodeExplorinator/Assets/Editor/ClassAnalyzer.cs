@@ -65,9 +65,13 @@ namespace CodeExplorinator
             Debug.Log("CLASS NAME IS:" + classData.ClassInformation.Name);
 
             List<IFieldSymbol>
-                allVariables = FindAllVariables(root, model); // PROPERTY DECLARATIONS MISSING!!! CONTINUE CODING HERE!!
+                allVariables = FindAllFieldDeclarations(root, model); // PROPERTY DECLARATIONS MISSING!!! CONTINUE CODING HERE!!
             List<FieldData> publicVariables = getAllPublicFieldSymbols(allVariables, classData);
             List<FieldData> privateVariables = getAllPrivateFieldSymbols(allVariables, classData);
+
+            List<IPropertySymbol> allProperties = FindAllPropertyDeclarations(root, model);
+            List<PropertyData> publicProperties = getAllPublicPropertySymbols(allProperties, classData);
+            List<PropertyData> privateProperties = getAllPrivatePropertySymbols(allProperties, classData);
 
             List<IMethodSymbol> allMethods = FindAllMethods(root, model);
             List<MethodData> publicMethods = getAllPublicMethodSymbols(allMethods, classData);
@@ -75,6 +79,10 @@ namespace CodeExplorinator
 
             classData.PublicVariables.AddRange(publicVariables);
             classData.PrivateVariables.AddRange(privateVariables);
+            
+            classData.PublicProperties.AddRange(publicProperties);
+            classData.PrivateProperties.AddRange(privateProperties);
+            
             classData.PublicMethods.AddRange(publicMethods);
             classData.PrivateMethods.AddRange(privateMethods);
 
@@ -247,7 +255,7 @@ namespace CodeExplorinator
             return null;
         }
 
-        private static List<IFieldSymbol> FindAllVariables(ClassDeclarationSyntax root, SemanticModel model)
+        private static List<IFieldSymbol> FindAllFieldDeclarations(ClassDeclarationSyntax root, SemanticModel model)
         {
             // Use the syntax model to find all declarations:
             IEnumerable<FieldDeclarationSyntax> fieldDeclarationSyntaxes = root.DescendantNodes()
@@ -296,5 +304,91 @@ namespace CodeExplorinator
 
             return null;
         }
+
+        private static List<IPropertySymbol> FindAllPropertyDeclarations(ClassDeclarationSyntax root, SemanticModel model)
+        {
+            // Use the syntax model to find all declarations:
+            IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes = root.DescendantNodes()
+                .OfType<PropertyDeclarationSyntax>();
+
+            List<IPropertySymbol> propertySymbols = new List<IPropertySymbol>();
+
+            foreach (PropertyDeclarationSyntax propertyDeclarationSyntax in propertyDeclarationSyntaxes)
+            {
+                propertySymbols.Add(model.GetDeclaredSymbol(propertyDeclarationSyntax));
+            }
+
+            return propertySymbols;
+        }
+        
+        private static List<PropertyData> getAllPublicPropertySymbols(List<IPropertySymbol> propertySymbols, ClassData classData)
+        {
+            try
+            {
+                //select all public, protected, internal and friend vars and display them 
+                IEnumerable<IPropertySymbol> publicVariables = propertySymbols
+                    .Where(m => m.DeclaredAccessibility != Accessibility.Private);
+
+
+                List<PropertyData> propertyDatas = new List<PropertyData>();
+
+                foreach (var publicVariable in publicVariables)
+                {
+                    PropertyData temp = new PropertyData(publicVariable, classData);
+                    propertyDatas.Add(temp);
+                }
+
+                //remove later!!
+                IEnumerable<string> distinctPublicVariables = publicVariables.Select(m => m.Name);
+
+                foreach (var variable in distinctPublicVariables)
+                {
+                    Debug.Log("this property is public: " + variable);
+                }
+
+                return propertyDatas;
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.Log("no public property found");
+            }
+
+            return null;
+        }
+
+        private static List<PropertyData> getAllPrivatePropertySymbols(List<IPropertySymbol> propertySymbols, ClassData classData)
+        {
+            try
+            {
+                //select all private vars and display them 
+                IEnumerable<IPropertySymbol> privateVariables = propertySymbols
+                    .Where(m => m.DeclaredAccessibility == Accessibility.Private);
+
+                List<PropertyData> propertyDatas = new List<PropertyData>();
+
+                foreach (var privateVariable in privateVariables)
+                {
+                    PropertyData temp = new PropertyData(privateVariable, classData);
+                    propertyDatas.Add(temp);
+                }
+
+                //remove later!!
+                IEnumerable<string> distinctPrivateVariables = privateVariables.Select(m => m.Name);
+
+                foreach (var variable in distinctPrivateVariables)
+                {
+                    Debug.Log("this property is private: " + variable);
+                }
+
+                return propertyDatas;
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.Log("no private property found");
+            }
+
+            return null;
+        }
+        
     }
 }

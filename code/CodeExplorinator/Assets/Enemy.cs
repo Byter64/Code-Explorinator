@@ -17,19 +17,29 @@ public class Enemy : MonoBehaviour
     uint actionCounter;
     public string noteFromPlayer;
     private Player player;
-    // Start is called before the first frame update
+ 
     void Start()
     {
         noteFromPlayer = "I was faster";
         player = Player.instance;
     }
-
-    // Update is called once per frame
     void Update()
     {
         RegisterAction();
     }
-
+    public void AttackPlayer(Player player)
+    {
+        player.GetAttacked(attack);
+    }
+    public void AttackPlayerMagicly(Player player)
+    {
+        player.GetAttacked(magicAttack);
+    }
+    public void RegisterAction()
+    {
+        actionCounter++;
+    }
+    
     private static Enemy Reproduce(Enemy mother, Enemy father)
     {
         mother.RegisterAction();
@@ -39,21 +49,6 @@ public class Enemy : MonoBehaviour
         child.father = father;
 
         return child;
-    }
-
-    public void AttackPlayer(Player player)
-    {
-        player.GetAttacked(attack);
-    }
-
-    public void AttackPlayerMagicly(Player player)
-    {
-        player.GetAttacked(magicAttack);
-    }
-
-    public void RegisterAction()
-    {
-        actionCounter++;
     }
 
     private void BreatheAir()

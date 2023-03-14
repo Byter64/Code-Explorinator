@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -7,10 +7,10 @@ using UnityEngine;
 
 namespace CodeExplorinator
 {
-    public class FieldData
+    public class PropertyData
     {
         
-        public IFieldSymbol FieldSymbol { get; private set; }
+        public IPropertySymbol PropertySymbol { get; private set; }
         public ClassData ContainingClass { get; private set; }
         public List<FieldAccessData> AllAccesses
         {
@@ -21,108 +21,98 @@ namespace CodeExplorinator
         }
         public List<FieldAccessData> ExternalAccesses { get; private set; }
         public List<FieldAccessData> InternalAccesses { get; private set; }
-        public List<FieldModifiers> FieldModifiersList { get; private set; }
+        public List<PropertyModifiers> PropertyModifiersList { get; private set; }
         
-        public FieldData(IFieldSymbol fieldSymbol, ClassData containingClass)
+        public PropertyData(IPropertySymbol propertySymbol, ClassData containingClass)
         {
-            FieldSymbol = fieldSymbol;
+            PropertySymbol = propertySymbol;
             ContainingClass = containingClass;
             ExternalAccesses = new List<FieldAccessData>();
             InternalAccesses = new List<FieldAccessData>();
-            FieldModifiersList = new List<FieldModifiers>();
+            PropertyModifiersList = new List<PropertyModifiers>();
             DetermineModifiers();
         }
 
         public override string ToString()
         {
-            return FieldSymbol.Name;
+            return PropertySymbol.Name;
 
         }
 
         public string GetName()
         {
-            return FieldSymbol.Name;
+            return PropertySymbol.Name;
         }
 
         public Accessibility GetAccessibility()
         {
-            return FieldSymbol.DeclaredAccessibility;
+            return PropertySymbol.DeclaredAccessibility;
         }
         
         public string GetAccessibilityAsString()
         {
-            if (FieldSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
+            if (PropertySymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
             {
                 return "protected internal";
             }
 
-            if (FieldSymbol.DeclaredAccessibility == Accessibility.ProtectedAndInternal)
+            if (PropertySymbol.DeclaredAccessibility == Accessibility.ProtectedAndInternal)
             {
                 return "private protected";
             }
             
             //irgendwelche weirden spezialfälle sind nicht bedacht
 
-            return FieldSymbol.DeclaredAccessibility.ToString().ToLower();
+            return PropertySymbol.DeclaredAccessibility.ToString().ToLower();
         }
         
         public ITypeSymbol GetType()
         {
-            return FieldSymbol.Type;
+            return PropertySymbol.Type;
         }
 
-        public IFieldSymbol GetIFieldSymbol()
+        public IPropertySymbol GetIPropertySymbol()
         {
-            return FieldSymbol;
+            return PropertySymbol;
         }
 
         private void DetermineModifiers()
         {
-            if (FieldSymbol.IsStatic)
+            if (PropertySymbol.IsStatic)
             {
-                FieldModifiersList.Add(FieldModifiers.STATIC);
+                PropertyModifiersList.Add(PropertyModifiers.STATIC);
             }
             
-            if (FieldSymbol.IsAbstract)
+            if (PropertySymbol.IsAbstract)
             {
-                FieldModifiersList.Add(FieldModifiers.ABSTRACT);
+                PropertyModifiersList.Add(PropertyModifiers.ABSTRACT);
             }
 
-            if (FieldSymbol.IsExtern)
+            if (PropertySymbol.IsExtern)
             {
-                FieldModifiersList.Add(FieldModifiers.EXTERN);
+                PropertyModifiersList.Add(PropertyModifiers.EXTERN);
             }
 
-            if ( FieldSymbol.IsOverride)
+            if ( PropertySymbol.IsOverride)
             {
-                FieldModifiersList.Add(FieldModifiers.OVERRIDE);
+                PropertyModifiersList.Add(PropertyModifiers.OVERRIDE);
             }
 
-            if (FieldSymbol.IsSealed)
+            if (PropertySymbol.IsSealed)
             {
-                FieldModifiersList.Add(FieldModifiers.SEALED);
+                PropertyModifiersList.Add(PropertyModifiers.SEALED);
             }
 
-            if (FieldSymbol.IsVirtual)
+            if (PropertySymbol.IsVirtual)
             {
-                FieldModifiersList.Add(FieldModifiers.VIRTUAL);
+                PropertyModifiersList.Add(PropertyModifiers.VIRTUAL);
             }
             
-            if ( FieldSymbol.IsReadOnly)
+            if ( PropertySymbol.IsReadOnly)
             {
-                FieldModifiersList.Add(FieldModifiers.READONLY);
+                PropertyModifiersList.Add(PropertyModifiers.READONLY);
             }
 
-            if (FieldSymbol.IsConst)
-            {
-                FieldModifiersList.Add(FieldModifiers.CONST);
-            }
-
-            if (FieldSymbol.IsVolatile)
-            {
-                FieldModifiersList.Add(FieldModifiers.VOLATILE);
-            }
-            
 
             //dunno what this does but it sounds like we could use it:
             //MethodSymbol.IsConditional;
@@ -130,15 +120,15 @@ namespace CodeExplorinator
             //MethodSymbol.IsExtensionMethod;
         }
 
-        public enum FieldModifiers
+        public enum PropertyModifiers
         {
             STATIC,
             ABSTRACT,
-            CONST,
+            CONST, //doesnt work
             OVERRIDE,
             READONLY,
             SEALED,
-            VOLATILE,
+            VOLATILE, //doesnt work
             VIRTUAL,
             EXTERN,
             
