@@ -25,23 +25,33 @@ namespace CodeExplorinator
         {
             get
             {
-                return ExternalInvocations.Concat(InternalInvocations).ToList();
+                return InvokedByExternal.Concat(InvokedByInternal).ToList();
             }
         }
 
         /// <summary>
         /// All invocations to this method outside of the class it is declared in within the project
         /// </summary>
-        public List<MethodInvocationData> ExternalInvocations { get; private set; }
+        public List<MethodInvocationData> InvokedByExternal { get; private set; }
 
         /// <summary>
         /// All invocations to this method inside the class it is declared in within the project
         /// </summary>
-        public List<MethodInvocationData> InternalInvocations { get; private set; }
+        public List<MethodInvocationData> InvokedByInternal { get; private set; }
 
 
         //to be implemented: get modifiers
-        public List<MethodInvocationData> Invocations { get; private set; }
+        
+        /// <summary>
+        /// All invocations this method makes to other methods in its own class
+        /// </summary>
+        public List<MethodInvocationData> InvokedInternalMethods { get; private set; }
+        
+        /// <summary>
+        /// All invocations this method makes to other methods outside its own class
+        /// </summary>
+        public List<MethodInvocationData> InvokedExternalMethods { get; private set; }
+        
         public List<MethodModifiers> MethodModifiersList { get; private set; }
         
 
@@ -49,9 +59,10 @@ namespace CodeExplorinator
         {
             MethodSymbol = symbol;
             ContainingClass = containingClass;
-            ExternalInvocations = new List<MethodInvocationData>();
-            InternalInvocations = new List<MethodInvocationData>();
-            Invocations = new List<MethodInvocationData>();
+            InvokedByExternal = new List<MethodInvocationData>();
+            InvokedByInternal = new List<MethodInvocationData>();
+            InvokedInternalMethods = new List<MethodInvocationData>();
+            InvokedExternalMethods = new List<MethodInvocationData>();
             MethodModifiersList = new List<MethodModifiers>();
             DetermineModifiers();
         }

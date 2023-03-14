@@ -164,8 +164,8 @@ namespace CodeExplorinator
         {
             foreach(MethodData method in PublicMethods)
             {
-                method.InternalInvocations.Clear();
-                method.ExternalInvocations.Clear();
+                method.InvokedByInternal.Clear();
+                method.InvokedByExternal.Clear();
             }
         }
 

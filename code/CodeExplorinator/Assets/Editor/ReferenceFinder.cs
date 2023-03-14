@@ -39,12 +39,24 @@ namespace CodeExplorinator
                         {
                             if(invocation.ContainingMethod.ContainingClass == invocation.ReferencedMethod.ContainingClass)
                             {
-                                methodData.InternalInvocations.Add(invocation);
+                                methodData.InvokedByInternal.Add(invocation);
+                                invocation.ContainingMethod.InvokedInternalMethods.Add(invocation);
                             }
                             else
                             {
-                                methodData.ExternalInvocations.Add(invocation);
+                                methodData.InvokedByExternal.Add(invocation);
+                                invocation.ContainingMethod.InvokedExternalMethods.Add(invocation);
                             }
+                        }
+                        
+                    }
+
+                    foreach (var methodData in classData.PrivateMethods)
+                    {
+                        if (invocation.ReferencedMethod == methodData)
+                        {
+                            methodData.InvokedByInternal.Add(invocation);
+                            invocation.ContainingMethod.InvokedInternalMethods.Add(invocation);
                         }
                     }
                 }
