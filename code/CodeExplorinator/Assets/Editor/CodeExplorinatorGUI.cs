@@ -7,7 +7,7 @@ namespace CodeExplorinator
         private static Texture2D kirby;
 
         [MenuItem("Window/CodeExplorinator")]
-        public static void ShowWindow()
+        public static void OnShowWindow()
         {
             kirby = Resources.Load<Texture2D>("KSA_Kirby");
             
@@ -17,6 +17,7 @@ namespace CodeExplorinator
         private void OnGUI()
         {
             EditorGUI.DrawTextureTransparent(new Rect(10, 10, kirby.width, kirby.height), kirby);
+            
         }
     }
 }

@@ -49,7 +49,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 50, y: 111, z: 72, w: 23}
+  spriteBorder: {x: 235, y: 169, z: 111, w: 190}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -105,7 +105,196 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: KSA_Kirby_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 247.33334
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91ca300511eb0d842b60267fb747a8fc
+      internalID: 32797829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_1
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 247.33334
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 35b4dd9b99e77d24489ac918d6d5a669
+      internalID: -297266233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_2
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 247.33334
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 362416651e0a5854b8903bf517d17f2c
+      internalID: 603764368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 124.333336
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8596cdc9b05bd1849a7e00b5094f66e4
+      internalID: -1715865994
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_4
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 124.333336
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 95f962c6188f1d44993349b80250393d
+      internalID: -857960727
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_5
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 124.333336
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4cd5c8383d6fcb47b9fa90807ab51c3
+      internalID: 1304982705
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_6
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1.3333359
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d25fcf6b9053f3345a94b39931c84886
+      internalID: -2103939662
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_7
+      rect:
+        serializedVersion: 2
+        x: 120
+        y: 1.3333359
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 347351645320e1f48a8fff2ef3e7de78
+      internalID: 652448293
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: KSA_Kirby_8
+      rect:
+        serializedVersion: 2
+        x: 240
+        y: 1.3333359
+        width: 120
+        height: 123.666664
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0970eef12c5e1d641b9aea5a15d9d092
+      internalID: 1029219022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -116,7 +305,16 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      KSA_Kirby_1: -297266233
+      KSA_Kirby_4: -857960727
+      KSA_Kirby_5: 1304982705
+      KSA_Kirby_8: 1029219022
+      KSA_Kirby_0: 32797829
+      KSA_Kirby_7: 652448293
+      KSA_Kirby_3: -1715865994
+      KSA_Kirby_6: -2103939662
+      KSA_Kirby_2: 603764368
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
