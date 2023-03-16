@@ -57,6 +57,8 @@ public static class CanIUseRoslyn
         }
         
         ReferenceFinder.ReFillAllPublicMethodReferences(classDatas, compilation);
+        ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
+        ReferenceFinder.ReFillAllPublicPropertyAccesses(classDatas, compilation);
 
         foreach(ClassData classData in classDatas)
         {
@@ -75,30 +77,63 @@ public static class CanIUseRoslyn
 
                 result = "";
                 
-                foreach (MethodInvocationData invocationData in methodData.InvokedInternalMethods)
+                foreach (MethodInvocationData invocationData in methodData.IsInvokingInternalMethods)
                 {
                     result += "\t method " + invocationData.ContainingMethod + " in class: " + methodData.ContainingClass.GetName() + " references internal: " + invocationData.ReferencedMethod +
                               "\t\t of class " + invocationData.ReferencedMethod.ContainingClass + "\n";
                 }
                 
+                Debug.Log(result);
                 result = "";
                 
-                foreach (MethodInvocationData invocationData in methodData.InvokedExternalMethods)
+                foreach (MethodInvocationData invocationData in methodData.IsInvokingExternalMethods)
                 {
                     result += "\t method " + invocationData.ContainingMethod + " in class: " + methodData.ContainingClass.GetName() + " references external: " + invocationData.ReferencedMethod +
                               "\t\t of class " + invocationData.ReferencedMethod.ContainingClass + "\n";
                 }
                 
                 Debug.Log(result);
-            }
+                result = "";
 
-            foreach (var methodData in classData.PrivateMethods)
-            {
+                foreach (var invocationData in methodData.IsAccessingExternalField)
+                {
+                    result += "\t FIELD: method " + invocationData.ContainingMethod + " in class: " + methodData.ContainingClass.GetName() + " references external field: " + invocationData.ReferencedField +
+                              "\t\t of class " + invocationData.ReferencedField.ContainingClass + "\n";
+                }
                 
+                Debug.Log(result);
+                result = "";
+
+                foreach (var invocationData in methodData.IsAccessingInternalField)
+                {
+                    result += "\t FIELD: method " + invocationData.ContainingMethod + " in class: " + methodData.ContainingClass.GetName() + " references external field: " + invocationData.ReferencedField +
+                              "\t\t of class " + invocationData.ReferencedField.ContainingClass + "\n";
+                }
+                
+                Debug.Log(result);
+                result = "";
+
+                foreach (var invocationData in methodData.IsAccessingExternalProperty)
+                {
+                    result += "\t PROPERTY: method " + invocationData.ContainingMethod + " in class: " + methodData.ContainingClass.GetName() + " references external property: " + invocationData.ReferencedProperty +
+                              "\t\t of class " + invocationData.ReferencedProperty.ContainingClass + "\n";
+                }
+                
+                Debug.Log(result);
+                result = "";
+
+                foreach (var invocationData in methodData.IsAccessingInternalProperty)
+                {
+                    result += "\t PROPERTY: method " + invocationData.ContainingMethod + " in class: " + methodData.ContainingClass.GetName() + " references internal property: " + invocationData.ReferencedProperty +
+                              "\t\t of class " + invocationData.ReferencedProperty.ContainingClass + "\n";
+                }
+                
+                Debug.Log(result);
             }
+            
         }
 
-        ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
+        
         foreach (ClassData classData in classDatas)
         {
             foreach (FieldData fieldData in classData.PublicVariables)
@@ -114,6 +149,8 @@ public static class CanIUseRoslyn
                 Debug.Log(result);
             }
         }
+
+        ReferenceFinder.ReFillAllClassReferences(classDatas,compilation);
     }
     
 }

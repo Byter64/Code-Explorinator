@@ -40,18 +40,41 @@ namespace CodeExplorinator
         public List<MethodInvocationData> InvokedByInternal { get; private set; }
 
 
-        //to be implemented: get modifiers
+        
         
         /// <summary>
         /// All invocations this method makes to other methods in its own class
         /// </summary>
-        public List<MethodInvocationData> InvokedInternalMethods { get; private set; }
+        public List<MethodInvocationData> IsInvokingInternalMethods { get; private set; }
         
         /// <summary>
         /// All invocations this method makes to other methods outside its own class
         /// </summary>
-        public List<MethodInvocationData> InvokedExternalMethods { get; private set; }
+        public List<MethodInvocationData> IsInvokingExternalMethods { get; private set; }
+
+        /// <summary>
+        /// All accesses to a field outside of the class this method is declared in within the project
+        /// </summary>
+        public List<FieldAccessData> IsAccessingExternalField { get; private set; }
         
+        /// <summary>
+        /// All accesses to a field inside the class this method is declared in within the project
+        /// </summary>
+        public List<FieldAccessData> IsAccessingInternalField { get; private set; }
+        
+        /// <summary>
+        /// All accesses to a property outside of the class this method is declared in within the project
+        /// </summary>
+        public List<PropertyAccessData> IsAccessingExternalProperty{ get; private set; }
+        
+        /// <summary>
+        /// All accesses to a property inside the class this method is declared in within the project
+        /// </summary>
+        public List<PropertyAccessData> IsAccessingInternalProperty { get; private set; }
+        
+        
+        
+        //to be implemented: get modifiers
         public List<MethodModifiers> MethodModifiersList { get; private set; }
         
 
@@ -61,8 +84,12 @@ namespace CodeExplorinator
             ContainingClass = containingClass;
             InvokedByExternal = new List<MethodInvocationData>();
             InvokedByInternal = new List<MethodInvocationData>();
-            InvokedInternalMethods = new List<MethodInvocationData>();
-            InvokedExternalMethods = new List<MethodInvocationData>();
+            IsInvokingInternalMethods = new List<MethodInvocationData>();
+            IsInvokingExternalMethods = new List<MethodInvocationData>();
+            IsAccessingInternalField = new List<FieldAccessData>();
+            IsAccessingExternalField = new List<FieldAccessData>();
+            IsAccessingInternalProperty = new List<PropertyAccessData>();
+            IsAccessingExternalProperty = new List<PropertyAccessData>();
             MethodModifiersList = new List<MethodModifiers>();
             DetermineModifiers();
         }

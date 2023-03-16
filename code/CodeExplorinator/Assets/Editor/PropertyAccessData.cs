@@ -1,30 +1,28 @@
-﻿using Microsoft.CodeAnalysis;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace CodeExplorinator
 {
-    public class FieldAccessData
+    public class PropertyAccessData
     {
-        
         /// <summary>
         /// The method in which this access takes place
         /// </summary>
         public MethodData ContainingMethod { get; private set; }
         
         /// <summary>
-        /// The field that is accessed
+        /// The property that is accessed
         /// </summary>
-        public FieldData ReferencedField { get; private set; }
+        public PropertyData ReferencedProperty { get; private set; }
 
 
-        public FieldAccessData(MethodData containingMethod, FieldData referencedField)
+        public PropertyAccessData(MethodData containingMethod, PropertyData referencedProperty)
         {
             ContainingMethod = containingMethod;
-            ReferencedField = referencedField;
+            ReferencedProperty = referencedProperty;
         }
-
     }
 }
+

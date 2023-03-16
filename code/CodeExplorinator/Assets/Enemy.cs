@@ -30,6 +30,7 @@ public class Enemy : MonoBehaviour
     public void AttackPlayer(Player player)
     {
         player.GetAttacked(attack);
+        string bob = player.nickname;
     }
     public void AttackPlayerMagicly(Player player)
     {

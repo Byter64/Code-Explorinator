@@ -12,23 +12,32 @@ namespace CodeExplorinator
         
         public IPropertySymbol PropertySymbol { get; private set; }
         public ClassData ContainingClass { get; private set; }
-        public List<FieldAccessData> AllAccesses
+        public List<PropertyAccessData> AllAccesses
         {
             get
             {
-                return ExternalAccesses.Concat(InternalAccesses).ToList();
+                return AccessedByExternal.Concat(AccessedByInternal).ToList();
             }
         }
-        public List<FieldAccessData> ExternalAccesses { get; private set; }
-        public List<FieldAccessData> InternalAccesses { get; private set; }
+        
+        /// <summary>
+        /// All accesses to this property outside of the class it is declared in within the project
+        /// </summary>
+        public List<PropertyAccessData> AccessedByExternal { get; private set; }
+        
+        /// <summary>
+        /// All accesses to this property inside the class it is declared in within the project
+        /// </summary>
+        public List<PropertyAccessData> AccessedByInternal { get; private set; }
+        
         public List<PropertyModifiers> PropertyModifiersList { get; private set; }
         
         public PropertyData(IPropertySymbol propertySymbol, ClassData containingClass)
         {
             PropertySymbol = propertySymbol;
             ContainingClass = containingClass;
-            ExternalAccesses = new List<FieldAccessData>();
-            InternalAccesses = new List<FieldAccessData>();
+            AccessedByExternal = new List<PropertyAccessData>();
+            AccessedByInternal = new List<PropertyAccessData>();
             PropertyModifiersList = new List<PropertyModifiers>();
             DetermineModifiers();
         }

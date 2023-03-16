@@ -16,19 +16,28 @@ namespace CodeExplorinator
         {
             get
             {
-                return ExternalAccesses.Concat(InternalAccesses).ToList();
+                return AccessedByExternal.Concat(AccessedByInternal).ToList();
             }
         }
-        public List<FieldAccessData> ExternalAccesses { get; private set; }
-        public List<FieldAccessData> InternalAccesses { get; private set; }
+        
+        /// <summary>
+        /// All accesses to this field outside of the class it is declared in within the project
+        /// </summary>
+        public List<FieldAccessData> AccessedByExternal { get; private set; }
+        
+        /// <summary>
+        /// All accesses to this field inside the class it is declared in within the project
+        /// </summary>
+        public List<FieldAccessData> AccessedByInternal { get; private set; }
+
         public List<FieldModifiers> FieldModifiersList { get; private set; }
         
         public FieldData(IFieldSymbol fieldSymbol, ClassData containingClass)
         {
             FieldSymbol = fieldSymbol;
             ContainingClass = containingClass;
-            ExternalAccesses = new List<FieldAccessData>();
-            InternalAccesses = new List<FieldAccessData>();
+            AccessedByExternal = new List<FieldAccessData>();
+            AccessedByInternal = new List<FieldAccessData>();
             FieldModifiersList = new List<FieldModifiers>();
             DetermineModifiers();
         }

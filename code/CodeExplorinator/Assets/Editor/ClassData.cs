@@ -173,8 +173,17 @@ namespace CodeExplorinator
         {
             foreach (FieldData field in PublicVariables)
             {
-                field.InternalAccesses.Clear();
-                field.ExternalAccesses.Clear();
+                field.AccessedByInternal.Clear();
+                field.AccessedByExternal.Clear();
+            }
+        }
+        
+        public void ClearAllPublicPropertyAccesses()
+        {
+            foreach (PropertyData property in PublicProperties)
+            {
+                property.AccessedByInternal.Clear();
+                property.AccessedByExternal.Clear();
             }
         }
 
