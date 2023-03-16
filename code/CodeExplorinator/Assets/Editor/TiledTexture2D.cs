@@ -7,7 +7,7 @@ namespace CodeExplorinator
     /// <summary>
     /// A wrapper class for a tiled texture. Be aware that resizing it does NOT change the old texture but rather creates a new texture everytime the scale or size is changed.
     /// </summary>
-    public class TiledTexture2D
+    public class TiledTextureBuilder
     {
         private enum Tile
         {
@@ -40,7 +40,7 @@ namespace CodeExplorinator
         }
 
         /// <summary>
-        /// The size of the TiledTexture2D in pixels
+        /// The size of the TiledTextureBuilder in pixels
         /// </summary>
         public Vector2Int Size
         {
@@ -59,20 +59,6 @@ namespace CodeExplorinator
         /// </summary>
         public Vector2Int OriginalSize { get { return new Vector2Int(OriginalTexture.width, OriginalTexture.height); } }
         public Texture2D OriginalTexture { get; private set; }
-        /// <summary>
-        /// The tiled texture
-        /// </summary>
-        public Texture2D TiledTexture 
-        { 
-            get
-            {
-                if(mustUpdateTiledTexture)
-                {
-                    UpdateTiledTexture();
-                }
-                return tiledTexture;
-            }
-        }
 
         private bool mustUpdateTiledTexture = true;
         private Vector2Int size;
@@ -87,7 +73,7 @@ namespace CodeExplorinator
         /// </summary>
         /// <param name="texture2D">the underlying base texture</param>
         /// <param name="middleRectangle">the middle part of the texture in pixels that is going to be repeated if the texture is scaled up. !!CAUTION: (0|0) is in the bottom left corner!!</param>
-        public TiledTexture2D(Texture2D texture2D, RectInt middleRectangle)
+        public TiledTextureBuilder(Texture2D texture2D, RectInt middleRectangle)
         {
             OriginalTexture = texture2D;
             splitPointBottomLeft = middleRectangle.position;
@@ -95,6 +81,15 @@ namespace CodeExplorinator
             tiles = CreateTileDictionary(texture2D, splitPointBottomLeft, splitPointTopRight);
             scale = Vector2.one;
             size = new Vector2Int(texture2D.width, texture2D.height);
+        }
+
+        public Texture2D BuildTexture()
+        {
+            if (mustUpdateTiledTexture)
+            {
+                UpdateTiledTexture();
+            }
+            return tiledTexture;
         }
 
         /// <summary>
@@ -105,7 +100,6 @@ namespace CodeExplorinator
             Vector2Int splitPointTopRight = Size - (OriginalSize - this.splitPointTopRight);
             mustUpdateTiledTexture = false;
             tiledTexture = new Texture2D(Size.x, Size.y);
-            tiledTexture.name = "Neues Tiled Tests";
 
             int[] positionX = new int[3]
             {
