@@ -172,12 +172,12 @@ namespace CodeExplorinator
                         {
                             if (access.ContainingMethod.ContainingClass == access.ReferencedField.ContainingClass)
                             {
-                                fieldData.AccessedByInternal.Add(access);
+                                fieldData.AccessedByInternalMethod.Add(access);
                                 access.ContainingMethod.IsAccessingInternalField.Add(access);
                             }
                             else
                             {
-                                fieldData.AccessedByExternal.Add(access);
+                                fieldData.AccessedByExternalMethod.Add(access);
                                 access.ContainingMethod.IsAccessingExternalField.Add(access);
                             }
                         }
@@ -187,7 +187,7 @@ namespace CodeExplorinator
                     {
                         if (access.ReferencedField == fieldData)
                         {
-                            fieldData.AccessedByInternal.Add(access);
+                            fieldData.AccessedByInternalMethod.Add(access);
                             access.ContainingMethod.IsAccessingInternalField.Add(access);
                         }
                     }
@@ -311,12 +311,12 @@ namespace CodeExplorinator
                         {
                             if (access.ContainingMethod.ContainingClass == access.ReferencedProperty.ContainingClass)
                             {
-                                propertyData.AccessedByInternal.Add(access);
+                                propertyData.AccessedByInternalMethod.Add(access);
                                 access.ContainingMethod.IsAccessingInternalProperty.Add(access);
                             }
                             else
                             {
-                                propertyData.AccessedByExternal.Add(access);
+                                propertyData.AccessedByExternalMethod.Add(access);
                                 access.ContainingMethod.IsAccessingExternalProperty.Add(access);
                             }
                         }
@@ -326,7 +326,7 @@ namespace CodeExplorinator
                     {
                         if (access.ReferencedProperty == propertyData)
                         {
-                            propertyData.AccessedByInternal.Add(access);
+                            propertyData.AccessedByInternalMethod.Add(access);
                             access.ContainingMethod.IsAccessingInternalProperty.Add(access);
                         }
                     }
@@ -358,7 +358,7 @@ namespace CodeExplorinator
             }
 
             List<PropertyAccessData> allAccesses = new List<PropertyAccessData>();
-            
+
             IEnumerable<IdentifierNameSyntax> accesses =
                 syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>();
             foreach (IdentifierNameSyntax access in accesses)
@@ -418,44 +418,88 @@ namespace CodeExplorinator
             return null;
 
             EndOfGeneratePropertyAccessData:
-            
+
             return new PropertyAccessData(containingMethod, referencedProperty);
         }
 
         #endregion
 
-        
+
         #region ClassReferences
 
         public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas, Compilation compilation)
         {
+            //creates all ClassFieldReferenceData and ClassPropertyReferenceData and inserts these references into the ClassData, FieldData and PropertyData
             foreach (var classData in classDatas)
             {
-                FindAllClassVariables(classData);
+                FindAllClassFields(classData, classDatas);
+                FindAllClassProperties(classData, classDatas);
+            }
+        }
+
+        private static void FindAllClassFields(ClassData classData, IEnumerable<ClassData> classDatas)
+        {
+            //could be improved to ignore basic types
+
+            foreach (var fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
+            {
+                foreach (var referencedClass in classDatas)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
+                    {
+                        Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
+                                  fieldData.ContainingClass);
+                        ClassFieldReferenceData reference = new ClassFieldReferenceData(referencedClass, fieldData);
+                        
+                        //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
+                        if (referencedClass == fieldData.ContainingClass)
+                        {
+                            referencedClass.InternalClassFieldReference.Add(reference);
+                            fieldData.ReferencingContainingClass.Add(reference);
+                        }
+                        else
+                        {
+                            referencedClass.ReferencedByExternalClassField.Add(reference);
+                            fieldData.ReferencingExternalClass.Add(reference);
+                            fieldData.ContainingClass.IsReferencingExternalClassField.Add(reference);
+                        }
+                        
+                    }
+                }
             }
             
         }
 
-        private static void FindAllClassVariables(ClassData classData)
+        private static void FindAllClassProperties(ClassData classData, IEnumerable<ClassData> classDatas)
         {
-            foreach (var fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
-            {
-                if (fieldData.GetType().Name == classData.GetName()) //maybe not the best way to analyze this
-                {
-                    Debug.Log("found a reference to the class: " + classData + " in class: " + fieldData.ContainingClass);
-                }
-
-            }
+            //could be improved to ignore basic types
             
             foreach (var propertyData in classData.PublicProperties.Concat(classData.PrivateProperties).ToList())
             {
-                if (propertyData.GetType().Name == classData.GetName()) //maybe not the best way to analyze this
+                foreach (var referencedClass in classDatas)
                 {
-                    Debug.Log("found a reference to the class: " + classData + " in class: " + propertyData.ContainingClass);
+                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetType()))
+                    {
+                        Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
+                                  propertyData.ContainingClass);
+                        ClassPropertyReferenceData reference = new ClassPropertyReferenceData(referencedClass, propertyData);
+                        
+                        //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
+                        if (referencedClass == propertyData.ContainingClass)
+                        {
+                            referencedClass.InternalClassPropertyReference.Add(reference);
+                            propertyData.ReferencingContainingClass.Add(reference);
+                        }
+                        else
+                        {
+                            referencedClass.ReferencedByExternalClassProperty.Add(reference);
+                            propertyData.ReferencingExternalClass.Add(reference);
+                            propertyData.ContainingClass.IsReferencingExternalClassProperty.Add(reference);
+                        }
+                    }
                 }
             }
         }
-        
 
         #endregion
 

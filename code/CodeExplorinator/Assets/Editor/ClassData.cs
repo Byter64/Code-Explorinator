@@ -17,6 +17,37 @@ namespace CodeExplorinator
         public List<PropertyData> PrivateProperties { get; private set; }
         public List<MethodData> PublicMethods { get; private set; }
         public List<MethodData> PrivateMethods { get; private set; }
+        
+        /// <summary>
+        /// All references to this class in other classes within the project saved as a field
+        /// </summary>
+        public List<ClassFieldReferenceData> ReferencedByExternalClassField { get; private set; }
+
+        /// <summary>
+        /// All references to this class in other classes within the project saved as a property
+        /// </summary>
+        public List<ClassPropertyReferenceData> ReferencedByExternalClassProperty { get; private set; }
+        
+        /// <summary>
+        /// All references to this class within itself saved as a field
+        /// </summary>
+        public List<ClassFieldReferenceData> InternalClassFieldReference { get; private set; }
+        
+        /// <summary>
+        /// All references to this class within itself saved as a property
+        /// </summary>
+        public List<ClassPropertyReferenceData> InternalClassPropertyReference { get; private set; }
+        
+        /// <summary>
+        /// All references this class contains of other classes saved as a field
+        /// </summary>
+        public List<ClassFieldReferenceData> IsReferencingExternalClassField { get; private set; }
+        
+        /// <summary>
+        /// All references this class contains of other classes saved as a property
+        /// </summary>
+        public List<ClassPropertyReferenceData> IsReferencingExternalClassProperty { get; private set; }
+        
         public List<ClassModifiers> ClassModifiersList { get; private set; }
         public string ClassModifiersAsString
         {
@@ -44,6 +75,12 @@ namespace CodeExplorinator
             PrivateProperties = new List<PropertyData>();
             PublicMethods = new List<MethodData>();
             PrivateMethods = new List<MethodData>();
+            ReferencedByExternalClassField = new List<ClassFieldReferenceData>();
+            ReferencedByExternalClassProperty = new List<ClassPropertyReferenceData>();
+            InternalClassFieldReference = new List<ClassFieldReferenceData>();
+            InternalClassPropertyReference = new List<ClassPropertyReferenceData>();
+            IsReferencingExternalClassField = new List<ClassFieldReferenceData>();
+            IsReferencingExternalClassProperty = new List<ClassPropertyReferenceData>();
             ClassModifiersList = new List<ClassModifiers>();
             ClassInformation = classInformation;
             DetermineModifiers();
@@ -55,7 +92,7 @@ namespace CodeExplorinator
         {
             return ClassInformation.Name;
         }
-        
+
         public Accessibility GetAccessibility()
         {
             return ClassInformation.DeclaredAccessibility;
@@ -79,19 +116,19 @@ namespace CodeExplorinator
         public void ReadOutMyInformation()
         {
             string classString = "Class: ".ToUpper() + GetAccessibilityAsString() + " ";
-            
+
             foreach (var classModifier in ClassModifiersList)
             {
                 classString += classModifier.ToString().ToLower() + " ";
             }
 
             classString += GetName() + "\n";
-            
+
             string publicVariableString = "has out of class accessible Variables:\n".ToUpper();
             foreach (var publicVariable in PublicVariables)
             {
                 publicVariableString += publicVariable.GetAccessibilityAsString() + " ";
-                
+
                 foreach (var fieldModifier in publicVariable.FieldModifiersList)
                 {
                     publicVariableString += fieldModifier.ToString().ToLower() + " ";
@@ -99,12 +136,12 @@ namespace CodeExplorinator
 
                 publicVariableString += publicVariable.FieldSymbol.Type.Name + " " + publicVariable.GetName() + "\n";
             }
-            
+
             string privateVariableString = "has private Variables:\n".ToUpper();
             foreach (var privateVariable in PrivateVariables)
             {
                 privateVariableString += privateVariable.GetAccessibilityAsString() + " ";
-                
+
                 foreach (var fieldModifier in privateVariable.FieldModifiersList)
                 {
                     privateVariableString += fieldModifier.ToString().ToLower() + " ";
@@ -112,12 +149,12 @@ namespace CodeExplorinator
 
                 privateVariableString += privateVariable.FieldSymbol.Type.Name + " " + privateVariable.GetName() + "\n";
             }
-            
+
             string publicMethodString = "has out of class accessible Methods:\n".ToUpper();
             foreach (var publicMethod in PublicMethods)
             {
                 publicMethodString += publicMethod.GetAccessibilityAsString() + " ";
-                
+
                 foreach (var methodModifier in publicMethod.MethodModifiersList)
                 {
                     publicMethodString += methodModifier.ToString().ToLower() + " ";
@@ -135,14 +172,14 @@ namespace CodeExplorinator
                     publicMethodString = publicMethodString.Remove(publicMethodString.Length - 2);
                 }
 
-                publicMethodString +=  ")\n";
+                publicMethodString += ")\n";
             }
-            
+
             string privateMethodString = "has private Methods:\n".ToUpper();
             foreach (var privateMethod in PrivateMethods)
             {
                 privateMethodString += privateMethod.GetAccessibilityAsString() + " ";
-                
+
                 foreach (var methodModifier in privateMethod.MethodModifiersList)
                 {
                     privateMethodString += methodModifier.ToString().ToLower() + " ";
@@ -154,17 +191,18 @@ namespace CodeExplorinator
                 {
                     privateMethodString += parameter.Type.Name + " " + parameter.Name + ", ";
                 }
+
                 if (privateMethod.GetParameters().Length > 0)
                 {
                     privateMethodString = privateMethodString.Remove(privateMethodString.Length - 2);
                 }
-                
-                
-                privateMethodString +=  ")\n";
+
+
+                privateMethodString += ")\n";
             }
 
             string result = classString + publicVariableString + privateVariableString + publicMethodString +
-                            privateMethodString; 
+                            privateMethodString;
 
             Debug.Log(result);
         }
@@ -179,7 +217,7 @@ namespace CodeExplorinator
 
         public void ClearAllPublicMethodInvocations()
         {
-            foreach(MethodData method in PublicMethods)
+            foreach (MethodData method in PublicMethods)
             {
                 method.InvokedByInternal.Clear();
                 method.InvokedByExternal.Clear();
@@ -190,17 +228,17 @@ namespace CodeExplorinator
         {
             foreach (FieldData field in PublicVariables)
             {
-                field.AccessedByInternal.Clear();
-                field.AccessedByExternal.Clear();
+                field.AccessedByInternalMethod.Clear();
+                field.AccessedByExternalMethod.Clear();
             }
         }
-        
+
         public void ClearAllPublicPropertyAccesses()
         {
             foreach (PropertyData property in PublicProperties)
             {
-                property.AccessedByInternal.Clear();
-                property.AccessedByExternal.Clear();
+                property.AccessedByInternalMethod.Clear();
+                property.AccessedByExternalMethod.Clear();
             }
         }
 
@@ -208,6 +246,7 @@ namespace CodeExplorinator
         {
             return ClassInformation.Name;
         }
+
         private void DetermineModifiers()
         {
             if (ClassInformation.IsStatic)

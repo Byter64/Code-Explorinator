@@ -17,19 +17,29 @@ namespace CodeExplorinator
         {
             get
             {
-                return AccessedByExternal.Concat(AccessedByInternal).ToList();
+                return AccessedByExternalMethod.Concat(AccessedByInternalMethod).ToList();
             }
         }
         
         /// <summary>
         /// All accesses to this field outside of the class it is declared in within the project
         /// </summary>
-        public List<FieldAccessData> AccessedByExternal { get; private set; }
+        public List<FieldAccessData> AccessedByExternalMethod { get; private set; }
         
         /// <summary>
         /// All accesses to this field inside the class it is declared in within the project
         /// </summary>
-        public List<FieldAccessData> AccessedByInternal { get; private set; }
+        public List<FieldAccessData> AccessedByInternalMethod { get; private set; }
+
+        /// <summary>
+        /// If the field is a reference to the class it is declared in, the class is inserted here; can be null
+        /// </summary>
+        public List<ClassFieldReferenceData> ReferencingContainingClass { get; private set; }
+        
+        /// <summary>
+        /// If the field is a reference to another class, the class is inserted here; can be null
+        /// </summary>
+        public List<ClassFieldReferenceData> ReferencingExternalClass { get; private set; }
 
         public List<FieldModifiers> FieldModifiersList { get; private set; }
 
@@ -56,8 +66,10 @@ namespace CodeExplorinator
         {
             FieldSymbol = fieldSymbol;
             ContainingClass = containingClass;
-            AccessedByExternal = new List<FieldAccessData>();
-            AccessedByInternal = new List<FieldAccessData>();
+            AccessedByExternalMethod = new List<FieldAccessData>();
+            AccessedByInternalMethod = new List<FieldAccessData>();
+            ReferencingContainingClass = new List<ClassFieldReferenceData>();
+            ReferencingExternalClass = new List<ClassFieldReferenceData>();
             FieldModifiersList = new List<FieldModifiers>();
             DetermineModifiers();
         }

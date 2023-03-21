@@ -16,19 +16,29 @@ namespace CodeExplorinator
         {
             get
             {
-                return AccessedByExternal.Concat(AccessedByInternal).ToList();
+                return AccessedByExternalMethod.Concat(AccessedByInternalMethod).ToList();
             }
         }
         
         /// <summary>
         /// All accesses to this property outside of the class it is declared in within the project
         /// </summary>
-        public List<PropertyAccessData> AccessedByExternal { get; private set; }
+        public List<PropertyAccessData> AccessedByExternalMethod { get; private set; }
         
         /// <summary>
         /// All accesses to this property inside the class it is declared in within the project
         /// </summary>
-        public List<PropertyAccessData> AccessedByInternal { get; private set; }
+        public List<PropertyAccessData> AccessedByInternalMethod { get; private set; }
+        
+        /// <summary>
+        /// If the property is a reference to the class it is declared in, the class is inserted here; can be null
+        /// </summary>
+        public List<ClassPropertyReferenceData> ReferencingContainingClass { get; private set; }
+        
+        /// <summary>
+        /// If the property is a reference to another class, the class is inserted here; can be null
+        /// </summary>
+        public List<ClassPropertyReferenceData> ReferencingExternalClass { get; private set; }
         
         public List<PropertyModifiers> PropertyModifiersList { get; private set; }
         
@@ -36,8 +46,10 @@ namespace CodeExplorinator
         {
             PropertySymbol = propertySymbol;
             ContainingClass = containingClass;
-            AccessedByExternal = new List<PropertyAccessData>();
-            AccessedByInternal = new List<PropertyAccessData>();
+            AccessedByExternalMethod = new List<PropertyAccessData>();
+            AccessedByInternalMethod = new List<PropertyAccessData>();
+            ReferencingContainingClass = new List<ClassPropertyReferenceData>();
+            ReferencingExternalClass = new List<ClassPropertyReferenceData>();
             PropertyModifiersList = new List<PropertyModifiers>();
             DetermineModifiers();
         }
