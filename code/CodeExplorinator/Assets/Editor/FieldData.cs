@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using UnityEngine;
+using static CodeExplorinator.MethodData;
 
 namespace CodeExplorinator
 {
@@ -31,7 +32,26 @@ namespace CodeExplorinator
         public List<FieldAccessData> AccessedByInternal { get; private set; }
 
         public List<FieldModifiers> FieldModifiersList { get; private set; }
-        
+
+        public string FieldModifiersAsString
+        {
+            get
+            {
+                string result = "";
+                foreach (FieldModifiers modifier in FieldModifiersList)
+                {
+                    result += modifier.ToString().ToLower() + " ";
+                }
+                //If not empty, remove the last space
+                if (!result.Equals(""))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+
+                return result;
+            }
+        }
+
         public FieldData(IFieldSymbol fieldSymbol, ClassData containingClass)
         {
             FieldSymbol = fieldSymbol;
@@ -44,8 +64,17 @@ namespace CodeExplorinator
 
         public override string ToString()
         {
-            return FieldSymbol.Name;
+            string result = FieldSymbol.DeclaredAccessibility + " ";
+            result += FieldModifiersAsString;
+            if (FieldModifiersList.Count != 0)
+            {
+                result += " ";
+            }
 
+            result += GetType() + " ";
+
+            result += GetName() + ";";
+            return result;
         }
 
         public string GetName()

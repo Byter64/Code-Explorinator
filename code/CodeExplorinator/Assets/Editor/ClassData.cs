@@ -18,7 +18,24 @@ namespace CodeExplorinator
         public List<MethodData> PublicMethods { get; private set; }
         public List<MethodData> PrivateMethods { get; private set; }
         public List<ClassModifiers> ClassModifiersList { get; private set; }
+        public string ClassModifiersAsString
+        {
+            get
+            {
+                string result = "";
+                foreach(ClassModifiers modifier in ClassModifiersList)
+                {
+                    result += modifier.ToString() + " ";
+                }
+                //If not empty, remove the last space
+                if(!result.Equals(""))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
 
+                return result;
+            }
+        }
         public ClassData(INamedTypeSymbol classInformation)
         {
             PublicVariables = new List<FieldData>();

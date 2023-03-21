@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using UnityEngine;
+using static CodeExplorinator.ClassData;
 
 namespace CodeExplorinator
 {
@@ -76,7 +77,24 @@ namespace CodeExplorinator
         
         //to be implemented: get modifiers
         public List<MethodModifiers> MethodModifiersList { get; private set; }
-        
+        public string MethodModifiersAsString
+        {
+            get
+            {
+                string result = "";
+                foreach (MethodModifiers modifier in MethodModifiersList)
+                {
+                    result += modifier.ToString().ToLower() + " ";
+                }
+                //If not empty, remove the last space
+                if (!result.Equals(""))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+
+                return result;
+            }
+        }
 
         public MethodData(IMethodSymbol symbol, ClassData containingClass)
         {
@@ -146,7 +164,26 @@ namespace CodeExplorinator
 
         public override string ToString()
         {
-            return MethodSymbol.Name;
+            string result = MethodSymbol.DeclaredAccessibility + " ";
+            result += MethodModifiersAsString;
+            if(MethodModifiersList.Count != 0)
+            {
+                result += " ";
+            }
+            result += GetName() + "(";
+
+            ImmutableArray<IParameterSymbol> parameters = GetParameters();
+            foreach(IParameterSymbol parameter in parameters)
+            {
+                result += parameter.Type + " " + parameter.Name + ", ";
+            }
+            if (parameters.Length != 0)
+            {
+                result = result.Substring(0, result.Length - 2);
+            }
+            result += ");";
+
+            return result;
         }
 
         private void DetermineModifiers()
