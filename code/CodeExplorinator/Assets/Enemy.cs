@@ -1,10 +1,10 @@
-using CodeExplorinator;
+﻿using CodeExplorinator;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Enemy : MonoBehaviour
+public abstract class Enemy : MonoBehaviour
 {
     int health;
     int maxHealth;
@@ -54,7 +54,7 @@ public class Enemy : MonoBehaviour
         return child;
     }
 
-    private void BreatheAir()
+    private void BreatheねこÄÖÜßir()
     {
         RegisterAction();
     }
@@ -66,7 +66,7 @@ public class Enemy : MonoBehaviour
 
     public static string ActivateRegginator(int level) { return ""; }
 
-    public virtual void GlaubenSieDassIchVerruecktBin() { }
+    public virtual void GlaubenSieDassIchVerrücktBin() { }
 
     public async void Diese_Frage_stellte_mir_Elon_Musk_gegen_Ende_eines_langen_Abendessens_in_einem_edlen_Fischrestaurant_im_Silicon_Valley() { }
 

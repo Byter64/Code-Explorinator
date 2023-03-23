@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Editor/MeineTestserrgdg.uss?fileID=7433441132597879392&amp;guid=b31144b84fa13b04bb81f14d3880fdf6&amp;type=3#MeineTestserrgdg" />
+    <ui:Label tabindex="-1" text="Label" display-tooltip-when-elided="true" style="margin-left: 2px; margin-right: 4px; margin-top: 1px; margin-bottom: 4px; padding-left: 2px;">
+        <ui:Label text="Hello World! From UXML" style="font-size: 14px; margin-left: 6px;" />
+    </ui:Label>
+    <ui:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0); -unity-background-image-tint-color: rgb(0, 0, 0); background-image: url(&apos;project://database/Packages/com.unity.2d.spriteshape/Editor/ObjectMenuCreation/DefaultAssets/Textures/Sprite%20Shape%20Fill.png?fileID=2800000&amp;guid=b281b91a70a624a0da1c43adc1c30c7b&amp;type=3#Sprite Shape Fill&apos;); right: 0; height: 143px; bottom: -12px;" />
+</ui:UXML>

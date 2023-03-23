@@ -2,10 +2,13 @@ using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
+using static Codice.CM.Common.Serialization.PacketFileReader;
 
 namespace CodeExplorinator
 {
-    public class ClassGUI : IDrawable
+    [System.Serializable]
+    public class ClassGUI
     {
         public Vector2 Position { get; set; }
         private static TiledTextureData TiledTextureData
@@ -35,16 +38,11 @@ namespace CodeExplorinator
             }
         }
 
-
         #region Defines for the graphics
         /// <summary>
         /// Height in pixels of the header for the class
         /// </summary>
-        private static int headerHeight = 71;
-        /// <summary>
-        /// For the lines that seperate methods from fields
-        /// </summary>
-        private static int lineThickness = 5;
+        private static int headerHeight = 88;
         /// <summary>
         /// the amount of pixels which everything within the box is moved to the right
         /// </summary>
@@ -64,7 +62,8 @@ namespace CodeExplorinator
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
         private ClassData data;
-        private Texture2D background;
+        private Texture2D backgroundTexture;
+        private Texture2D lineTexture;
 
         /// <summary>
         /// 
@@ -73,7 +72,7 @@ namespace CodeExplorinator
         /// <param name="classStyle">The style in which the class name will be displayed</param>
         /// <param name="fieldStyle">The style in which fields AND properties will be displayed</param>
         /// <param name="methodStyle">The style in which methods will be displayed</param>
-        public ClassGUI(ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle)
+        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, Texture2D lineTexture)
         {
             if (!classStyle.font.dynamic)
             {
@@ -88,75 +87,86 @@ namespace CodeExplorinator
                 throw new System.ArgumentException("Font for field style is not dynamic and thus cannot be scaled");
             }
 
+            Position = position;
             this.data = data;
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
-
+            this.lineTexture = lineTexture;
 
             TextureBuilder.Size = CalculateBackgroundSize();
-            background = TextureBuilder.BuildTexture();
-            widthInPixels = background.width;
-            heightInPixels = background.height;
+            TextureBuilder.Size = new Vector2Int(10, 10);
+            backgroundTexture = TextureBuilder.BuildTexture();
+            widthInPixels = backgroundTexture.width;
+            heightInPixels = backgroundTexture.height;
             Debug.LogWarning("GUIStyles für ClassGUI sind noch nicht richtig definiert");
         }
 
-        public void Draw()
+        public VisualElement CreateVisualElement()
         {
-            ///<summary>always indicates the next free space that has not been drawn to</summary>
-            float yPosition = Position.y;
-            Rect drawRect = new Rect(Position.x, yPosition, background.width, background.height);
+            VisualElement classElement = new VisualElement();
+            classElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
+            classElement.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(widthInPixels, heightInPixels));
+            classElement.style.height = heightInPixels;
+            classElement.style.width = widthInPixels;
+            classElement.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
 
-            EditorGUI.DrawTextureTransparent(drawRect, background);
             #region DrawHeader
-            if (data.ClassModifiersList.Count == 0)
-            {
-                Rect headerRect = new Rect(Position.x, yPosition, background.width, headerHeight);
-                //Class name
-                EditorGUI.LabelField(headerRect, data.GetName(), classStyle);
+            string headerText = data.ClassModifiersList.Count == 0 ? "" : "<<" + data.ClassModifiersAsString + ">>";
+            headerText += "\n" + data.GetName();
+            Label header = new Label(headerText);
+            header.style.unityFont = new StyleFont(classStyle.font);
+            header.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperCenter);
+            header.style.height = headerHeight;
+            header.style.fontSize = classStyle.fontSize;
+            header.style.color = Color.black;
 
-            }
-            else
-            {
-                //Modifiers
-                Rect headerRect = new Rect(Position.x, yPosition, background.width, headerHeight / 2);
-                EditorGUI.LabelField(headerRect, "<<" + data.ClassModifiersAsString + ">>", classStyle);
-
-                //Class name
-                drawRect.y += headerHeight / 2;
-                EditorGUI.LabelField(headerRect, data.GetName(), classStyle);
-            }
-
-            yPosition += headerHeight;
+            classElement.Add(header);
             #endregion
 
             #region DrawFields
-            drawRect.height = methodStyle.lineHeight;
-            drawRect.x = intendation + Position.x;
+            VisualElement fields = new VisualElement();
+            fields.style.paddingLeft = intendation;
+            classElement.Add(fields);
+
             foreach (FieldData fieldData in data.PublicVariables.Concat(data.PrivateVariables))
             {
-                drawRect.y = yPosition;
-                EditorGUI.LabelField(drawRect, fieldData.ToString(), methodStyle);
+                Label field = new Label(fieldData.ToString());
+                field.style.unityFont = new StyleFont(fieldStyle.font);
+                field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                field.style.fontSize = fieldStyle.fontSize;
+                field.style.color = Color.black;
 
-                yPosition += methodStyle.lineHeight;
+                fields.Add(field);
             }
             #endregion
 
-            Rect line = new Rect(Position.x, yPosition, widthInPixels, lineThickness);
-            EditorGUI.DrawRect(line, Color.black);
-            yPosition += lineThickness;
+            if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && data.PublicVariables.Concat(data.PrivateVariables).Count() != 0)
+            {
+                VisualElement line = new VisualElement();
+                line.style.backgroundImage = new StyleBackground(lineTexture);
+                line.style.height = lineTexture.height;
+                line.style.width = classElement.style.width;
+
+                classElement.Add(line);
+            }
 
             #region DrawMethods
-            drawRect.height = methodStyle.lineHeight;
-            drawRect.x = intendation + Position.x;
+            VisualElement methods = new VisualElement();
+            methods.style.paddingLeft = intendation;
+            classElement.Add(methods);
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
-                drawRect.y = yPosition;
-                EditorGUI.LabelField(drawRect, methodData.ToString(), methodStyle);
+                Label method = new Label(methodData.ToString());
+                method.style.unityFont = new StyleFont(methodStyle.font);
+                method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                method.style.fontSize = methodStyle.fontSize;
+                method.style.color = Color.black;
 
-                yPosition += methodStyle.lineHeight;
+                methods.Add(method);
             }
             #endregion
+            return classElement;
         }
 
         private Vector2Int CalculateBackgroundSize()
@@ -178,17 +188,23 @@ namespace CodeExplorinator
                 }
             }
 
+            result.y += lineTexture.height;
+
+            Label tempLabel = new Label();
+            tempLabel.style.unityFont = methodStyle.font;
+            tempLabel.style.fontSize = methodStyle.fontSize;
             foreach (MethodData method in data.PublicMethods.Concat(data.PrivateMethods))
             {
-                result.y += methodStyle.lineHeight;
-                float min, max;
-                methodStyle.CalcMinMaxWidth(new GUIContent(method.ToString()), out min, out max);
-                if (min != max) { Debug.LogWarning("min and max width were not the same for: \n" + method.ContainingClass.GetName() + "." + method.GetName()); };
+                tempLabel.text = method.ToString();
 
-                if (min > result.x)
+                Vector2 textSize = tempLabel.MeasureTextSize(method.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
+
+                Debug.Log("For " + method.ToString() + " is " + textSize.x + " space needed");
+                if (textSize.x > result.x)
                 {
-                    result.x = min;
+                    result.x = textSize.x;
                 }
+                result.y += methodStyle.lineHeight;
             }
 
             result.y += emptySpaceBottom;

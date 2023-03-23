@@ -65,7 +65,7 @@ namespace CodeExplorinator
             Debug.Log("CLASS NAME IS:" + classData.ClassInformation.Name);
 
             List<IFieldSymbol>
-                allVariables = FindAllFieldDeclarations(root, model); // PROPERTY DECLARATIONS MISSING!!! CONTINUE CODING HERE!!
+                allVariables = FindAllFieldDeclarations(root, model);
             List<FieldData> publicVariables = getAllPublicFieldSymbols(allVariables, classData);
             List<FieldData> privateVariables = getAllPrivateFieldSymbols(allVariables, classData);
 

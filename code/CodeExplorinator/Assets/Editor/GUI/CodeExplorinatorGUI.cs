@@ -6,22 +6,54 @@ using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Linq;
+using UnityEngine.UIElements;
 
 namespace CodeExplorinator
 {
     public class CodeExplorinatorGUI : EditorWindow
     {
-        private static List<IDrawable> drawables = new List<IDrawable>();
+        [SerializeField, Tooltip("This file will be overwritten by the CodeExplorinator with the code graph")]
+        private VisualTreeAsset uxmlFile;
+        [SerializeField]
+        private Texture2D lineTexture;
 
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
         {
-            
-            GetWindow(typeof(CodeExplorinatorGUI));
+            EditorWindow editorWindow = GetWindow(typeof(CodeExplorinatorGUI));
+            editorWindow.titleContent = new GUIContent("Code Explorinator");
+        }
 
-            //█████████████████████████████████
-            //███████████DebugCode█████████████
-            //█████████████████████████████████
+        private void CreateGUI()
+        {
+            ClassData testData = CreateTestData();
+            
+            GUIStyle classStyle = new GUIStyle();
+            classStyle.alignment = TextAnchor.MiddleCenter;
+            classStyle.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf");
+            classStyle.fontSize = 20;
+
+            GUIStyle methodStyle = new GUIStyle(classStyle);
+            methodStyle.alignment = TextAnchor.UpperLeft;
+            
+            ClassGUI testClass = new ClassGUI(new Vector2(50, 50), testData, classStyle, classStyle, methodStyle, lineTexture);
+            VisualElement testVisualElement = testClass.CreateVisualElement();
+            rootVisualElement.Add(testVisualElement);
+            
+            // VisualElements objects can contain other VisualElement following a tree hierarchy.
+            //VisualElement label = new Label("Hello World! From C#");
+            //root1.Add(label);
+
+            // Instantiate UXML
+            //VisualElement labelFromUXML = m_VisualTreeAsset.Instantiate();
+            //root1.Add(labelFromUXML);
+        }
+
+        /// <summary>
+        /// DEBUG. Will analyze the whole project and instantiate the first class it found as GUI element0
+        /// </summary>
+        private ClassData CreateTestData()
+        {
             string[] allCSharpScripts =
                 Directory.GetFiles(Application.dataPath, "*.cs",
                     SearchOption.AllDirectories); //maybe searching all directories not needed?
@@ -44,26 +76,7 @@ namespace CodeExplorinator
                 allClasses.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
 
-            //ClassData testData = new ClassData(new TestINamedTypeSymbol());
-            //testData.PublicMethods.Add()
-            GUIStyle classStyle = new GUIStyle();
-            classStyle.alignment = TextAnchor.MiddleCenter;
-            classStyle.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf");
-            GUIStyle methodStyle = new GUIStyle(classStyle);
-            methodStyle.alignment = TextAnchor.UpperLeft;
-            drawables.Add(new ClassGUI(allClasses.First(), classStyle, classStyle, methodStyle));
-            //█████████████████████████████████
-            //█████████Ende DebugCode██████████
-            //█████████████████████████████████
-        }
-
-        private void OnGUI()
-        {
-            //EditorGUI.DrawTextureTransparent(new Rect(10, 10, kirby.width, kirby.height), kirby);
-            foreach(IDrawable drawable in drawables)
-            {
-                drawable.Draw();
-            }
+            return allClasses.First();
         }
     }
 }
