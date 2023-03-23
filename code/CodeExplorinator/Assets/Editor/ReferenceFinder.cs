@@ -445,6 +445,7 @@ namespace CodeExplorinator
             {
                 foreach (var referencedClass in classDatas)
                 {
+                    //if the class is referenced by this field set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
                     {
                         Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
@@ -462,6 +463,17 @@ namespace CodeExplorinator
                             referencedClass.ReferencedByExternalClassField.Add(reference);
                             fieldData.ReferencingExternalClass.Add(reference);
                             fieldData.ContainingClass.IsReferencingExternalClassField.Add(reference);
+                            
+                            //this still needs to be tested!!
+                            if (!referencedClass.AllConnectedClasses.Contains(fieldData.ContainingClass))
+                            {
+                                referencedClass.AllConnectedClasses.Add(fieldData.ContainingClass);
+                            }
+
+                            if (!fieldData.ContainingClass.AllConnectedClasses.Contains(referencedClass))
+                            {
+                                fieldData.ContainingClass.AllConnectedClasses.Add(referencedClass);
+                            }
                         }
                         
                     }
@@ -478,6 +490,7 @@ namespace CodeExplorinator
             {
                 foreach (var referencedClass in classDatas)
                 {
+                    //if the class is referenced by this property set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetType()))
                     {
                         Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
@@ -495,6 +508,18 @@ namespace CodeExplorinator
                             referencedClass.ReferencedByExternalClassProperty.Add(reference);
                             propertyData.ReferencingExternalClass.Add(reference);
                             propertyData.ContainingClass.IsReferencingExternalClassProperty.Add(reference);
+                            
+                            
+                            //this still needs to be tested!!
+                            if (!referencedClass.AllConnectedClasses.Contains(propertyData.ContainingClass))
+                            {
+                                referencedClass.AllConnectedClasses.Add(propertyData.ContainingClass);
+                            }
+
+                            if (!propertyData.ContainingClass.AllConnectedClasses.Contains(referencedClass))
+                            {
+                                propertyData.ContainingClass.AllConnectedClasses.Add(referencedClass);
+                            }
                         }
                     }
                 }

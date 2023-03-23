@@ -48,6 +48,11 @@ namespace CodeExplorinator
         /// </summary>
         public List<ClassPropertyReferenceData> IsReferencingExternalClassProperty { get; private set; }
         
+        /// <summary>
+        /// A list of all classes referencing or are referenced by this class
+        /// </summary>
+        public List<ClassData> AllConnectedClasses { get; private set; }
+
         public List<ClassModifiers> ClassModifiersList { get; private set; }
         public string ClassModifiersAsString
         {
@@ -81,6 +86,7 @@ namespace CodeExplorinator
             InternalClassPropertyReference = new List<ClassPropertyReferenceData>();
             IsReferencingExternalClassField = new List<ClassFieldReferenceData>();
             IsReferencingExternalClassProperty = new List<ClassPropertyReferenceData>();
+            AllConnectedClasses = new List<ClassData>();
             ClassModifiersList = new List<ClassModifiers>();
             ClassInformation = classInformation;
             DetermineModifiers();

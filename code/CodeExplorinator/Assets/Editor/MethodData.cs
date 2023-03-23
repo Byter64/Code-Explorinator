@@ -40,9 +40,6 @@ namespace CodeExplorinator
         /// </summary>
         public List<MethodInvocationData> InvokedByInternal { get; private set; }
 
-
-        
-        
         /// <summary>
         /// All invocations this method makes to other methods in its own class
         /// </summary>
@@ -73,10 +70,15 @@ namespace CodeExplorinator
         /// </summary>
         public List<PropertyAccessData> IsAccessingInternalProperty { get; private set; }
         
-        
-        
+        /// <summary>
+        /// A list of all Methods that are referenced by or are referencing this method NOT IMPLEMENTED!!!
+        /// </summary>
+        public List<MethodData> AllConnectedMethods { get; private set; }
+
         //to be implemented: get modifiers
         public List<MethodModifiers> MethodModifiersList { get; private set; }
+        
+        //maybe create this once the method is created, else this is probably generated each time this string is accessed
         public string MethodModifiersAsString
         {
             get
