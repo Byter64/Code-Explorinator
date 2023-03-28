@@ -16,7 +16,7 @@ namespace CodeExplorinator
         [SerializeField, Tooltip("This file will be overwritten by the CodeExplorinator with the code graph")]
         private VisualTreeAsset uxmlFile;
         [SerializeField]
-        private Texture2D lineTexture;
+        public Texture2D lineTexture;
 
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()

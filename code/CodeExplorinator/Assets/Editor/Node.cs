@@ -14,19 +14,15 @@ namespace CodeExplorinator
         public VisualElement VisualElement;
         public Vector2 position;
 
-        public Node(ClassData classData)
+        public Node(ClassData classData, VisualElement visualElement)
         {
             ClassData = classData;
+            VisualElement = visualElement;
+            ConnectedNodes = new List<Node>();
+            NotConnectedNodes = new List<Node>();
+            F = new Vector2();
         }
-
-    
-    
-        public int Ft(int t)
-        {
         
-        
-            return 0;
-        }
     }
 }
 

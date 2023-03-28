@@ -29,6 +29,8 @@ namespace CodeExplorinator
         public void Start()
         {
             List<ClassData> classDatas = GenerateClasses();
+            AnalysedClasses = new List<ClassData>();
+            AnalysedMethods = new List<MethodData>();
             
             ClassData startingClass = GetStartingClass(classDatas);
             GenerateClassGraph(startingClass, searchRadius);
