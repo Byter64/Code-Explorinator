@@ -64,11 +64,14 @@ public abstract class Enemy : MonoBehaviour
 
     }
 
+    protected void iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii() { }
+    protected void mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm() { }
+
     public static string ActivateRegginator(int level) { return ""; }
 
     public virtual void GlaubenSieDassIchVerrücktBin() { }
 
-    public async void Diese_Frage_stellte_mir_Elon_Musk_gegen_Ende_eines_langen_Abendessens_in_einem_edlen_Fischrestaurant_im_Silicon_Valley() { }
+    //public async void Diese_Frage_stellte_mir_Elon_Musk_gegen_Ende_eines_langen_Abendessens_in_einem_edlen_Fischrestaurant_im_Silicon_Valley() { }
 
     private CodeExplorinatorGUI Your_Princess_In_Another_Castle() { return null; }
 

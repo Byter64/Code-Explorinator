@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UIElements;
+using UnityEngine.TextCore.Text;
 
 namespace CodeExplorinator
 {
@@ -26,19 +27,25 @@ namespace CodeExplorinator
 
         private void CreateGUI()
         {
-            ClassData testData = CreateTestData();
-            
-            GUIStyle classStyle = new GUIStyle();
-            classStyle.alignment = TextAnchor.MiddleCenter;
-            classStyle.font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf");
-            classStyle.fontSize = 20;
 
+            GUIStyle classStyle = new GUIStyle
+            {
+                alignment = TextAnchor.MiddleCenter,
+                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
+                fontSize = 20
+            };
             GUIStyle methodStyle = new GUIStyle(classStyle);
             methodStyle.alignment = TextAnchor.UpperLeft;
             
-            ClassGUI testClass = new ClassGUI(new Vector2(50, 50), testData, classStyle, classStyle, methodStyle, lineTexture);
-            VisualElement testVisualElement = testClass.CreateVisualElement();
-            rootVisualElement.Add(testVisualElement);
+            List<ClassData> data = CreateData();
+            float xpos = 0;
+            foreach (ClassData classData in data)
+            { 
+                ClassGUI testClass = new ClassGUI(new Vector2(xpos, 0), classData, classStyle, methodStyle, methodStyle, lineTexture);
+                VisualElement testVisualElement = testClass.CreateVisualElement();
+                rootVisualElement.Add(testVisualElement);
+                xpos += testClass.Size.x;
+            }
             
             // VisualElements objects can contain other VisualElement following a tree hierarchy.
             //VisualElement label = new Label("Hello World! From C#");
@@ -53,6 +60,11 @@ namespace CodeExplorinator
         /// DEBUG. Will analyze the whole project and instantiate the first class it found as GUI element0
         /// </summary>
         private ClassData CreateTestData()
+        {
+            return CreateData().First();
+        }
+
+        private List<ClassData> CreateData()
         {
             string[] allCSharpScripts =
                 Directory.GetFiles(Application.dataPath, "*.cs",
@@ -76,7 +88,7 @@ namespace CodeExplorinator
                 allClasses.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
 
-            return allClasses.First();
+            return allClasses;
         }
     }
 }

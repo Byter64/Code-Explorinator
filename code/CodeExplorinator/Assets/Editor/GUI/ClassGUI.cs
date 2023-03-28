@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -11,6 +12,11 @@ namespace CodeExplorinator
     public class ClassGUI
     {
         public Vector2 Position { get; set; }
+        public Vector2 Size
+        {
+            get { return new Vector2(backgroundTexture.width, backgroundTexture.height); }
+        }
+        
         private static TiledTextureData TiledTextureData
         {
             get
@@ -95,7 +101,6 @@ namespace CodeExplorinator
             this.lineTexture = lineTexture;
 
             TextureBuilder.Size = CalculateBackgroundSize();
-            TextureBuilder.Size = new Vector2Int(10, 10);
             backgroundTexture = TextureBuilder.BuildTexture();
             widthInPixels = backgroundTexture.width;
             heightInPixels = backgroundTexture.height;
@@ -104,12 +109,15 @@ namespace CodeExplorinator
 
         public VisualElement CreateVisualElement()
         {
+            Debug.LogWarning("Default font is used because I do not know how to change the default font");
             VisualElement classElement = new VisualElement();
             classElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
             classElement.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(widthInPixels, heightInPixels));
             classElement.style.height = heightInPixels;
             classElement.style.width = widthInPixels;
             classElement.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            classElement.style.marginLeft = Position.x;
+            classElement.style.marginTop = Position.y;
 
             #region DrawHeader
             string headerText = data.ClassModifiersList.Count == 0 ? "" : "<<" + data.ClassModifiersAsString + ">>";
@@ -158,7 +166,8 @@ namespace CodeExplorinator
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
                 Label method = new Label(methodData.ToString());
-                method.style.unityFont = new StyleFont(methodStyle.font);
+                StyleFont de = new StyleFont(methodStyle.font);
+                method.style.unityFont = de;
                 method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 method.style.fontSize = methodStyle.fontSize;
                 method.style.color = Color.black;
@@ -181,8 +190,10 @@ namespace CodeExplorinator
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(field.ToString()), out min, out max);
                 if(min != max) { Debug.LogWarning("min and max width were not the same for: \n" + field.ContainingClass.GetName() + "." + field.GetName()); };
-                
-                if(min > result.x)
+
+                Debug.Log("For " + field.ToString() + " is " + min + " space needed");
+
+                if (min > result.x)
                 {
                     result.x = min;
                 }
