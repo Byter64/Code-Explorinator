@@ -14,7 +14,7 @@ namespace CodeExplorinator
         {
             BreadthSearch breadthSearch = new BreadthSearch();
             breadthSearch.Start();
-            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI, graph), 10, 1000);
+            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI, graph), 10, 10);
         }
 
         private static List<Node> GenerateNodes(List<ClassData> classDatas, CodeExplorinatorGUI codeExplorinatorGUI, VisualElement graph)

@@ -43,48 +43,29 @@ namespace CodeExplorinator
             graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
             graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
             graph.style.marginTop = -0b1111111111111111111;
-            GUIStyle classStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
-                fontSize = 20
-            };
-            GUIStyle methodStyle = new GUIStyle(classStyle);
-            methodStyle.alignment = TextAnchor.UpperLeft;
-            
-            List<ClassData> data = CreateData();
-            float xpos = 0;
-            foreach (ClassData classData in data)
-            { 
-                ClassGUI testClass = new ClassGUI(new Vector2(xpos - graph.style.marginLeft.value.value, -graph.style.marginTop.value.value) , classData, classStyle, methodStyle, methodStyle, lineTexture);
-                VisualElement testVisualElement = testClass.CreateVisualElement();
-                graph.Add(testVisualElement);
-                xpos += testClass.Size.x;
-            }
-            
-            // VisualElements objects can contain other VisualElement following a tree hierarchy.
-            //VisualElement label = new Label("Hello World! From C#");
-            //root1.Add(label);
-
-            // Instantiate UXML
-            //VisualElement labelFromUXML = m_VisualTreeAsset.Instantiate();
-            //root1.Add(labelFromUXML);
-            
-            */
-            VisualElement graph = new VisualElement();
-            graph.style.scale = Vector2.one;
-            rootVisualElement.Add(graph);
-            dragBehaviour = new DragBehaviour(graph);
-            graph.style.position = new StyleEnum<Position>(Position.Absolute);
-            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0b11111111111111111111, 0b11111111111111111111));
-            graph.style.width = 0b11111111111111111111;
-            graph.style.height = 0b11111111111111111111;
-            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
-            graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
-            graph.style.marginTop = -0b1111111111111111111;
-            
             SpringEmbedderAlgorithm.Init(this, graph);
 
+            #region YanniksAltesZeichenZeugs
+            //GUIStyle classStyle = new GUIStyle
+            //{
+            //    alignment = TextAnchor.MiddleCenter,
+            //    font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
+            //    fontSize = 20
+            //};
+            //GUIStyle methodStyle = new GUIStyle(classStyle);
+            //methodStyle.alignment = TextAnchor.UpperLeft;
+            
+            //List<ClassData> data = CreateData();
+            //float xpos = 0;
+            //foreach (ClassData classData in data)
+            //{ 
+            //    ClassGUI testClass = new ClassGUI(new Vector2(xpos - graph.style.marginLeft.value.value, -graph.style.marginTop.value.value) , classData, classStyle, methodStyle, methodStyle, lineTexture);
+            //    VisualElement testVisualElement = testClass.CreateVisualElement();
+            //    graph.Add(testVisualElement);
+            //    xpos += testClass.Size.x;
+            //}
+
+            #endregion
         }
 
 
