@@ -25,9 +25,10 @@ namespace CodeExplorinator
             editorWindow.titleContent = new GUIContent("Code Explorinator");
         }
 
+
         private void CreateGUI()
         {
-
+            /*
             GUIStyle classStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleCenter,
@@ -54,7 +55,15 @@ namespace CodeExplorinator
             // Instantiate UXML
             //VisualElement labelFromUXML = m_VisualTreeAsset.Instantiate();
             //root1.Add(labelFromUXML);
+            
+            */
+            
+            SpringEmbedderAlgorithm.Init(this);
+
         }
+
+
+
 
         /// <summary>
         /// DEBUG. Will analyze the whole project and instantiate the first class it found as GUI element0

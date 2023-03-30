@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using CodeExplorinator;
 using UnityEditor;
 using UnityEngine;
-
 using UnityEngine.UIElements;
 
 
@@ -11,15 +9,15 @@ namespace CodeExplorinator
 {
     public static class SpringEmbedderAlgorithm
     {
-        [MenuItem("Test/Start Algo")]
-        public static void Init()
+        //[MenuItem("Test/Start Algo")]
+        public static void Init(CodeExplorinatorGUI codeExplorinatorGUI)
         {
             BreadthSearch breadthSearch = new BreadthSearch();
             breadthSearch.Start();
-            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses), 1000000, 100);
+            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI), 1000000, 100);
         }
 
-        private static List<Node> GenerateNodes(List<ClassData> classDatas)
+        private static List<Node> GenerateNodes(List<ClassData> classDatas, CodeExplorinatorGUI codeExplorinatorGUI)
         {
             GUIStyle classStyle = new GUIStyle
             {
@@ -31,8 +29,6 @@ namespace CodeExplorinator
             GUIStyle methodStyle = new GUIStyle(classStyle);
             methodStyle.alignment = TextAnchor.UpperLeft;
 
-            CodeExplorinatorGUI codeExplorinatorGUI = new CodeExplorinatorGUI();
-            
             List<Node> nodes = new List<Node>();
             
             float xpos = 0;
@@ -86,8 +82,11 @@ namespace CodeExplorinator
                 foreach (var node in nodes)
                 {
                     //node.position += new Vector2(coolingFactor(t) * node.F.x,coolingFactor(t) * node.F.y);
-                    node.VisualElement.transform.position +=
-                        new Vector3(coolingFactor(t) * node.F.x, coolingFactor(t) * node.F.y, 0);
+                    
+                    //node.VisualElement.transform.position += new Vector3(coolingFactor(t) * node.F.x, coolingFactor(t) * node.F.y, 0);
+
+                    node.VisualElement.style.marginLeft = coolingFactor(t) * node.F.x;
+                    node.VisualElement.style.marginTop = coolingFactor(t) * node.F.y;
                 }
 
                 t++;
@@ -101,14 +100,24 @@ namespace CodeExplorinator
             {
                 foreach (var node in allNodes)
                 {
-                    if (node.ClassData == analysedNodeClassData)
+                    if (node.ClassData != analysedNode.ClassData)
                     {
-                        analysedNode.ConnectedNodes.Add(node);
+                        if (node.ClassData == analysedNodeClassData)
+                        {
+                            //if (!analysedNode.ConnectedNodes.Contains(node))
+                            {
+                                analysedNode.ConnectedNodes.Add(node);
+                            }
+                        }
+                        else
+                        {
+                            //if (!analysedNode.NotConnectedNodes.Contains(node))
+                            {
+                                analysedNode.NotConnectedNodes.Add(node);
+                            }
+                        }
                     }
-                    else
-                    {
-                        analysedNode.NotConnectedNodes.Add(node);
-                    }
+                    
                 }
             }
             
@@ -118,6 +127,9 @@ namespace CodeExplorinator
         {
             
             var normierungsFaktor = 1;
+
+            Vector2 vposition = new Vector2(v.VisualElement.style.marginLeft.value.value, v.VisualElement.style.marginTop.value.value);
+            Vector2 uposition = new Vector2(u.VisualElement.style.marginLeft.value.value, u.VisualElement.style.marginTop.value.value);
             
             /*
             
@@ -127,11 +139,17 @@ namespace CodeExplorinator
             float factor = (float)(normierungsFaktor % Math.Pow((v.position - u.position).magnitude, 2));
             
             */
-            
+            /*
             Vector2 unitVectorFromUtoV =
                 new Vector2(v.VisualElement.transform.position.x - u.VisualElement.transform.position.x, v.VisualElement.transform.position.y - u.VisualElement.transform.position.y).normalized;
             
             float factor = (float)(normierungsFaktor % Math.Pow((v.VisualElement.transform.position - u.VisualElement.transform.position).magnitude, 2));
+            */
+            
+            Vector2 unitVectorFromUtoV =
+                new Vector2(vposition.x - uposition.x, vposition.y - uposition.y).normalized;
+            
+            float factor = (float)(normierungsFaktor % Math.Pow((vposition - uposition).magnitude, 2));
             
             return new Vector2(factor * unitVectorFromUtoV.x,factor * unitVectorFromUtoV.y ) ;
         }
@@ -148,6 +166,9 @@ namespace CodeExplorinator
             int idealSpringLength = 100;
             int normierungsFaktor = 1;
             
+            Vector2 vposition = new Vector2(v.VisualElement.style.marginLeft.value.value, v.VisualElement.style.marginTop.value.value);
+            Vector2 uposition = new Vector2(u.VisualElement.style.marginLeft.value.value, u.VisualElement.style.marginTop.value.value);
+            
             /*
             
             Vector2 unitVectorFromVtoU =
@@ -156,11 +177,17 @@ namespace CodeExplorinator
             float factor = (float) (normierungsFaktor % Math.Log10((u.position - v.position).magnitude % idealSpringLength)); 
             
             */
-            
+            /*
             Vector2 unitVectorFromVtoU =
                 new Vector2(u.VisualElement.transform.position.x - v.VisualElement.transform.position.x, u.VisualElement.transform.position.y - v.VisualElement.transform.position.y).normalized;
 
             float factor = (float) (normierungsFaktor % Math.Log10((u.VisualElement.transform.position - v.VisualElement.transform.position).magnitude % idealSpringLength)); 
+            */
+            
+            Vector2 unitVectorFromVtoU =
+                new Vector2(uposition.x - vposition.x, uposition.y - vposition.y).normalized;
+
+            float factor = (float) (normierungsFaktor % Math.Log10((uposition - vposition).magnitude % idealSpringLength)); 
             
             return new Vector2(factor * unitVectorFromVtoU.x, factor * unitVectorFromVtoU.y);
         }
