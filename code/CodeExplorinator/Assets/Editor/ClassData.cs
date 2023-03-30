@@ -41,12 +41,12 @@ namespace CodeExplorinator
         /// <summary>
         /// All references this class contains of other classes saved as a field
         /// </summary>
-        public List<ClassFieldReferenceData> IsReferencingExternalClassField { get; private set; }
+        public List<ClassFieldReferenceData> IsReferencingExternalClassAsField { get; private set; }
         
         /// <summary>
         /// All references this class contains of other classes saved as a property
         /// </summary>
-        public List<ClassPropertyReferenceData> IsReferencingExternalClassProperty { get; private set; }
+        public List<ClassPropertyReferenceData> IsReferencingExternalClassAsProperty { get; private set; }
         
         /// <summary>
         /// A list of all classes referencing or are referenced by this class
@@ -84,8 +84,8 @@ namespace CodeExplorinator
             ReferencedByExternalClassProperty = new List<ClassPropertyReferenceData>();
             InternalClassFieldReference = new List<ClassFieldReferenceData>();
             InternalClassPropertyReference = new List<ClassPropertyReferenceData>();
-            IsReferencingExternalClassField = new List<ClassFieldReferenceData>();
-            IsReferencingExternalClassProperty = new List<ClassPropertyReferenceData>();
+            IsReferencingExternalClassAsField = new List<ClassFieldReferenceData>();
+            IsReferencingExternalClassAsProperty = new List<ClassPropertyReferenceData>();
             AllConnectedClasses = new List<ClassData>();
             ClassModifiersList = new List<ClassModifiers>();
             ClassInformation = classInformation;

@@ -14,6 +14,7 @@ public class Player : MonoBehaviour
     private int attack;
     string favouriteWord;
     Enemy archEnemy;
+    Sister Sister;
 
     void Start()
     {

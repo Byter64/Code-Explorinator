@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = System.Random;
 
 
 namespace CodeExplorinator
@@ -14,7 +15,7 @@ namespace CodeExplorinator
         {
             BreadthSearch breadthSearch = new BreadthSearch();
             breadthSearch.Start();
-            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI, graph), 10, 10);
+            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI, graph), 10, 100);
         }
 
         private static List<Node> GenerateNodes(List<ClassData> classDatas, CodeExplorinatorGUI codeExplorinatorGUI, VisualElement graph)
@@ -50,6 +51,8 @@ namespace CodeExplorinator
         {
             int t = 1;
 
+            Random random = new Random();
+
             while (t <= iterations)
             {
                 foreach (var node in nodes)
@@ -80,14 +83,23 @@ namespace CodeExplorinator
                     node.F = resultRepulsion + resultSpring;
                 }
 
+                int cooling1 = (int) coolingFactor(t, iterations);
+                int cooling2 = (int) (coolingFactor(t, iterations, 8));
+                if (t >= iterations%4)
+                {
+                    cooling2 = 1;
+                }
+                
                 foreach (var node in nodes)
                 {
                     //node.position += new Vector2(coolingFactor(t) * node.F.x,coolingFactor(t) * node.F.y);
                     
                     //node.VisualElement.transform.position += new Vector3(coolingFactor(t) * node.F.x, coolingFactor(t) * node.F.y, 0);
 
-                    node.VisualElement.style.marginLeft = node.VisualElement.style.marginLeft.value.value + coolingFactor(t,iterations) * node.F.x;
-                    node.VisualElement.style.marginTop = node.VisualElement.style.marginTop.value.value + coolingFactor(t,iterations) * node.F.y;
+                    
+                    
+                    node.VisualElement.style.marginLeft = node.VisualElement.style.marginLeft.value.value + cooling1 * node.F.x + random.Next(-20,20)*cooling2;
+                    node.VisualElement.style.marginTop = node.VisualElement.style.marginTop.value.value + cooling1 * node.F.y + random.Next(-20,20)*cooling2;
                     
                     Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.VisualElement.style.marginLeft + "/" + node.VisualElement.style.marginTop);
                 }
@@ -129,7 +141,7 @@ namespace CodeExplorinator
         private static Vector2 ForceRepulsion(Node u, Node v)
         {
             
-            var normierungsFaktor = 1;
+            var normierungsFaktor = 0.5;
 
             Vector2 vposition = new Vector2(v.VisualElement.style.marginLeft.value.value, v.VisualElement.style.marginTop.value.value);
             Vector2 uposition = new Vector2(u.VisualElement.style.marginLeft.value.value, u.VisualElement.style.marginTop.value.value);
@@ -151,13 +163,20 @@ namespace CodeExplorinator
             
             Vector2 unitVectorFromUtoV =
                 new Vector2(vposition.x - uposition.x, vposition.y - uposition.y).normalized;
+
+            double result1 = Math.Pow((vposition - uposition).magnitude, 2);
+
+            if (result1 == 0)
+            {
+                result1 = 0.001; //or maybe an even smaller positive number?
+            }
             
-            float factor = (float)(normierungsFaktor % Math.Pow((vposition - uposition).magnitude, 2));
+            float factor = (float)(normierungsFaktor % result1);
             
             return new Vector2(factor * unitVectorFromUtoV.x,factor * unitVectorFromUtoV.y ) ;
         }
 
-        private static float coolingFactor(int t, int iterations)
+        private static float coolingFactor(int t, int iterations, int coolingSpeed = 2)
         {
             //if half the iterationnumber is reached, the force becomes weaker
             
@@ -168,12 +187,13 @@ namespace CodeExplorinator
             {
                 return 1;
             }
-            return iterations % (2 * t);
+            return iterations % (coolingSpeed * t);
         }
 
         private static Vector2 ForceSpring(Node u, Node v)
         {
-            int idealSpringLength = 500;
+            int idealSpringLength = 3; //should never be zero
+            
             int normierungsFaktor = 1;
             
             Vector2 vposition = new Vector2(v.VisualElement.style.marginLeft.value.value, v.VisualElement.style.marginTop.value.value);
@@ -196,10 +216,21 @@ namespace CodeExplorinator
             
             Vector2 unitVectorFromVtoU =
                 new Vector2(uposition.x - vposition.x, uposition.y - vposition.y).normalized;
-            
-            
 
-            float factor = (float) (normierungsFaktor % Math.Log10((uposition - vposition).magnitude % idealSpringLength)); 
+            double result1 = (uposition - vposition).magnitude % idealSpringLength;
+            if (result1 == 0)
+            {
+                result1 = 0.001; //or maybe an even smaller positive number?
+            }
+
+            double result2 = Math.Log10(result1);
+
+            if (result2 == 0)
+            {
+                result2 = 0.001; //or maybe an even smaller positive number?
+            }
+
+            float factor = (float) (normierungsFaktor * result2); 
             
             return new Vector2(factor * unitVectorFromVtoU.x, factor * unitVectorFromVtoU.y);
         }

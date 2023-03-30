@@ -462,7 +462,7 @@ namespace CodeExplorinator
                         {
                             referencedClass.ReferencedByExternalClassField.Add(reference);
                             fieldData.ReferencingExternalClass.Add(reference);
-                            fieldData.ContainingClass.IsReferencingExternalClassField.Add(reference);
+                            fieldData.ContainingClass.IsReferencingExternalClassAsField.Add(reference);
                             
                             //this still needs to be tested!!
                             if (!referencedClass.AllConnectedClasses.Contains(fieldData.ContainingClass))
@@ -507,7 +507,7 @@ namespace CodeExplorinator
                         {
                             referencedClass.ReferencedByExternalClassProperty.Add(reference);
                             propertyData.ReferencingExternalClass.Add(reference);
-                            propertyData.ContainingClass.IsReferencingExternalClassProperty.Add(reference);
+                            propertyData.ContainingClass.IsReferencingExternalClassAsProperty.Add(reference);
                             
                             
                             //this still needs to be tested!!

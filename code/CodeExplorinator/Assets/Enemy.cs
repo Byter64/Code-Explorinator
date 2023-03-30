@@ -16,6 +16,8 @@ public abstract class Enemy : MonoBehaviour
     Enemy mother;
     Enemy father;
 
+    public Sister lover;
+
     uint actionCounter;
     public string noteFromPlayer;
     private Player player;

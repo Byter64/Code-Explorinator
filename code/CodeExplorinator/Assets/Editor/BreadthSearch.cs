@@ -10,7 +10,7 @@ namespace CodeExplorinator
 {
     public class BreadthSearch
     {
-        public int searchRadius = 3;
+        public int searchRadius = 7;
         public List<ClassData> AnalysedClasses;
         public List<MethodData> AnalysedMethods;
 
@@ -58,16 +58,18 @@ namespace CodeExplorinator
 
             //checking incoming and outgoing references
 
-            foreach (var fieldReference in startingClass.IsReferencingExternalClassField)
+            /*
+            
+            foreach (var fieldReference in startingClass.IsReferencingExternalClassAsField)
             {
                 //instantiate fieldReference.FieldContainingReference.ContainingClass
-                GenerateClassGraph(fieldReference.FieldContainingReference.ContainingClass, searchRadius - 1);
+                GenerateClassGraph(fieldReference.ReferencedClass, searchRadius - 1);
             }
 
-            foreach (var propertyReference in startingClass.IsReferencingExternalClassProperty)
+            foreach (var propertyReference in startingClass.IsReferencingExternalClassAsProperty)
             {
                 //instantiate propertyReference.PropertyContainingReference.ContainingClass
-                GenerateClassGraph(propertyReference.PropertyContainingReference.ContainingClass, searchRadius - 1);
+                GenerateClassGraph(propertyReference.ReferencedClass, searchRadius - 1);
             }
 
             foreach (var fieldReference in startingClass.ReferencedByExternalClassField)
@@ -81,14 +83,16 @@ namespace CodeExplorinator
                 //instantiate propertyReference.PropertyContainingReference.ContainingClass
                 GenerateClassGraph(propertyReference.PropertyContainingReference.ContainingClass, searchRadius - 1);
             }
+            */
             
+            //or just iterate though AllContainingClasses:
             
-            /*or just iterate though AllContainingClasses:
             foreach (var connectedClass in startingClass.AllConnectedClasses)
             {
                 GenerateClassGraph(connectedClass,searchRadius - 1);
             }
-            */
+            
+            
         }
 
         public void GenerateMethodGraph(MethodData startingMethod, int searchRadius)
@@ -117,7 +121,7 @@ namespace CodeExplorinator
             foreach (var methodInvocation in startingMethod.IsInvokingExternalMethods)
             {
                 //instantiate reference to method and maybe even the containing class
-                GenerateMethodGraph(methodInvocation.ContainingMethod, searchRadius - 1);
+                GenerateMethodGraph(methodInvocation.ReferencedMethod, searchRadius - 1);
             }
 
             foreach (var fieldAccess in startingMethod.IsAccessingExternalField)
