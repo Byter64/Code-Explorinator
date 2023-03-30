@@ -18,6 +18,8 @@ namespace CodeExplorinator
         [SerializeField]
         public Texture2D lineTexture;
 
+        private DragBehaviour dragBehaviour;
+
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
         {
@@ -57,8 +59,19 @@ namespace CodeExplorinator
             //root1.Add(labelFromUXML);
             
             */
+            VisualElement graph = new VisualElement();
+            graph.style.scale = Vector2.one;
+            rootVisualElement.Add(graph);
+            dragBehaviour = new DragBehaviour(graph);
+            graph.style.position = new StyleEnum<Position>(Position.Absolute);
+            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0b11111111111111111111, 0b11111111111111111111));
+            graph.style.width = 0b11111111111111111111;
+            graph.style.height = 0b11111111111111111111;
+            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
+            graph.style.marginTop = -0b1111111111111111111;
             
-            SpringEmbedderAlgorithm.Init(this);
+            SpringEmbedderAlgorithm.Init(this, graph);
 
         }
 
