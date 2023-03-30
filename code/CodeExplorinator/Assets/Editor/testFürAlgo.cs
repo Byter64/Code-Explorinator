@@ -17,7 +17,7 @@ public class testFürAlgo : EditorWindow
 
     public void CreateGUI()
     {
-        // Each editor window contains a root VisualElement object
+        // Each editor window contains a target VisualElement object
         VisualElement root = rootVisualElement;
 
         // VisualElements objects can contain other VisualElement following a tree hierarchy.

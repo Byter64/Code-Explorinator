@@ -16,7 +16,7 @@ public class MeineTestserrgdg : EditorWindow
 
     public void CreateGUI()
     {
-        // Each editor window contains a root VisualElement object
+        // Each editor window contains a target VisualElement object
         VisualElement root = rootVisualElement;
 
         root.Children();

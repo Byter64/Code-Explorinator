@@ -19,6 +19,7 @@ namespace CodeExplorinator
         public Texture2D lineTexture;
 
         private DragBehaviour dragBehaviour;
+        private ZoomBehaviour zoomBehaviour;
 
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
@@ -30,7 +31,18 @@ namespace CodeExplorinator
 
         private void CreateGUI()
         {
-            /*
+            VisualElement graph = new VisualElement();
+            graph.style.scale = Vector2.one;
+            rootVisualElement.Add(graph);
+            dragBehaviour = new DragBehaviour(graph);
+            zoomBehaviour = new ZoomBehaviour(graph, 1.05f);
+            graph.style.position = new StyleEnum<Position>(Position.Absolute);
+            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0b11111111111111111111, 0b11111111111111111111));
+            graph.style.width = 0b11111111111111111111;
+            graph.style.height = 0b11111111111111111111;
+            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
+            graph.style.marginTop = -0b1111111111111111111;
             GUIStyle classStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleCenter,
@@ -44,9 +56,9 @@ namespace CodeExplorinator
             float xpos = 0;
             foreach (ClassData classData in data)
             { 
-                ClassGUI testClass = new ClassGUI(new Vector2(xpos, 0), classData, classStyle, methodStyle, methodStyle, lineTexture);
+                ClassGUI testClass = new ClassGUI(new Vector2(xpos - graph.style.marginLeft.value.value, -graph.style.marginTop.value.value) , classData, classStyle, methodStyle, methodStyle, lineTexture);
                 VisualElement testVisualElement = testClass.CreateVisualElement();
-                rootVisualElement.Add(testVisualElement);
+                graph.Add(testVisualElement);
                 xpos += testClass.Size.x;
             }
             

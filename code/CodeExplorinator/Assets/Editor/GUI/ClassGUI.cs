@@ -4,7 +4,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static Codice.CM.Common.Serialization.PacketFileReader;
 
 namespace CodeExplorinator
 {
@@ -210,7 +209,6 @@ namespace CodeExplorinator
 
                 Vector2 textSize = tempLabel.MeasureTextSize(method.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
 
-                Debug.Log("For " + method.ToString() + " is " + textSize.x + " space needed");
                 if (textSize.x > result.x)
                 {
                     result.x = textSize.x;
