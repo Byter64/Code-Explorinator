@@ -5,6 +5,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
+using UnityEngine.UIElements;
 
 namespace CodeExplorinator
 {
@@ -13,6 +15,9 @@ namespace CodeExplorinator
         public int searchRadius = 7;
         public List<ClassData> AnalysedClasses;
         public List<MethodData> AnalysedMethods;
+        public List<Node> Nodes;
+        private VisualElement Graph;
+        private CodeExplorinatorGUI CodeExplorinatorGUI;
 
         private ClassData GetStartingClass(List<ClassData> classDatas)
         {
@@ -26,8 +31,13 @@ namespace CodeExplorinator
             return methodDatas[0];
         }
 
-        public void Start()
+        public void Init(CodeExplorinatorGUI codeExplorinatorGUI, VisualElement graph)
         {
+            CodeExplorinatorGUI = codeExplorinatorGUI;
+            Graph = graph;
+
+            Nodes = new List<Node>();
+
             List<ClassData> classDatas = GenerateClasses();
             AnalysedClasses = new List<ClassData>();
             AnalysedMethods = new List<MethodData>();
@@ -39,6 +49,30 @@ namespace CodeExplorinator
             {
                 GenerateMethodGraph(startingMethod,searchRadius);
             }
+            
+            SpringEmbedderAlgorithm.Calculate(Nodes, 1000, 1000);
+            
+            ConnectionGUI connectionGUI = new ConnectionGUI(Nodes, graph, CodeExplorinatorGUI.lineTexture);
+            connectionGUI.DrawConnections();
+        }
+
+        private void GenerateNode(ClassData classData, bool isLeaf)
+        {
+            GUIStyle classStyle = new GUIStyle
+            {
+                alignment = TextAnchor.MiddleCenter,
+                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
+                fontSize = 20
+            };
+            
+            GUIStyle methodStyle = new GUIStyle(classStyle);
+            methodStyle.alignment = TextAnchor.UpperLeft;
+
+                ClassGUI testClass = new ClassGUI(new Vector2(Random.Range(-50,50) - Graph.style.marginLeft.value.value, Random.Range(-50,50)-Graph.style.marginTop.value.value), classData, classStyle, methodStyle, methodStyle, CodeExplorinatorGUI.lineTexture);
+                VisualElement testVisualElement = testClass.CreateVisualElement();
+                Debug.Log("Visualelement: " + testVisualElement.style.marginLeft + "/" + testVisualElement.style.marginTop);
+                Nodes.Add(new Node(classData, testVisualElement, isLeaf));
+                Graph.Add(testVisualElement);
         }
 
         public void GenerateClassGraph(ClassData startingClass, int searchRadius)
@@ -48,13 +82,45 @@ namespace CodeExplorinator
                 return;
             }
 
+            /*
             //hopefully this doesnt need to be synchronized?
             if (AnalysedClasses.Contains(startingClass))
             {
                 return;
             }
+            */
+
+            //if the class was already analysed but we can still search, the node is not generated but the tree explored further
+            //impacts the searchtime negatively tho
+            //if we wanted to perfectly run through all nodes we would have to save the highest searchradius that was gone trough, and go through
+            //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
+            foreach (var node in Nodes)
+            {
+                if (node.ClassData == startingClass)
+                {
+                    if (node.IsLeaf && searchRadius>1)
+                    {
+                        node.IsLeaf = false; 
+                        goto SkipOverGeneration;
+                    }
+
+                    return;
+                }
+            }
+            
 
             AnalysedClasses.Add(startingClass);
+
+            if (searchRadius == 1)
+            {
+                GenerateNode(startingClass,true);
+            }
+            else
+            {
+                GenerateNode(startingClass,false);
+            }
+            
+            SkipOverGeneration:
 
             //checking incoming and outgoing references
 
@@ -86,7 +152,7 @@ namespace CodeExplorinator
             */
             
             //or just iterate though AllContainingClasses:
-            
+
             foreach (var connectedClass in startingClass.AllConnectedClasses)
             {
                 GenerateClassGraph(connectedClass,searchRadius - 1);

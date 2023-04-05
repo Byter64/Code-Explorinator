@@ -43,9 +43,14 @@ namespace CodeExplorinator
             graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
             graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
             graph.style.marginTop = -0b1111111111111111111;
-            SpringEmbedderAlgorithm.Init(this, graph);
+            
+            
+            //SpringEmbedderAlgorithm.Init(this, graph);
+            BreadthSearch breadthSearch = new BreadthSearch();
+            breadthSearch.Init(this, graph);
 
             #region YanniksAltesZeichenZeugs
+
             //GUIStyle classStyle = new GUIStyle
             //{
             //    alignment = TextAnchor.MiddleCenter,
@@ -54,7 +59,7 @@ namespace CodeExplorinator
             //};
             //GUIStyle methodStyle = new GUIStyle(classStyle);
             //methodStyle.alignment = TextAnchor.UpperLeft;
-            
+
             //List<ClassData> data = CreateData();
             //float xpos = 0;
             //foreach (ClassData classData in data)
