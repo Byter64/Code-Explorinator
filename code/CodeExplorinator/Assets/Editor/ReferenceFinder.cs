@@ -144,6 +144,7 @@ namespace CodeExplorinator
 
         #endregion
 
+        
         #region VariableAccesses
 
         /// <summary>
@@ -282,7 +283,7 @@ namespace CodeExplorinator
 
         #endregion
 
-
+        
         #region PropertyAccesses
 
         /// <summary>
@@ -423,8 +424,8 @@ namespace CodeExplorinator
         }
 
         #endregion
-
-
+        
+        
         #region ClassReferences
 
         public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas, Compilation compilation)

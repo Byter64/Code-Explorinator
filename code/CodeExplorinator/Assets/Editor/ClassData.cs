@@ -11,13 +11,18 @@ namespace CodeExplorinator
     public class ClassData
     {
         public INamedTypeSymbol ClassInformation { get; private set; }
+
+        /// <summary>
+        /// the graph node that belongs to this classData
+        /// </summary>
+        public ClassNode ClassNode;
         public List<FieldData> PublicVariables { get; private set; }
         public List<FieldData> PrivateVariables { get; private set; }
         public List<PropertyData> PublicProperties { get; private set; }
         public List<PropertyData> PrivateProperties { get; private set; }
         public List<MethodData> PublicMethods { get; private set; }
         public List<MethodData> PrivateMethods { get; private set; }
-        
+
         /// <summary>
         /// All references to this class in other classes within the project saved as a field
         /// </summary>

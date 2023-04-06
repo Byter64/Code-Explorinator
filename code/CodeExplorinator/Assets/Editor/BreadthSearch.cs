@@ -12,10 +12,13 @@ namespace CodeExplorinator
 {
     public class BreadthSearch
     {
-        public int searchRadius = 7;
+        /// <summary>
+        /// This number determines the depth of the breadth search. The starting class is counted as radius 1.
+        /// </summary>
+        public int searchRadius = 2;
         public List<ClassData> AnalysedClasses;
         public List<MethodData> AnalysedMethods;
-        public List<Node> Nodes;
+        public List<ClassNode> AnalysedNodes;
         private VisualElement Graph;
         private CodeExplorinatorGUI CodeExplorinatorGUI;
 
@@ -36,7 +39,7 @@ namespace CodeExplorinator
             CodeExplorinatorGUI = codeExplorinatorGUI;
             Graph = graph;
 
-            Nodes = new List<Node>();
+            AnalysedNodes = new List<ClassNode>();
 
             List<ClassData> classDatas = GenerateClasses();
             AnalysedClasses = new List<ClassData>();
@@ -50,9 +53,9 @@ namespace CodeExplorinator
                 GenerateMethodGraph(startingMethod,searchRadius);
             }
             
-            SpringEmbedderAlgorithm.Calculate(Nodes, 1000, 1000);
+            SpringEmbedderAlgorithm.StartAlgorithm(AnalysedNodes, 100000, 1000);
             
-            ConnectionGUI connectionGUI = new ConnectionGUI(Nodes, graph, CodeExplorinatorGUI.lineTexture);
+            ConnectionGUI connectionGUI = new ConnectionGUI(AnalysedNodes, graph, CodeExplorinatorGUI.lineTexture);
             connectionGUI.DrawConnections();
         }
 
@@ -71,7 +74,9 @@ namespace CodeExplorinator
                 ClassGUI testClass = new ClassGUI(new Vector2(Random.Range(-50,50) - Graph.style.marginLeft.value.value, Random.Range(-50,50)-Graph.style.marginTop.value.value), classData, classStyle, methodStyle, methodStyle, CodeExplorinatorGUI.lineTexture);
                 VisualElement testVisualElement = testClass.CreateVisualElement();
                 Debug.Log("Visualelement: " + testVisualElement.style.marginLeft + "/" + testVisualElement.style.marginTop);
-                Nodes.Add(new Node(classData, testVisualElement, isLeaf));
+                ClassNode node = new ClassNode(classData, testVisualElement, isLeaf);
+                AnalysedNodes.Add(node);
+                classData.ClassNode = node;
                 Graph.Add(testVisualElement);
         }
 
@@ -94,7 +99,7 @@ namespace CodeExplorinator
             //impacts the searchtime negatively tho
             //if we wanted to perfectly run through all nodes we would have to save the highest searchradius that was gone trough, and go through
             //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
-            foreach (var node in Nodes)
+            foreach (var node in AnalysedNodes)
             {
                 if (node.ClassData == startingClass)
                 {

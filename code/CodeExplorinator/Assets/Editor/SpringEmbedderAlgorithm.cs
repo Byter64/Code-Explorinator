@@ -48,7 +48,7 @@ namespace CodeExplorinator
         }
         */
 
-        public static void CalculateOld(List<Node> nodes, double threshold, int iterations)
+        public static void CalculateOld(List<ClassNode> nodes, double threshold, int iterations)
         {
             int t = 1;
 
@@ -100,8 +100,8 @@ namespace CodeExplorinator
             //CleanupMiddlePoint(nodes);
         }
         
-        //this method calculates the position of the node
-        public static void Calculate(List<Node> nodes, double threshold, int iterations)
+        //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
+        public static void StartAlgorithm(List<ClassNode> nodes, double threshold, int iterations)
         {
             int t = 1;
 
@@ -111,7 +111,7 @@ namespace CodeExplorinator
             {
                 foreach (var node in nodes)
                 {
-                    if (node.F.magnitude > threshold) //somehow the threshold does nothing, even when 1?
+                    if (node.F.magnitude > threshold)
                     {
                         return;
                     }
@@ -159,7 +159,7 @@ namespace CodeExplorinator
             
         }
 
-        private static void DetermineConnectionBetweenNodes(Node analysedNode, List<Node> allNodes)
+        private static void DetermineConnectionBetweenNodes(ClassNode analysedNode, List<ClassNode> allNodes)
         {
             
             foreach (var analysedNodeClassData in analysedNode.ClassData.AllConnectedClasses)
@@ -189,10 +189,10 @@ namespace CodeExplorinator
             
         }
 
-        private static Vector2 ForceRepulsion(Node u, Node v)
+        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v)
         {
             
-            float normierungsFaktor = 1f;
+            float normierungsFaktor = 5f;
             
             Vector2 unitVectorFromUtoV =
                 new Vector2(v.position.x - u.position.x, v.position.y - u.position.y).normalized;
@@ -223,9 +223,9 @@ namespace CodeExplorinator
             return iterations % (coolingSpeed * t);
         }
 
-        private static Vector2 ForceSpring(Node u, Node v)
+        private static Vector2 ForceSpring(ClassNode u, ClassNode v)
         {
-            float idealSpringLength = 100f; //should never be zero
+            float idealSpringLength = 1000f; //should never be zero
             
             int normierungsFaktor = 1;
             
