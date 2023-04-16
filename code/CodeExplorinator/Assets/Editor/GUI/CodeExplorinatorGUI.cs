@@ -90,8 +90,11 @@ namespace CodeExplorinator
 
         private List<ClassData> GenerateClassDataFromProject()
         {
-            string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
+            //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
+            string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
+
+            
             CSharpCompilation compilation = CSharpCompilation.Create("myAssembly");
             List<ClassData> classDatas = new List<ClassData>();
 
@@ -119,5 +122,6 @@ namespace CodeExplorinator
 
             return classDatas;
         }
+        
     }
 }

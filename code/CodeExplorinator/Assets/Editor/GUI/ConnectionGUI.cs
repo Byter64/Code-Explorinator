@@ -184,6 +184,9 @@ namespace CodeExplorinator
 
         private VisualElement CreateVisualElementArrow(ClassNode footNode, ClassNode tipNode)
         {
+            //creates parent visual element
+            VisualElement parent = new VisualElement();
+
             //create vectors u and v that hold the position of the node anchored centered on top
             Vector2 u = new Vector2(footNode.classGUI.VisualElement.style.marginLeft.value.value + footNode.classGUI.VisualElement.style.width.value.value * 0.5f,
                 footNode.classGUI.VisualElement.style.marginTop.value.value);
@@ -222,9 +225,14 @@ namespace CodeExplorinator
             
             arrow.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x)*Mathf.Rad2Deg)));
 
-            line.Add(arrow);
+            //line.Add(arrow);
 
-            return line;
+            //return line;
+            
+            parent.Add(line);
+            parent.Add(arrow);
+
+            return parent;
         }
         
         private VisualElement CreateVisualElementArrowToRandom(ClassNode node, bool isIncomingArrow)

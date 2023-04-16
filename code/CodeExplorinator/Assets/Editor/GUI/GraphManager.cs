@@ -34,7 +34,9 @@ namespace CodeExplorinator
             ClassNode.CopyRerefencesFromClassData(nodes);
 
             shownConnections = new List<ConnectionGUI>();
-            UpdateFocusClass(nodes.Where(x => x.ClassData.ToString().ToLower().Contains("classdata")).First().ClassData);
+            //UpdateFocusClass(nodes.Where(x => x.ClassData.ToString().ToLower().Contains("classdata")).First().ClassData);
+            
+            UpdateFocusClass(nodes.First().ClassData);
         }
 
         public void UpdateFocusClass(ClassData classData)
@@ -67,10 +69,14 @@ namespace CodeExplorinator
             RemoveConnectionsFromGraphRoot();
             shownConnections = new List<ConnectionGUI>();
 
-            foreach(ClassNode tip in shownNodes)
+            foreach(ClassNode tip in shownNodes) //tip and foot need to be swapped
             {
                 foreach (ClassNode foot in tip.outgoingConnections)
                 {
+                    if (tip == foot)
+                    {
+                        continue;
+                    }
                     ClassNode shownFoot = shownNodes.Contains(foot) ? foot : null;
                     ConnectionGUI connection = new ConnectionGUI(tip, shownFoot);
                     connection.GenerateVisualElement();
@@ -78,7 +84,8 @@ namespace CodeExplorinator
                 }
             }
 
-            foreach (ClassNode foot in shownNodes)
+            /*
+             foreach (ClassNode foot in shownNodes)
             {
                 foreach (ClassNode tip in foot.ingoingConnections)
                 {
@@ -88,6 +95,8 @@ namespace CodeExplorinator
                     shownConnections.Add(connection);
                 }
             }
+             */
+            
             AppendShownConnectionsToGraphRoot();
         }
 

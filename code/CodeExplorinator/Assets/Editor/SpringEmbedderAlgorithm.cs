@@ -9,45 +9,6 @@ namespace CodeExplorinator
 {
     public static class SpringEmbedderAlgorithm
     {
-        /*
-        [MenuItem("Test/Start Algo")]
-        public static void Init(CodeExplorinatorGUI codeExplorinatorGUI, classGUI graph)
-        {
-            BreadthSearch breadthSearch = new BreadthSearch();
-            breadthSearch.Start();
-            Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI, graph), 10, 100);
-        }
-
-        private static List<Node> GenerateNodes(List<ClassData> classDatas, CodeExplorinatorGUI codeExplorinatorGUI, classGUI graph)
-        {
-            GUIStyle classStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
-                fontSize = 20
-            };
-            
-            GUIStyle methodStyle = new GUIStyle(classStyle);
-            methodStyle.alignment = TextAnchor.UpperLeft;
-
-            List<Node> nodes = new List<Node>();
-            
-            float xpos = 0;
-            foreach (ClassData classData in classDatas)
-            { 
-                ClassGUI testClass = new ClassGUI(new Vector2(xpos - graph.style.marginLeft.value.value, -graph.style.marginTop.value.value), classData, classStyle, methodStyle, methodStyle, codeExplorinatorGUI.lineTexture);
-                classGUI testVisualElement = testClass.GenerateVisualElement();
-                Debug.Log("Visualelement: " + testVisualElement.style.marginLeft + "/" + testVisualElement.style.marginTop);
-                nodes.Add(new Node(classData, testVisualElement));
-                graph.Add(testVisualElement);
-                xpos += testClass.Size.x;
-                
-            }
-
-            return nodes;
-        }
-        */
-
         public static void CalculateOld(List<ClassNode> nodes, double threshold, int iterations)
         {
             int t = 1;
@@ -162,13 +123,14 @@ namespace CodeExplorinator
         private static void DetermineConnectionBetweenNodes(ClassNode analysedNode, List<ClassNode> allNodes)
         {
             
-            foreach (var analysedNodeClassData in analysedNode.ClassData.AllConnectedClasses)
+            foreach (var connectedClass in analysedNode.ClassData.AllConnectedClasses)
             {
                 foreach (var node in allNodes)
                 {
+                    //if its not the same class:
                     if (node.ClassData != analysedNode.ClassData)
                     {
-                        if (node.ClassData == analysedNodeClassData)
+                        if (node.ClassData == connectedClass)
                         {
                             if (!analysedNode.ConnectedNodes.Contains(node))
                             {
@@ -189,11 +151,8 @@ namespace CodeExplorinator
             
         }
 
-        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v)
+        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v, float normFactor = 5f)
         {
-            
-            float normierungsFaktor = 5f;
-            
             Vector2 unitVectorFromUtoV =
                 new Vector2(v.position.x - u.position.x, v.position.y - u.position.y).normalized;
 
@@ -204,7 +163,7 @@ namespace CodeExplorinator
                 result1 = float.Epsilon;
             }
             
-            float factor = (float)(normierungsFaktor / result1);
+            float factor = (float)(normFactor / result1);
             
             return new Vector2(factor * unitVectorFromUtoV.x,factor * unitVectorFromUtoV.y ) ;
         }
@@ -212,9 +171,6 @@ namespace CodeExplorinator
         private static float coolingFactor(int t, int iterations, int coolingSpeed = 2)
         {
             //if half the iterationnumber is reached, the force becomes weaker
-            
-            //float someEstimatedIterationNumber = 200;
-            //return someEstimatedIterationNumber % t +1;
 
             if (t == 0)
             {
@@ -223,12 +179,14 @@ namespace CodeExplorinator
             return iterations % (coolingSpeed * t);
         }
 
-        private static Vector2 ForceSpring(ClassNode u, ClassNode v)
+        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1, float idealSpringLength = 1000f)
         {
-            float idealSpringLength = 1000f; //should never be zero
             
-            int normierungsFaktor = 1;
-            
+            if (idealSpringLength == 0)
+            {
+                idealSpringLength = float.Epsilon;
+            }
+
             Vector2 unitVectorFromVtoU =
                 new Vector2(u.position.x - v.position.x, u.position.y - v.position.y).normalized;
 
@@ -245,7 +203,7 @@ namespace CodeExplorinator
                 result2 = float.Epsilon;
             }
 
-            float factor = (float) (normierungsFaktor * result2); 
+            float factor = normFactor * (float) result2; 
             
             return new Vector2(factor * unitVectorFromVtoU.x, factor * unitVectorFromVtoU.y);
         }

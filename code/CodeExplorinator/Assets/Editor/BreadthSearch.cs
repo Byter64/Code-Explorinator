@@ -13,37 +13,19 @@ namespace CodeExplorinator
 {
     public class BreadthSearch
     {
-        /// <summary>
-        /// Nachricht von Yannik: Da AnalyzedClasses nirgends gelesen wird. Hab ich die nicht genommen, sondern AnalyzedNodes. Die Funktionalität
-        /// von AnalyzedClasses hab ich sicherheitshalber trotzdem aufrecht erhalten
-        /// </summary>
-        public List<ClassData> AnalysedClasses;
+  
         public List<MethodData> AnalysedMethods;
         public List<ClassNode> AnalysedNodes;
 
         public BreadthSearch()
         {
             AnalysedNodes = new List<ClassNode>();
-            AnalysedClasses = new List<ClassData>();
             AnalysedMethods = new List<MethodData>();
         }
-
-        private ClassData GetStartingClass(List<ClassData> classDatas)
-        {
-            //do something accually reasonable here
-            return classDatas[0];
-        }
-
-        private MethodData GetStartingMethod(List<MethodData> methodDatas)
-        {
-            //do something accually reasonable here
-            return methodDatas[0];
-        }
-
+        
         public void Reset()
         {
             AnalysedNodes = new List<ClassNode>();
-            AnalysedClasses = new List<ClassData>();
             AnalysedMethods = new List<MethodData>();
         }
 
@@ -54,7 +36,7 @@ namespace CodeExplorinator
         /// <param name="startingNode">the node from which the breadth search will start</param>
         /// <param name="depth">How for away from the starting node should be gone away. If depth is 0 then only the starting node will be in the returned list. </param>
         /// <returns></returns>
-        public HashSet<ClassNode> GenerateSubgraph(IEnumerable<ClassNode> graph, ClassNode startingNode, int depth)
+        public HashSet<ClassNode> GenerateSubgraph(IEnumerable<ClassNode> graph, ClassNode startingNode, int depth) //does graph even do anything??
         {
             HashSet<ClassNode> subgraph = new HashSet<ClassNode>();
             GenerateClassGraph(startingNode, depth, subgraph);
@@ -67,15 +49,7 @@ namespace CodeExplorinator
             {
                 return;
             }
-
-            /*
-            //hopefully this doesnt need to be synchronized?
-            if (AnalysedClasses.Contains(startingClass))
-            {
-                return;
-            }
-            */
-
+            
             //if the class was already analysed but we can still search, the node is not generated but the tree explored further
             //impacts the searchtime negatively tho
             //if we wanted to perfectly run through all nodes we would have to save the highest searchradius that was gone trough, and go through
@@ -96,7 +70,6 @@ namespace CodeExplorinator
 
             bool isLeafNode = searchRadius == 0;
             startingNode.IsLeaf = isLeafNode;
-            AnalysedClasses.Add(startingNode.ClassData);
             AnalysedNodes.Add(startingNode);
             result.Add(startingNode);
 
@@ -133,7 +106,7 @@ namespace CodeExplorinator
 
             //or just iterate though AllContainingClasses:
 
-            foreach (var connectedClass in startingNode.ConnectedNodes)
+            foreach (var connectedClass in startingNode.ConnectedNodes) //connected nodes could be made to a hashset
             {
                 GenerateClassGraph(connectedClass, searchRadius - 1, result);
             }

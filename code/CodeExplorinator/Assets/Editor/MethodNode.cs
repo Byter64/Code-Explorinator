@@ -11,7 +11,7 @@ namespace CodeExplorinator
         /// <summary>
         /// this position is used to calculate the position of the node and taking into consideration the width and height of the box
         /// </summary>
-        public Vector2 position;
+        public Vector2 position; //should this be the same as the position of the class? we just need to factor in the method connetions
         public List<MethodNode> ConnectedNodes;
         public List<MethodNode> NotConnectedNodes;
         public VisualElement VisualElement;
