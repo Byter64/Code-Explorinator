@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static UnityEngine.GraphicsBuffer;
 
 namespace CodeExplorinator
 {
@@ -16,6 +17,8 @@ namespace CodeExplorinator
             get { return new Vector2(backgroundTexture.width, backgroundTexture.height); }
         }
         
+        public VisualElement VisualElement { get; private set; }
+
         private static TiledTextureData TiledTextureData
         {
             get
@@ -61,6 +64,7 @@ namespace CodeExplorinator
         private static TiledTextureBuilder textureBuilder;
         private static TiledTextureData tiledTextureData;
 
+        private bool wasClickedDown;
         private int widthInPixels;
         private int heightInPixels;
         private GUIStyle classStyle;
@@ -69,6 +73,7 @@ namespace CodeExplorinator
         private ClassData data;
         private Texture2D backgroundTexture;
         private Texture2D lineTexture;
+        private GraphManager graphManager;
 
         /// <summary>
         /// 
@@ -77,7 +82,7 @@ namespace CodeExplorinator
         /// <param name="classStyle">The style in which the class name will be displayed</param>
         /// <param name="fieldStyle">The style in which fields AND properties will be displayed</param>
         /// <param name="methodStyle">The style in which methods will be displayed</param>
-        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, Texture2D lineTexture)
+        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphManager graphManager)
         {
             if (!classStyle.font.dynamic)
             {
@@ -97,18 +102,24 @@ namespace CodeExplorinator
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
-            this.lineTexture = lineTexture;
+            this.graphManager = graphManager;
+            lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
 
             TextureBuilder.Size = CalculateBackgroundSize();
             backgroundTexture = TextureBuilder.BuildTexture();
             widthInPixels = backgroundTexture.width;
             heightInPixels = backgroundTexture.height;
-            Debug.LogWarning("GUIStyles für ClassGUI sind noch nicht richtig definiert");
         }
 
-        public VisualElement CreateVisualElement()
+        public void GenerateVisualElement()
         {
-            Debug.LogWarning("Default font is used because I do not know how to change the default font");
+            if(VisualElement != null)
+            {
+                VisualElement.UnregisterCallback<PointerDownEvent>(PointerDownHandler);
+                VisualElement.UnregisterCallback<PointerUpEvent>(PointerUpHandler);
+            }
+
+            //Debug.LogWarning("Default font is used because I do not know how to change the default font");
             VisualElement classElement = new VisualElement();
             classElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
             classElement.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(widthInPixels, heightInPixels));
@@ -174,7 +185,32 @@ namespace CodeExplorinator
                 methods.Add(method);
             }
             #endregion
-            return classElement;
+
+            VisualElement = classElement;
+            VisualElement.RegisterCallback<PointerDownEvent>(PointerDownHandler);
+            VisualElement.RegisterCallback<PointerUpEvent>(PointerUpHandler);
+        }
+
+        private void PointerDownHandler(PointerDownEvent context)
+        {
+            context.StopPropagation();
+            wasClickedDown = true;
+            VisualElement.CapturePointer(context.pointerId);
+        }
+
+        private void PointerUpHandler(PointerUpEvent context)
+        {
+            if (wasClickedDown)
+            {
+                Debug.Log("Ich bin Fokus: " + data);
+                graphManager.UpdateFocusClass(data);
+            }
+
+            if (VisualElement.HasPointerCapture(context.pointerId))
+            {
+                VisualElement.ReleasePointer(context.pointerId);
+            }
+            wasClickedDown = false;
         }
 
         private Vector2Int CalculateBackgroundSize()
@@ -190,7 +226,7 @@ namespace CodeExplorinator
                 fieldStyle.CalcMinMaxWidth(new GUIContent(field.ToString()), out min, out max);
                 if(min != max) { Debug.LogWarning("min and max width were not the same for: \n" + field.ContainingClass.GetName() + "." + field.GetName()); };
 
-                Debug.Log("For " + field.ToString() + " is " + min + " space needed");
+                //Debug.Log("For " + field.ToString() + " is " + min + " space needed");
 
                 if (min > result.x)
                 {

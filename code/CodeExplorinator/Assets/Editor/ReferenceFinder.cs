@@ -112,11 +112,10 @@ namespace CodeExplorinator
             //Searching for the declaration of the method in which access is invoked
             //███████████████████████████████████████████████████████████████████████████████
             SyntaxNode syntaxNode = invocation;
-            while (syntaxNode != null && syntaxNode.GetType() != typeof(MethodDeclarationSyntax))
-            {
+            while (syntaxNode != null && syntaxNode.GetType() != typeof(MethodDeclarationSyntax) && syntaxNode.GetType() != typeof(PropertyDeclarationSyntax))
+            { //} //Diese Klammer hab ich reingemacht, damit ich weiß, wo ich nächstes mal weitermachen muss
                 syntaxNode = syntaxNode.Parent;
             }
-
             IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(classDatas, invocator);
 
@@ -449,8 +448,8 @@ namespace CodeExplorinator
                     //if the class is referenced by this field set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
                     {
-                        Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
-                                  fieldData.ContainingClass);
+                        //Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
+                                  //fieldData.ContainingClass);
                         ClassFieldReferenceData reference = new ClassFieldReferenceData(referencedClass, fieldData);
                         
                         //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists

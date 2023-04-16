@@ -7,20 +7,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
+using UnityEditor.Graphs;
 
 namespace CodeExplorinator
 {
     public class BreadthSearch
     {
         /// <summary>
-        /// This number determines the depth of the breadth search. The starting class is counted as radius 1.
+        /// Nachricht von Yannik: Da AnalyzedClasses nirgends gelesen wird. Hab ich die nicht genommen, sondern AnalyzedNodes. Die Funktionalität
+        /// von AnalyzedClasses hab ich sicherheitshalber trotzdem aufrecht erhalten
         /// </summary>
-        public int searchRadius = 2;
         public List<ClassData> AnalysedClasses;
         public List<MethodData> AnalysedMethods;
         public List<ClassNode> AnalysedNodes;
-        private VisualElement Graph;
-        private CodeExplorinatorGUI CodeExplorinatorGUI;
+
+        public BreadthSearch()
+        {
+            AnalysedNodes = new List<ClassNode>();
+            AnalysedClasses = new List<ClassData>();
+            AnalysedMethods = new List<MethodData>();
+        }
 
         private ClassData GetStartingClass(List<ClassData> classDatas)
         {
@@ -34,55 +40,30 @@ namespace CodeExplorinator
             return methodDatas[0];
         }
 
-        public void Init(CodeExplorinatorGUI codeExplorinatorGUI, VisualElement graph)
+        public void Reset()
         {
-            CodeExplorinatorGUI = codeExplorinatorGUI;
-            Graph = graph;
-
             AnalysedNodes = new List<ClassNode>();
-
-            List<ClassData> classDatas = GenerateClasses();
             AnalysedClasses = new List<ClassData>();
             AnalysedMethods = new List<MethodData>();
-            
-            ClassData startingClass = GetStartingClass(classDatas);
-            GenerateClassGraph(startingClass, searchRadius);
-            
-            foreach (var startingMethod in startingClass.PublicMethods.Concat(startingClass.PrivateMethods))
-            {
-                GenerateMethodGraph(startingMethod,searchRadius);
-            }
-            
-            SpringEmbedderAlgorithm.StartAlgorithm(AnalysedNodes, 100000, 1000);
-            
-            ConnectionGUI connectionGUI = new ConnectionGUI(AnalysedNodes, graph, CodeExplorinatorGUI.lineTexture);
-            connectionGUI.DrawConnections();
         }
 
-        private void GenerateNode(ClassData classData, bool isLeaf)
+        /// <summary>
+        /// Generates a subgraph from the full graph centered around the starting node with the given depth. It is not a real subgraph though because
+        /// the "leaf nodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
+        /// </summary>
+        /// <param name="startingNode">the node from which the breadth search will start</param>
+        /// <param name="depth">How for away from the starting node should be gone away. If depth is 0 then only the starting node will be in the returned list. </param>
+        /// <returns></returns>
+        public HashSet<ClassNode> GenerateSubgraph(IEnumerable<ClassNode> graph, ClassNode startingNode, int depth)
         {
-            GUIStyle classStyle = new GUIStyle
-            {
-                alignment = TextAnchor.MiddleCenter,
-                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
-                fontSize = 20
-            };
-            
-            GUIStyle methodStyle = new GUIStyle(classStyle);
-            methodStyle.alignment = TextAnchor.UpperLeft;
-
-                ClassGUI testClass = new ClassGUI(new Vector2(Random.Range(-50,50) - Graph.style.marginLeft.value.value, Random.Range(-50,50)-Graph.style.marginTop.value.value), classData, classStyle, methodStyle, methodStyle, CodeExplorinatorGUI.lineTexture);
-                VisualElement testVisualElement = testClass.CreateVisualElement();
-                Debug.Log("Visualelement: " + testVisualElement.style.marginLeft + "/" + testVisualElement.style.marginTop);
-                ClassNode node = new ClassNode(classData, testVisualElement, isLeaf);
-                AnalysedNodes.Add(node);
-                classData.ClassNode = node;
-                Graph.Add(testVisualElement);
+            HashSet<ClassNode> subgraph = new HashSet<ClassNode>();
+            GenerateClassGraph(startingNode, depth, subgraph);
+            return subgraph;
         }
 
-        public void GenerateClassGraph(ClassData startingClass, int searchRadius)
+        private void GenerateClassGraph(ClassNode startingNode, int searchRadius, HashSet<ClassNode> result)
         {
-            if (searchRadius <= 0)
+            if (searchRadius < 0)
             {
                 return;
             }
@@ -101,31 +82,25 @@ namespace CodeExplorinator
             //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
             foreach (var node in AnalysedNodes)
             {
-                if (node.ClassData == startingClass)
+                if (node == startingNode)
                 {
-                    if (node.IsLeaf && searchRadius>1)
+                    if (node.IsLeaf && searchRadius > 0)
                     {
-                        node.IsLeaf = false; 
+                        node.IsLeaf = false;
                         goto SkipOverGeneration;
                     }
 
                     return;
                 }
             }
-            
 
-            AnalysedClasses.Add(startingClass);
+            bool isLeafNode = searchRadius == 0;
+            startingNode.IsLeaf = isLeafNode;
+            AnalysedClasses.Add(startingNode.ClassData);
+            AnalysedNodes.Add(startingNode);
+            result.Add(startingNode);
 
-            if (searchRadius == 1)
-            {
-                GenerateNode(startingClass,true);
-            }
-            else
-            {
-                GenerateNode(startingClass,false);
-            }
-            
-            SkipOverGeneration:
+        SkipOverGeneration:
 
             //checking incoming and outgoing references
 
@@ -155,20 +130,20 @@ namespace CodeExplorinator
                 GenerateClassGraph(propertyReference.PropertyContainingReference.ContainingClass, searchRadius - 1);
             }
             */
-            
+
             //or just iterate though AllContainingClasses:
 
-            foreach (var connectedClass in startingClass.AllConnectedClasses)
+            foreach (var connectedClass in startingNode.ConnectedNodes)
             {
-                GenerateClassGraph(connectedClass,searchRadius - 1);
+                GenerateClassGraph(connectedClass, searchRadius - 1, result);
             }
-            
-            
+
+
         }
 
         public void GenerateMethodGraph(MethodData startingMethod, int searchRadius)
         {
-            if (searchRadius <= 0)
+            if (searchRadius < 0)
             {
                 return;
             }
@@ -178,7 +153,7 @@ namespace CodeExplorinator
             {
                 return;
             }
-            
+
             AnalysedMethods.Add(startingMethod);
 
             //checking incoming and outgoing references
@@ -204,39 +179,6 @@ namespace CodeExplorinator
             {
                 // just instantiate the class if needed, this is a dead end and not currently shown
             }
-        }
-
-
-        private List<ClassData> GenerateClasses()
-        {
-            string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
-
-            CSharpCompilation compilation = CSharpCompilation.Create("myAssembly");
-            List<ClassData> classDatas = new List<ClassData>();
-
-            foreach (string cSharpScript in allCSharpScripts)
-            {
-                StreamReader streamReader = new StreamReader(cSharpScript);
-                SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(streamReader.ReadToEnd());
-                streamReader.Close();
-
-                compilation = compilation.AddSyntaxTrees(syntaxTree);
-            }
-
-            foreach (SyntaxTree tree in compilation.SyntaxTrees)
-            {
-                SemanticModel semanticModel = compilation.GetSemanticModel(tree);
-
-                CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-                classDatas.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
-            }
-
-            ReferenceFinder.ReFillAllPublicMethodReferences(classDatas, compilation);
-            ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
-            ReferenceFinder.ReFillAllPublicPropertyAccesses(classDatas, compilation);
-            ReferenceFinder.ReFillAllClassReferences(classDatas, compilation);
-
-            return classDatas;
         }
     }
 }

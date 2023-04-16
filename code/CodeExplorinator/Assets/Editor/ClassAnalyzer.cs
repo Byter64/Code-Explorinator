@@ -62,7 +62,7 @@ namespace CodeExplorinator
             //finds all variable and method declarations, saves them as FieldData/MethodData and sorts them for Accessibility,
             //generates a ClassData
             ClassData classData = new ClassData(model.GetDeclaredSymbol(root));
-            Debug.Log("CLASS NAME IS:" + classData.ClassInformation.Name);
+            //Debug.Log("CLASS NAME IS:" + classData.ClassInformation.Name);
 
             List<IFieldSymbol>
                 allVariables = FindAllFieldDeclarations(root, model);
@@ -86,7 +86,7 @@ namespace CodeExplorinator
             classData.PublicMethods.AddRange(publicMethods);
             classData.PrivateMethods.AddRange(privateMethods);
 
-            classData.ReadOutMyInformation(); //for debugging purposes
+            //classData.ReadOutMyInformation(); //for debugging purposes
             
             return classData;
         }
@@ -115,14 +115,14 @@ namespace CodeExplorinator
 
                 foreach (var method in distinctPublicMethods)
                 {
-                    Debug.Log("this method is public: " + method);
+                    //Debug.Log("this method is public: " + method);
                 }
 
                 return methodDatas;
             }
             catch (NullReferenceException e)
             {
-                Debug.Log("no public methods found");
+                //Debug.Log("no public methods found");
             }
 
             return null;
@@ -152,14 +152,14 @@ namespace CodeExplorinator
 
                 foreach (var method in distinctPrivateMethods)
                 {
-                    Debug.Log("this method is private: " + method);
+                    //Debug.Log("this method is private: " + method);
                 }
 
                 return methodDatas;
             }
             catch (NullReferenceException e)
             {
-                Debug.Log("no private methods found");
+                //Debug.Log("no private methods found");
             }
 
             return null;
@@ -208,14 +208,14 @@ namespace CodeExplorinator
 
                 foreach (var variable in distinctPublicVariables)
                 {
-                    Debug.Log("this var is public: " + variable);
+                    //Debug.Log("this var is public: " + variable);
                 }
 
                 return fieldDatas;
             }
             catch (NullReferenceException e)
             {
-                Debug.Log("no public vars found");
+                //Debug.Log("no public vars found");
             }
 
             return null;
@@ -242,14 +242,14 @@ namespace CodeExplorinator
 
                 foreach (var variable in distinctPrivateVariables)
                 {
-                    Debug.Log("this var is private: " + variable);
+                    //Debug.Log("this var is private: " + variable);
                 }
 
                 return fieldDatas;
             }
             catch (NullReferenceException e)
             {
-                Debug.Log("no private vars found");
+                //Debug.Log("no private vars found");
             }
 
             return null;
@@ -343,14 +343,14 @@ namespace CodeExplorinator
 
                 foreach (var variable in distinctPublicVariables)
                 {
-                    Debug.Log("this property is public: " + variable);
+                    //Debug.Log("this property is public: " + variable);
                 }
 
                 return propertyDatas;
             }
             catch (NullReferenceException e)
             {
-                Debug.Log("no public property found");
+                //Debug.Log("no public property found");
             }
 
             return null;
@@ -377,14 +377,14 @@ namespace CodeExplorinator
 
                 foreach (var variable in distinctPrivateVariables)
                 {
-                    Debug.Log("this property is private: " + variable);
+                    //Debug.Log("this property is private: " + variable);
                 }
 
                 return propertyDatas;
             }
             catch (NullReferenceException e)
             {
-                Debug.Log("no private property found");
+                //Debug.Log("no private property found");
             }
 
             return null;

@@ -34,6 +34,7 @@ namespace CodeExplorinator
 
         private void PointerDownHandler(PointerDownEvent context)
         {
+            context.StopPropagation();
             isDragging = true;
             target.CapturePointer(context.pointerId);
         }
@@ -46,7 +47,7 @@ namespace CodeExplorinator
 
                 target.style.marginLeft = delta.x + target.style.marginLeft.value.value;
                 target.style.marginTop = delta.y + target.style.marginTop.value.value;
-                Debug.Log(context.localPosition);
+                //Debug.Log(context.localPosition);
             }
         }
 

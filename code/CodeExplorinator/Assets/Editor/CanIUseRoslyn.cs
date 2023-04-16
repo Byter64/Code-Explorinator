@@ -34,7 +34,7 @@ public static class CanIUseRoslyn
     [MenuItem("Test/Projekt analysieren")]
     public static void AnalizeProject()
     {
-        string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
+        string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
         CSharpCompilation compilation = CSharpCompilation.Create("myAssembly");
         List<ClassData> classDatas = new List<ClassData>();

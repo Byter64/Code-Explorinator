@@ -11,14 +11,14 @@ namespace CodeExplorinator
     {
         /*
         [MenuItem("Test/Start Algo")]
-        public static void Init(CodeExplorinatorGUI codeExplorinatorGUI, VisualElement graph)
+        public static void Init(CodeExplorinatorGUI codeExplorinatorGUI, classGUI graph)
         {
             BreadthSearch breadthSearch = new BreadthSearch();
             breadthSearch.Start();
             Calculate(breadthSearch.AnalysedClasses, GenerateNodes(breadthSearch.AnalysedClasses, codeExplorinatorGUI, graph), 10, 100);
         }
 
-        private static List<Node> GenerateNodes(List<ClassData> classDatas, CodeExplorinatorGUI codeExplorinatorGUI, VisualElement graph)
+        private static List<Node> GenerateNodes(List<ClassData> classDatas, CodeExplorinatorGUI codeExplorinatorGUI, classGUI graph)
         {
             GUIStyle classStyle = new GUIStyle
             {
@@ -36,7 +36,7 @@ namespace CodeExplorinator
             foreach (ClassData classData in classDatas)
             { 
                 ClassGUI testClass = new ClassGUI(new Vector2(xpos - graph.style.marginLeft.value.value, -graph.style.marginTop.value.value), classData, classStyle, methodStyle, methodStyle, codeExplorinatorGUI.lineTexture);
-                VisualElement testVisualElement = testClass.CreateVisualElement();
+                classGUI testVisualElement = testClass.GenerateVisualElement();
                 Debug.Log("Visualelement: " + testVisualElement.style.marginLeft + "/" + testVisualElement.style.marginTop);
                 nodes.Add(new Node(classData, testVisualElement));
                 graph.Add(testVisualElement);
@@ -88,10 +88,10 @@ namespace CodeExplorinator
 
                 foreach (var node in nodes)
                 {
-                    node.VisualElement.style.marginLeft = node.VisualElement.style.marginLeft.value.value + cooling1 * node.F.x;
-                    node.VisualElement.style.marginTop = node.VisualElement.style.marginTop.value.value + cooling1 * node.F.y;
+                    node.classGUI.VisualElement.style.marginLeft = node.classGUI.VisualElement.style.marginLeft.value.value + cooling1 * node.F.x;
+                    node.classGUI.VisualElement.style.marginTop = node.classGUI.VisualElement.style.marginTop.value.value + cooling1 * node.F.y;
                     
-                    Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.VisualElement.style.marginLeft + "/" + node.VisualElement.style.marginTop);
+                    Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.classGUI.VisualElement.style.marginLeft + "/" + node.classGUI.VisualElement.style.marginTop);
                 }
 
                 t++;
@@ -144,7 +144,7 @@ namespace CodeExplorinator
                     node.position.x += cooling * node.F.x;
                     node.position.y += cooling * node.F.y;
                     
-                    Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
+                    //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
                 }
 
                 t++;
@@ -153,8 +153,8 @@ namespace CodeExplorinator
             //as we incorporated the height and width into the Node.position Vector2, we now have to undo this:
             foreach (var node in nodes)
             {
-                node.VisualElement.style.marginLeft = node.position.x - node.VisualElement.style.width.value.value * 0.5f;
-                node.VisualElement.style.marginTop = node.position.y - node.VisualElement.style.height.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginLeft = node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginTop = node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
             }
             
         }

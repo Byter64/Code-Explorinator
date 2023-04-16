@@ -16,12 +16,12 @@ public class MeineTestserrgdg : EditorWindow
 
     public void CreateGUI()
     {
-        // Each editor window contains a target VisualElement object
+        // Each editor window contains a target classGUI object
         VisualElement root = rootVisualElement;
 
         root.Children();
 
-        // VisualElements objects can contain other VisualElement following a tree hierarchy.
+        // VisualElements objects can contain other classGUI following a tree hierarchy.
         VisualElement label = new Label("Hello World! From C#");
         root.Add(label);
 
