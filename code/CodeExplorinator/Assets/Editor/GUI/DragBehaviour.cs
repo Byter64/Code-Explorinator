@@ -47,7 +47,6 @@ namespace CodeExplorinator
 
                 target.style.marginLeft = delta.x + target.style.marginLeft.value.value;
                 target.style.marginTop = delta.y + target.style.marginTop.value.value;
-                //Debug.Log(context.localPosition);
             }
         }
 

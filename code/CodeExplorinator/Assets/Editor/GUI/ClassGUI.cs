@@ -1,10 +1,8 @@
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using static UnityEngine.GraphicsBuffer;
 
 namespace CodeExplorinator
 {
@@ -61,12 +59,14 @@ namespace CodeExplorinator
         private static int emptySpaceBottom = 10;
         #endregion
 
+        private readonly double doubleClickThreshold = 0.5;
         private static TiledTextureBuilder textureBuilder;
         private static TiledTextureData tiledTextureData;
 
-        private bool wasClickedDown;
+        private bool isClickHappening;
         private int widthInPixels;
         private int heightInPixels;
+        private double timeOfLastClick;
         private GUIStyle classStyle;
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
@@ -74,7 +74,6 @@ namespace CodeExplorinator
         private Texture2D backgroundTexture;
         private Texture2D lineTexture;
         private GraphManager graphManager;
-
         /// <summary>
         /// 
         /// </summary>
@@ -193,24 +192,48 @@ namespace CodeExplorinator
 
         private void PointerDownHandler(PointerDownEvent context)
         {
+            //!!Warning!!
+            //The way clicks are processed is prone to bugs because they are not handled globally. Example:
+            //click on one class, quickly double click on another one.
+            //Then the doubleclick handler will be executed first
+            //And then the monoclick handler.
+            isClickHappening = true;
+            if (EditorApplication.timeSinceStartup - timeOfLastClick <= doubleClickThreshold)
+            {
+                DoubleClickHandler();
+            }
+            else
+            {
+                EditorApplication.update += TryMonoClick;
+            }
+
             context.StopPropagation();
-            wasClickedDown = true;
-            VisualElement.CapturePointer(context.pointerId);
+            timeOfLastClick = EditorApplication.timeSinceStartup;
         }
 
         private void PointerUpHandler(PointerUpEvent context)
         {
-            if (wasClickedDown)
-            {
-                Debug.Log("Ich bin Fokus: " + data);
-                graphManager.UpdateFocusClass(data);
-            }
+            isClickHappening = false;
+        }
 
-            if (VisualElement.HasPointerCapture(context.pointerId))
+        private void TryMonoClick()
+        {
+            if(EditorApplication.timeSinceStartup - timeOfLastClick > doubleClickThreshold)
             {
-                VisualElement.ReleasePointer(context.pointerId);
+                EditorApplication.update -= TryMonoClick;
+                isClickHappening = false;
+                MonoClickHandler();
             }
-            wasClickedDown = false;
+        }
+
+        private void MonoClickHandler()
+        {
+            Debug.Log("Ich bin Fokus: " + data);
+        }
+
+        private void DoubleClickHandler()
+        {
+            graphManager.UpdateFocusClass(data);
         }
 
         private Vector2Int CalculateBackgroundSize()
