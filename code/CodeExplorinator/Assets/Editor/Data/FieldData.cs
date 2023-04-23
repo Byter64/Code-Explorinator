@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using UnityEngine;
-using static CodeExplorinator.MethodData;
+using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
@@ -86,6 +86,28 @@ namespace CodeExplorinator
             result += GetType() + " ";
 
             result += GetName() + ";";
+            return result;
+        }
+        public string ToRichString()
+        {
+            string result = ColorText(FieldSymbol.DeclaredAccessibility.ToString(), accessebility) + " ";
+            result += ColorText(FieldModifiersAsString, modifier);
+            if (FieldModifiersList.Count != 0)
+            {
+                result += " ";
+            }
+
+            if (FieldSymbol.Type.IsValueType)
+            {
+                result += ColorText(GetType().ToString(), structType) + " ";
+            }
+            else
+            {
+                result += ColorText(GetType().ToString(), classType) + " ";
+            }
+
+            result += ColorText(GetName(), variableName) + ColorText(";", rest);
+
             return result;
         }
 

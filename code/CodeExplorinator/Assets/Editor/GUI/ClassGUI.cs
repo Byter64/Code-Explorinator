@@ -4,6 +4,7 @@ using System.Net.NetworkInformation;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
@@ -159,8 +160,8 @@ namespace CodeExplorinator
             classElement.style.marginTop = Position.y;
 
             #region DrawHeader
-            string headerText = data.ClassModifiersList.Count == 0 ? "" : "<<" + data.ClassModifiersAsString + ">>";
-            headerText += "\n" + data.GetName();
+            string headerText = data.ClassModifiersList.Count == 0 ? "" : ColorText("<<" + data.ClassModifiersAsString + ">>", className);
+            headerText += "\n" + ColorText(data.GetName(), className);
             Label header = new Label(headerText);
             header.style.backgroundImage = Background.FromTexture2D(headerTexture);
             header.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(headerTexture.width, headerTexture.height));
@@ -168,7 +169,7 @@ namespace CodeExplorinator
             header.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperCenter);
             header.style.height = headerTexture.height;
             header.style.fontSize = classStyle.fontSize;
-            header.style.color = Color.black;
+            header.style.color = UnityEngine.Color.black;
             this.header = header;
 
             classElement.Add(header);
@@ -181,11 +182,11 @@ namespace CodeExplorinator
 
             foreach (FieldData fieldData in data.PublicVariables.Concat(data.PrivateVariables))
             {
-                Label field = new Label(fieldData.ToString());
+                Label field = new Label(fieldData.ToRichString());
                 field.style.unityFont = new StyleFont(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
-                field.style.color = Color.black;
+                field.style.color = UnityEngine.Color.black;
 
                 fields.Add(field);
             }
@@ -207,12 +208,12 @@ namespace CodeExplorinator
             classElement.Add(methods);
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
-                Label method = new Label(methodData.ToString());
+                Label method = new Label(methodData.ToRichString());
                 StyleFont de = new StyleFont(methodStyle.font);
                 method.style.unityFont = de;
                 method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 method.style.fontSize = methodStyle.fontSize;
-                method.style.color = Color.black;
+                method.style.color = UnityEngine.Color.black;
 
                 methods.Add(method);
             }

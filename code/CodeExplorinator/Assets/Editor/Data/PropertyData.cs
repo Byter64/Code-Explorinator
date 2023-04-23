@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using UnityEngine;
+using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
@@ -41,7 +42,26 @@ namespace CodeExplorinator
         public List<ClassPropertyReferenceData> ReferencingExternalClass { get; private set; }
         
         public List<PropertyModifiers> PropertyModifiersList { get; private set; }
-        
+
+        public string PropertyModifiersAsString
+        {
+            get
+            {
+                string result = "";
+                foreach (PropertyModifiers modifier in PropertyModifiersList)
+                {
+                    result += modifier.ToString().ToLower() + " ";
+                }
+                //If not empty, remove the last space
+                if (!result.Equals(""))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+
+                return result;
+            }
+        }
+
         public PropertyData(IPropertySymbol propertySymbol, ClassData containingClass)
         {
             PropertySymbol = propertySymbol;
@@ -53,11 +73,39 @@ namespace CodeExplorinator
             PropertyModifiersList = new List<PropertyModifiers>();
             DetermineModifiers();
         }
-
         public override string ToString()
         {
-            return PropertySymbol.Name;
+            string result = PropertySymbol.DeclaredAccessibility + " ";
+            result += PropertyModifiersAsString;
+            if (PropertyModifiersList.Count != 0)
+            {
+                result += " ";
+            }
 
+            result += GetType() + " ";
+
+            result += GetName() + ";";
+            return result;
+        }
+        public string ToRichString()
+        {
+            string result = ColorText(PropertySymbol.DeclaredAccessibility.ToString(), accessebility) + " ";
+            result += ColorText(PropertyModifiersAsString, modifier);
+            if (PropertyModifiersList.Count != 0)
+            {
+                result += " ";
+            }
+            if (PropertySymbol.Type.IsValueType)
+            {
+                result += ColorText(GetType().ToString(), structType) + " ";
+            }
+            else
+            {
+                result += ColorText(GetType().ToString(), classType) + " ";
+            }
+            result += ColorText(GetName(), variableName) + ColorText(";", rest);
+
+            return result;
         }
 
         public string GetName()

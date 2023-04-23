@@ -142,7 +142,8 @@ namespace CodeExplorinator
             {
                 alignment = TextAnchor.MiddleCenter,
                 font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
-                fontSize = 20
+                fontSize = 20,
+                richText = true
             };
 
             GUIStyle methodStyle = new GUIStyle(classStyle);

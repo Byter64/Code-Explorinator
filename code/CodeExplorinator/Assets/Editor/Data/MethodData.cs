@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using UnityEngine;
-using static CodeExplorinator.ClassData;
+using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
@@ -167,14 +167,14 @@ namespace CodeExplorinator
         {
             string result = MethodSymbol.DeclaredAccessibility + " ";
             result += MethodModifiersAsString;
-            if(MethodModifiersList.Count != 0)
+            if (MethodModifiersList.Count != 0)
             {
                 result += " ";
             }
             result += GetName() + "(";
 
             ImmutableArray<IParameterSymbol> parameters = GetParameters();
-            foreach(IParameterSymbol parameter in parameters)
+            foreach (IParameterSymbol parameter in parameters)
             {
                 result += parameter.Type + " " + parameter.Name + ", ";
             }
@@ -183,6 +183,30 @@ namespace CodeExplorinator
                 result = result.Substring(0, result.Length - 2);
             }
             result += ");";
+
+            return result;
+        }
+
+        public string ToRichString()
+        {
+            string result = ColorText(MethodSymbol.DeclaredAccessibility.ToString(), accessebility) + " ";
+            result += ColorText(MethodModifiersAsString, modifier);
+            if (MethodModifiersList.Count != 0)
+            {
+                result += " ";
+            }
+            result += ColorText(GetName(), methodName) + ColorText("(", rest);
+
+            ImmutableArray<IParameterSymbol> parameters = GetParameters();
+            foreach (IParameterSymbol parameter in parameters)
+            {
+                result += ColorText(parameter.Type.ToString(), parameterType) + " " + ColorText(parameter.Name, parameterName) + ColorText(", ", rest);
+            }
+            if (parameters.Length != 0)
+            {
+                result = result.Substring(0, result.Length - ColorText(", ", rest).Length);
+            }
+            result += ColorText(");", rest);
 
             return result;
         }

@@ -255,7 +255,14 @@ namespace CodeExplorinator
 
         public override string ToString()
         {
-            return ClassInformation.Name;
+            string result = ClassModifiersList.Count == 0 ? "" : "<<" + ClassModifiersAsString + ">>";
+            result += GetName();
+            return result;
+        }
+
+        public string ToRichString()
+        {
+            return ToString();
         }
 
         private void DetermineModifiers()
