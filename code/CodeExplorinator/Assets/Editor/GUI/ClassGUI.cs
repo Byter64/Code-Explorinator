@@ -214,7 +214,7 @@ namespace CodeExplorinator
                 method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 method.style.fontSize = methodStyle.fontSize;
                 method.style.color = UnityEngine.Color.black;
-
+                new ClickBehaviour(method, null, null);
                 methods.Add(method);
             }
             #endregion
