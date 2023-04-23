@@ -1,5 +1,6 @@
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,30 +18,57 @@ namespace CodeExplorinator
         
         public VisualElement VisualElement { get; private set; }
 
-        private static TiledTextureData TiledTextureData
+        private static TiledTextureData BackgroundTextureData
         {
             get
             {
-                if (tiledTextureData == null)
+                if (backgroundData == null)
                 {
-                    tiledTextureData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Class.asset", typeof(TiledTextureData));
+                    backgroundData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Class.asset", typeof(TiledTextureData));
                 }
-                return tiledTextureData;
+                return backgroundData;
             }
         }
 
-        private static TiledTextureBuilder TextureBuilder
+        private static TiledTextureData HeaderTextureData
         {
             get
             {
-                if(textureBuilder == null)
+                if (headerData == null)
                 {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + TiledTextureData.graphicsPath);
+                    headerData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Header.asset", typeof(TiledTextureData));
+                }
+                return headerData;
+            }
+        }
+
+        private static TiledTextureBuilder BackgroundBuilder
+        {
+            get
+            {
+                if(backgroundBuilder == null)
+                {
+                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + BackgroundTextureData.graphicsPath);
                     Texture2D texture = new Texture2D(1, 1);
                     ImageConversion.LoadImage(texture, fileData);
-                    textureBuilder = new TiledTextureBuilder(texture, TiledTextureData.middleRectangle);
+                    backgroundBuilder = new TiledTextureBuilder(texture, BackgroundTextureData.middleRectangle);
                 }
-                return textureBuilder;
+                return backgroundBuilder;
+            }
+        }
+
+        private static TiledTextureBuilder HeaderBuilder
+        {
+            get
+            {
+                if (headerBuilder == null)
+                {
+                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + HeaderTextureData.graphicsPath);
+                    Texture2D texture = new Texture2D(1, 1);
+                    ImageConversion.LoadImage(texture, fileData);
+                    headerBuilder = new TiledTextureBuilder(texture, HeaderTextureData.middleRectangle);
+                }
+                return headerBuilder;
             }
         }
 
@@ -59,21 +87,26 @@ namespace CodeExplorinator
         private static int emptySpaceBottom = 10;
         #endregion
 
-        private readonly double doubleClickThreshold = 0.5;
-        private static TiledTextureBuilder textureBuilder;
-        private static TiledTextureData tiledTextureData;
+        private static TiledTextureBuilder backgroundBuilder;
+        private static TiledTextureData backgroundData;
+        private static TiledTextureBuilder headerBuilder;
+        private static TiledTextureData headerData;
 
-        private bool isClickHappening;
+        private bool isExpanded;
         private int widthInPixels;
         private int heightInPixels;
-        private double timeOfLastClick;
+
         private GUIStyle classStyle;
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
         private ClassData data;
         private Texture2D backgroundTexture;
+        private Texture2D headerTexture;
         private Texture2D lineTexture;
         private GraphManager graphManager;
+        private VisualElement header;
+        private ClickBehaviour bodyClick;
+        private ClickBehaviour headerClick;
         /// <summary>
         /// 
         /// </summary>
@@ -96,6 +129,7 @@ namespace CodeExplorinator
                 throw new System.ArgumentException("Font for field style is not dynamic and thus cannot be scaled");
             }
 
+            isExpanded = true;
             Position = position;
             this.data = data;
             this.classStyle = classStyle;
@@ -104,20 +138,16 @@ namespace CodeExplorinator
             this.graphManager = graphManager;
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
 
-            TextureBuilder.Size = CalculateBackgroundSize();
-            backgroundTexture = TextureBuilder.BuildTexture();
+            BackgroundBuilder.Size = CalculateBackgroundSize();
+            backgroundTexture = BackgroundBuilder.BuildTexture();
             widthInPixels = backgroundTexture.width;
             heightInPixels = backgroundTexture.height;
+            HeaderBuilder.Size = new Vector2Int(widthInPixels, 0);
+            headerTexture = HeaderBuilder.BuildTexture();
         }
 
         public void GenerateVisualElement()
         {
-            if(VisualElement != null)
-            {
-                VisualElement.UnregisterCallback<PointerDownEvent>(PointerDownHandler);
-                VisualElement.UnregisterCallback<PointerUpEvent>(PointerUpHandler);
-            }
-
             //Debug.LogWarning("Default font is used because I do not know how to change the default font");
             VisualElement classElement = new VisualElement();
             classElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
@@ -132,11 +162,14 @@ namespace CodeExplorinator
             string headerText = data.ClassModifiersList.Count == 0 ? "" : "<<" + data.ClassModifiersAsString + ">>";
             headerText += "\n" + data.GetName();
             Label header = new Label(headerText);
+            header.style.backgroundImage = Background.FromTexture2D(headerTexture);
+            header.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(headerTexture.width, headerTexture.height));
             header.style.unityFont = new StyleFont(classStyle.font);
             header.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperCenter);
-            header.style.height = headerHeight;
+            header.style.height = headerTexture.height;
             header.style.fontSize = classStyle.fontSize;
             header.style.color = Color.black;
+            this.header = header;
 
             classElement.Add(header);
             #endregion
@@ -186,52 +219,33 @@ namespace CodeExplorinator
             #endregion
 
             VisualElement = classElement;
-            VisualElement.RegisterCallback<PointerDownEvent>(PointerDownHandler);
-            VisualElement.RegisterCallback<PointerUpEvent>(PointerUpHandler);
+            TryAssignClickBehaviours();
         }
 
-        private void PointerDownHandler(PointerDownEvent context)
+        private void TryAssignClickBehaviours()
         {
-            //!!Warning!!
-            //The way clicks are processed is prone to bugs because they are not handled globally. Example:
-            //click on one class, quickly double click on another one.
-            //Then the doubleclick handler will be executed first
-            //And then the monoclick handler.
-            isClickHappening = true;
-            if (EditorApplication.timeSinceStartup - timeOfLastClick <= doubleClickThreshold)
+            bodyClick ??= new ClickBehaviour(VisualElement, null, UpdateFocusClass);
+            headerClick ??= new ClickBehaviour(header, SwapExpandedCollapsed, UpdateFocusClass);
+        }
+
+        private void SwapExpandedCollapsed()
+        {
+            isExpanded = !isExpanded;
+            if (isExpanded)
             {
-                DoubleClickHandler();
+                VisualElement.visible = true;
+                header.visible = true;
+                Debug.Log("Ich bin jetzt ausgeklappt: " + data);
             }
             else
             {
-                EditorApplication.update += TryMonoClick;
-            }
-
-            context.StopPropagation();
-            timeOfLastClick = EditorApplication.timeSinceStartup;
-        }
-
-        private void PointerUpHandler(PointerUpEvent context)
-        {
-            isClickHappening = false;
-        }
-
-        private void TryMonoClick()
-        {
-            if(EditorApplication.timeSinceStartup - timeOfLastClick > doubleClickThreshold)
-            {
-                EditorApplication.update -= TryMonoClick;
-                isClickHappening = false;
-                MonoClickHandler();
+                VisualElement.visible = false;
+                header.visible = true;
+                Debug.Log("Ich bin jetzt eingeklappt: " + data);
             }
         }
 
-        private void MonoClickHandler()
-        {
-            Debug.Log("Ich bin Fokus: " + data);
-        }
-
-        private void DoubleClickHandler()
+        private void UpdateFocusClass()
         {
             graphManager.UpdateFocusClass(data);
         }

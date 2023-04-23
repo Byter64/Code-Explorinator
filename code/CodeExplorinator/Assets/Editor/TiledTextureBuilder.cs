@@ -23,7 +23,7 @@ namespace CodeExplorinator
         }
 
         /// <summary>
-        /// The scale of the TiledTextureData relative to the original size
+        /// The scale of the BackgroundTextureData relative to the original size
         /// </summary>
         public Vector2 Scale
         {
