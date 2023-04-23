@@ -13,7 +13,6 @@ namespace CodeExplorinator
         {
             int t = 1;
 
-           
 
             while (t <= iterations)
             {
@@ -24,22 +23,22 @@ namespace CodeExplorinator
                         return;
                     }
                 }
-                
-                
+
+
                 foreach (var node in nodes)
                 {
                     Vector2 resultRepulsion = Vector2.zero;
                     Vector2 resultSpring = Vector2.zero;
-                    DetermineConnectionBetweenNodes(node,nodes);
-                    
+                    //DetermineConnectionBetweenNodes(node, nodes);
+
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
-                        resultRepulsion += ForceSpring(connectedNode,node);
+                        resultRepulsion += ForceSpring(connectedNode, node);
                     }
 
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
-                        resultSpring += ForceRepulsion(notConnectedNode,node);
+                        resultSpring += ForceRepulsion(notConnectedNode, node);
                     }
 
                     node.F = resultRepulsion + resultSpring;
@@ -49,24 +48,27 @@ namespace CodeExplorinator
 
                 foreach (var node in nodes)
                 {
-                    node.classGUI.VisualElement.style.marginLeft = node.classGUI.VisualElement.style.marginLeft.value.value + cooling1 * node.F.x;
-                    node.classGUI.VisualElement.style.marginTop = node.classGUI.VisualElement.style.marginTop.value.value + cooling1 * node.F.y;
-                    
-                    Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.classGUI.VisualElement.style.marginLeft + "/" + node.classGUI.VisualElement.style.marginTop);
+                    node.classGUI.VisualElement.style.marginLeft =
+                        node.classGUI.VisualElement.style.marginLeft.value.value + cooling1 * node.F.x;
+                    node.classGUI.VisualElement.style.marginTop =
+                        node.classGUI.VisualElement.style.marginTop.value.value + cooling1 * node.F.y;
+
+                    Debug.Log("Node " + node.ClassData.GetName() + ": " + node.classGUI.VisualElement.style.marginLeft +
+                              "/" + node.classGUI.VisualElement.style.marginTop);
                 }
 
                 t++;
             }
-            
+
             //CleanupMiddlePoint(nodes);
         }
-        
+
         //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
         public static void StartAlgorithm(List<ClassNode> nodes, double threshold, int iterations)
         {
             int t = 1;
 
-           
+            DetermineConnectionBetweenNodes(nodes);
 
             while (t <= iterations)
             {
@@ -77,22 +79,21 @@ namespace CodeExplorinator
                         return;
                     }
                 }
-                
-                
+
+
                 foreach (var node in nodes)
                 {
                     Vector2 resultRepulsion = Vector2.zero;
                     Vector2 resultSpring = Vector2.zero;
-                    DetermineConnectionBetweenNodes(node,nodes);
-                    
+
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
-                        resultRepulsion += ForceSpring(connectedNode,node);
+                        resultRepulsion += ForceSpring(connectedNode, node);
                     }
 
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
-                        resultSpring += ForceRepulsion(notConnectedNode,node);
+                        resultSpring += ForceRepulsion(notConnectedNode, node);
                     }
 
                     node.F = resultRepulsion + resultSpring;
@@ -104,7 +105,7 @@ namespace CodeExplorinator
                 {
                     node.position.x += cooling * node.F.x;
                     node.position.y += cooling * node.F.y;
-                    
+
                     //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
                 }
 
@@ -114,41 +115,172 @@ namespace CodeExplorinator
             //as we incorporated the height and width into the Node.position Vector2, we now have to undo this:
             foreach (var node in nodes)
             {
-                node.classGUI.VisualElement.style.marginLeft = node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
-                node.classGUI.VisualElement.style.marginTop = node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginLeft =
+                    node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginTop =
+                    node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
             }
-            
         }
 
-        private static void DetermineConnectionBetweenNodes(ClassNode analysedNode, List<ClassNode> allNodes)
+        private static void DetermineConnectionBetweenNodes(List<ClassNode> allNodes)
         {
-            
-            foreach (var connectedClass in analysedNode.ClassData.AllConnectedClasses)
+            foreach (var analysedNode in allNodes)
             {
-                foreach (var node in allNodes)
+                analysedNode.ConnectedNodes.Clear();
+                analysedNode.NotConnectedNodes.Clear();
+
+                foreach (var connectedClass in analysedNode.ClassData.AllConnectedClasses)
                 {
-                    //if its not the same class:
-                    if (node.ClassData != analysedNode.ClassData)
+                    foreach (var randomNode in allNodes)
                     {
-                        if (node.ClassData == connectedClass)
+                        //if the method is a leaf, we have to check whether the connection leads to a drawn class or not
+                        if (analysedNode.IsLeaf)
                         {
-                            if (!analysedNode.ConnectedNodes.Contains(node))
+                            //if its not the same class:
+                            if (randomNode.ClassData != analysedNode.ClassData &&
+                                allNodes.Contains(connectedClass.ClassNode))
                             {
-                                analysedNode.ConnectedNodes.Add(node);
+                                if (randomNode.ClassData == connectedClass)
+                                {
+                                    analysedNode.ConnectedNodes.Add(randomNode);
+                                }
+                                else
+                                {
+                                    analysedNode.NotConnectedNodes.Add(randomNode);
+                                }
                             }
                         }
                         else
                         {
-                            if (!analysedNode.NotConnectedNodes.Contains(node))
+                            //if its not the same class:
+                            if (randomNode.ClassData != analysedNode.ClassData)
                             {
-                                analysedNode.NotConnectedNodes.Add(node);
+                                if (randomNode.ClassData == connectedClass)
+                                {
+                                    analysedNode.ConnectedNodes.Add(randomNode);
+                                }
+                                else
+                                {
+                                    analysedNode.NotConnectedNodes.Add(randomNode);
+                                }
                             }
                         }
                     }
-                    
                 }
             }
-            
+        }
+
+        public static void StartMethodAlgorithm(HashSet<ClassNode> nodes, HashSet<MethodNode> allMethods,
+            double threshold, int iterations)
+        {
+            int t = 1;
+
+            DetermineConnectionsBetweenMethodNodes(allMethods);
+
+            while (t <= iterations)
+            {
+                foreach (var node in nodes)
+                {
+                    if (node.F.magnitude > threshold)
+                    {
+                        return;
+                    }
+                }
+
+
+                foreach (var node in nodes)
+                {
+                    Vector2 resultRepulsion = Vector2.zero;
+                    Vector2 resultSpring = Vector2.zero;
+
+                    foreach (var methodNode in node.MethodNodes)
+                    {
+                        foreach (var connectedNode in methodNode.ConnectedNodes)
+                        {
+                            resultRepulsion += ForceSpring(connectedNode.MethodData.ContainingClass.ClassNode, node);
+                        }
+                    }
+
+                    foreach (var methodNode in node.MethodNodes)
+                    {
+                        foreach (var notConnectedNode in methodNode.NotConnectedNodes)
+                        {
+                            resultSpring += ForceRepulsion(notConnectedNode.MethodData.ContainingClass.ClassNode, node);
+                        }
+                    }
+
+                    node.F = resultRepulsion + resultSpring;
+                }
+
+                float cooling = coolingFactor(t, iterations);
+
+                foreach (var node in nodes)
+                {
+                    node.position.x += cooling * node.F.x;
+                    node.position.y += cooling * node.F.y;
+
+                    //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
+                }
+
+                t++;
+            }
+
+            //as we incorporated the height and width into the Node.position Vector2, we now have to undo this:
+            foreach (var node in nodes)
+            {
+                node.classGUI.VisualElement.style.marginLeft =
+                    node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginTop =
+                    node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
+            }
+        }
+
+        private static void DetermineConnectionsBetweenMethodNodes(HashSet<MethodNode> allNodes)
+        {
+            foreach (var method in allNodes)
+            {
+                method.ConnectedNodes.Clear();
+                method.NotConnectedNodes.Clear();
+
+                foreach (var connectedMethod in method.MethodData.AllConnectedMethods)
+                {
+                    if (connectedMethod.MethodNode != method)
+                    {
+                        foreach (var randomNode in allNodes)
+                        {
+                            //if the method is a leaf, we have to check whether the connection leads to a drawn class or not
+                            if (method.IsLeaf)
+                            {
+                                if (method != randomNode && allNodes.Contains(connectedMethod.MethodNode))
+                                {
+                                    if (randomNode == connectedMethod.MethodNode)
+                                    {
+                                        method.ConnectedNodes.Add(randomNode);
+                                    }
+                                    else
+                                    {
+                                        method.NotConnectedNodes.Add(randomNode);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (method != randomNode)
+                                {
+                                    if (randomNode == connectedMethod.MethodNode)
+                                    {
+                                        method.ConnectedNodes.Add(randomNode);
+                                    }
+                                    else
+                                    {
+                                        method.NotConnectedNodes.Add(randomNode);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private static Vector2 ForceRepulsion(ClassNode u, ClassNode v, float normFactor = 5f)
@@ -162,10 +294,10 @@ namespace CodeExplorinator
             {
                 result1 = float.Epsilon;
             }
-            
+
             float factor = (float)(normFactor / result1);
-            
-            return new Vector2(factor * unitVectorFromUtoV.x,factor * unitVectorFromUtoV.y ) ;
+
+            return new Vector2(factor * unitVectorFromUtoV.x, factor * unitVectorFromUtoV.y);
         }
 
         private static float coolingFactor(int t, int iterations, int coolingSpeed = 2)
@@ -176,12 +308,13 @@ namespace CodeExplorinator
             {
                 return 1;
             }
+
             return iterations % (coolingSpeed * t);
         }
 
-        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1, float idealSpringLength = 1000f)
+        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1,
+            float idealSpringLength = 1000f)
         {
-            
             if (idealSpringLength == 0)
             {
                 idealSpringLength = float.Epsilon;
@@ -203,10 +336,9 @@ namespace CodeExplorinator
                 result2 = float.Epsilon;
             }
 
-            float factor = normFactor * (float) result2; 
-            
+            float factor = normFactor * (float)result2;
+
             return new Vector2(factor * unitVectorFromVtoU.x, factor * unitVectorFromVtoU.y);
         }
-        
     }
 }

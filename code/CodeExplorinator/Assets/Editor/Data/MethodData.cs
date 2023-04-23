@@ -9,7 +9,7 @@ using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
-    public class MethodData
+    public class MethodData 
     {
         /// <summary>
         /// The underlying IMethodSymbol which contains all important information about the method itself
@@ -19,6 +19,12 @@ namespace CodeExplorinator
         /// The class in which this method is defined and declared in
         /// </summary>
         public ClassData ContainingClass { get; private set;}
+        
+        /// <summary>
+        /// the graph node that belongs to this methodData
+        /// </summary>
+        public MethodNode MethodNode;
+        
         /// <summary>
         /// All invocations to this method within the project (Concatination of in and external invocations)
         /// </summary>
@@ -71,9 +77,9 @@ namespace CodeExplorinator
         public List<PropertyAccessData> IsAccessingInternalProperty { get; private set; }
         
         /// <summary>
-        /// A list of all Methods that are referenced by or are referencing this method NOT IMPLEMENTED!!!
+        /// A list of all Methods that are referenced by or are referencing this method
         /// </summary>
-        public List<MethodData> AllConnectedMethods { get; private set; }
+        public HashSet<MethodData> AllConnectedMethods { get; private set; }
         
         public List<MethodModifiers> MethodModifiersList { get; private set; }
         
@@ -109,6 +115,7 @@ namespace CodeExplorinator
             IsAccessingExternalField = new List<FieldAccessData>();
             IsAccessingInternalProperty = new List<PropertyAccessData>();
             IsAccessingExternalProperty = new List<PropertyAccessData>();
+            AllConnectedMethods = new HashSet<MethodData>();
             MethodModifiersList = new List<MethodModifiers>();
             DetermineModifiers();
         }

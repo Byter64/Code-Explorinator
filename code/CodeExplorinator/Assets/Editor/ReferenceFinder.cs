@@ -51,6 +51,9 @@ namespace CodeExplorinator
                                 methodData.InvokedByExternal.Add(invocation);
                                 invocation.ContainingMethod.IsInvokingExternalMethods.Add(invocation);
                             }
+                            
+                            methodData.AllConnectedMethods.Add(invocation.ContainingMethod);
+                            invocation.ContainingMethod.AllConnectedMethods.Add(methodData);
                         }
                     }
 
@@ -60,6 +63,9 @@ namespace CodeExplorinator
                         {
                             methodData.InvokedByInternal.Add(invocation);
                             invocation.ContainingMethod.IsInvokingInternalMethods.Add(invocation);
+                            
+                            methodData.AllConnectedMethods.Add(invocation.ContainingMethod);
+                            invocation.ContainingMethod.AllConnectedMethods.Add(methodData);
                         }
                     }
                 }
@@ -112,10 +118,13 @@ namespace CodeExplorinator
             //Searching for the declaration of the method in which access is invoked
             //███████████████████████████████████████████████████████████████████████████████
             SyntaxNode syntaxNode = invocation;
-            while (syntaxNode != null && syntaxNode.GetType() != typeof(MethodDeclarationSyntax) && syntaxNode.GetType() != typeof(PropertyDeclarationSyntax))
-            { //} //Diese Klammer hab ich reingemacht, damit ich weiß, wo ich nächstes mal weitermachen muss
+            while (syntaxNode != null && syntaxNode.GetType() != typeof(MethodDeclarationSyntax) &&
+                   syntaxNode.GetType() != typeof(PropertyDeclarationSyntax))
+            {
+                //} //Diese Klammer hab ich reingemacht, damit ich weiß, wo ich nächstes mal weitermachen muss
                 syntaxNode = syntaxNode.Parent;
             }
+
             IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(classDatas, invocator);
 
@@ -143,7 +152,7 @@ namespace CodeExplorinator
 
         #endregion
 
-        
+
         #region VariableAccesses
 
         /// <summary>
@@ -282,7 +291,7 @@ namespace CodeExplorinator
 
         #endregion
 
-        
+
         #region PropertyAccesses
 
         /// <summary>
@@ -423,11 +432,13 @@ namespace CodeExplorinator
         }
 
         #endregion
-        
-        
+
+
         #region ClassReferences
 
-        public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas, Compilation compilation)
+        public static void
+            ReFillAllClassReferences(IEnumerable<ClassData> classDatas,
+                Compilation compilation) //not sure if this is overwriting information or just adding it
         {
             //creates all ClassFieldReferenceData and ClassPropertyReferenceData and inserts these references into the ClassData, FieldData and PropertyData
             foreach (var classData in classDatas)
@@ -449,9 +460,9 @@ namespace CodeExplorinator
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
                     {
                         //Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
-                                  //fieldData.ContainingClass);
+                        //fieldData.ContainingClass);
                         ClassFieldReferenceData reference = new ClassFieldReferenceData(referencedClass, fieldData);
-                        
+
                         //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
                         if (referencedClass == fieldData.ContainingClass)
                         {
@@ -463,29 +474,19 @@ namespace CodeExplorinator
                             referencedClass.ReferencedByExternalClassField.Add(reference);
                             fieldData.ReferencingExternalClass.Add(reference);
                             fieldData.ContainingClass.IsReferencingExternalClassAsField.Add(reference);
-                            
-                            //this still needs to be tested!!
-                            if (!referencedClass.AllConnectedClasses.Contains(fieldData.ContainingClass))
-                            {
-                                referencedClass.AllConnectedClasses.Add(fieldData.ContainingClass);
-                            }
 
-                            if (!fieldData.ContainingClass.AllConnectedClasses.Contains(referencedClass))
-                            {
-                                fieldData.ContainingClass.AllConnectedClasses.Add(referencedClass);
-                            }
+                            referencedClass.AllConnectedClasses.Add(fieldData.ContainingClass);
+                            fieldData.ContainingClass.AllConnectedClasses.Add(referencedClass);
                         }
-                        
                     }
                 }
             }
-            
         }
 
         private static void FindAllClassProperties(ClassData classData, IEnumerable<ClassData> classDatas)
         {
             //could be improved to ignore basic types
-            
+
             foreach (var propertyData in classData.PublicProperties.Concat(classData.PrivateProperties).ToList())
             {
                 foreach (var referencedClass in classDatas)
@@ -495,8 +496,9 @@ namespace CodeExplorinator
                     {
                         Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
                                   propertyData.ContainingClass);
-                        ClassPropertyReferenceData reference = new ClassPropertyReferenceData(referencedClass, propertyData);
-                        
+                        ClassPropertyReferenceData reference =
+                            new ClassPropertyReferenceData(referencedClass, propertyData);
+
                         //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
                         if (referencedClass == propertyData.ContainingClass)
                         {
@@ -508,8 +510,8 @@ namespace CodeExplorinator
                             referencedClass.ReferencedByExternalClassProperty.Add(reference);
                             propertyData.ReferencingExternalClass.Add(reference);
                             propertyData.ContainingClass.IsReferencingExternalClassAsProperty.Add(reference);
-                            
-                            
+
+
                             //this still needs to be tested!!
                             if (!referencedClass.AllConnectedClasses.Contains(propertyData.ContainingClass))
                             {

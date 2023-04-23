@@ -15,10 +15,16 @@ namespace CodeExplorinator
         /// this position is used to calculate the position of the node and taking into consideration the width and height of the box
         /// </summary>
         public Vector2 position;
+        
         public List<ClassNode> ingoingConnections;
         public List<ClassNode> outgoingConnections;
-        public List<ClassNode> ConnectedNodes;
-        public List<ClassNode> NotConnectedNodes;
+        
+        //these are for determining the connections between classes for the spring algo
+        public HashSet<ClassNode> ConnectedNodes;
+        public HashSet<ClassNode> NotConnectedNodes;
+        
+        public List<MethodNode> MethodNodes;
+
         public ClassGUI classGUI { get; private set; }
         
         /// <summary>
@@ -32,8 +38,8 @@ namespace CodeExplorinator
             classGUI.GenerateVisualElement();
             this.classGUI = classGUI;
             IsLeaf = isLeaf;
-            ConnectedNodes = new List<ClassNode>();
-            NotConnectedNodes = new List<ClassNode>();
+            ConnectedNodes = new HashSet<ClassNode>();
+            NotConnectedNodes = new HashSet<ClassNode>();
             ingoingConnections = new List<ClassNode>();
             outgoingConnections = new List<ClassNode>();
             F = new Vector2();
@@ -64,10 +70,7 @@ namespace CodeExplorinator
                 {
                     node.outgoingConnections.Add(propertyAccess.ReferencedClass.ClassNode);
                 }
-
-                node.ConnectedNodes = new List<ClassNode>();
-                node.ConnectedNodes.AddRange(node.ingoingConnections);
-                node.ConnectedNodes.AddRange(node.outgoingConnections);
+                
             }
         }
 

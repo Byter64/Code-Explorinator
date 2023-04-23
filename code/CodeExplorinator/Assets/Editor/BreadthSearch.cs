@@ -11,22 +11,22 @@ using UnityEditor.Graphs;
 
 namespace CodeExplorinator
 {
-    public class BreadthSearch
+    public static class BreadthSearch
     {
   
-        public List<MethodData> AnalysedMethods;
-        public List<ClassNode> AnalysedNodes;
+        public static List<MethodNode> AnalysedMethods;
+        public static List<ClassNode> AnalysedClasses;
 
-        public BreadthSearch()
+        static BreadthSearch()
         {
-            AnalysedNodes = new List<ClassNode>();
-            AnalysedMethods = new List<MethodData>();
+            AnalysedClasses = new List<ClassNode>();
+            AnalysedMethods = new List<MethodNode>();
         }
         
-        public void Reset()
+        public static void Reset()
         {
-            AnalysedNodes = new List<ClassNode>();
-            AnalysedMethods = new List<MethodData>();
+            AnalysedClasses = new List<ClassNode>();
+            AnalysedMethods = new List<MethodNode>();
         }
 
         /// <summary>
@@ -36,14 +36,14 @@ namespace CodeExplorinator
         /// <param name="startingNode">the node from which the breadth search will start</param>
         /// <param name="depth">How for away from the starting node should be gone away. If depth is 0 then only the starting node will be in the returned list. </param>
         /// <returns></returns>
-        public HashSet<ClassNode> GenerateSubgraph(IEnumerable<ClassNode> graph, ClassNode startingNode, int depth) //does graph even do anything??
+        public static HashSet<ClassNode> GenerateClassSubgraph(IEnumerable<ClassNode> graph, ClassNode startingNode, int depth) //does graph even do anything??
         {
             HashSet<ClassNode> subgraph = new HashSet<ClassNode>();
             GenerateClassGraph(startingNode, depth, subgraph);
             return subgraph;
         }
 
-        private void GenerateClassGraph(ClassNode startingNode, int searchRadius, HashSet<ClassNode> result)
+        private static void GenerateClassGraph(ClassNode startingNode, int searchRadius, HashSet<ClassNode> result)
         {
             if (searchRadius < 0)
             {
@@ -54,7 +54,7 @@ namespace CodeExplorinator
             //impacts the searchtime negatively tho
             //if we wanted to perfectly run through all nodes we would have to save the highest searchradius that was gone trough, and go through
             //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
-            foreach (var node in AnalysedNodes)
+            foreach (var node in AnalysedClasses)
             {
                 if (node == startingNode)
                 {
@@ -67,10 +67,9 @@ namespace CodeExplorinator
                     return;
                 }
             }
-
-            bool isLeafNode = searchRadius == 0;
-            startingNode.IsLeaf = isLeafNode;
-            AnalysedNodes.Add(startingNode);
+            
+            startingNode.IsLeaf = searchRadius == 0;
+            AnalysedClasses.Add(startingNode);
             result.Add(startingNode);
 
         SkipOverGeneration:
@@ -106,52 +105,94 @@ namespace CodeExplorinator
 
             //or just iterate though AllContainingClasses:
 
+            foreach (var connectedClass in startingNode.ClassData.AllConnectedClasses)
+            {
+                GenerateClassGraph(connectedClass.ClassNode, searchRadius - 1, result);
+            }
+            
+            /*
             foreach (var connectedClass in startingNode.ConnectedNodes) //connected nodes could be made to a hashset
             {
                 GenerateClassGraph(connectedClass, searchRadius - 1, result);
             }
+            */
 
 
         }
+        
+        /// <summary>
+        /// Generates a subgraph from the full graph centered around the starting node with the given depth. It is not a real subgraph though because
+        /// the "leaf nodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
+        /// </summary>
+        /// <param name="startingNode">the node from which the breadth search will start</param>
+        /// <param name="depth">How for away from the starting node should be gone away. If depth is 0 then only the starting node will be in the returned list. </param>
+        /// <returns></returns>
+        public static HashSet<MethodNode> GenerateMethodSubgraph(MethodNode startingNode, int depth)
+        {
+            HashSet<MethodNode> subgraph = new HashSet<MethodNode>();
+            GenerateMethodGraph(startingNode, depth, subgraph);
+            return subgraph;
+        }
 
-        public void GenerateMethodGraph(MethodData startingMethod, int searchRadius)
+        private static void GenerateMethodGraph(MethodNode startingMethod, int searchRadius, HashSet<MethodNode> result)
         {
             if (searchRadius < 0)
             {
                 return;
             }
-
-            //hopefully this doesnt need to be synchronized?
-            if (AnalysedMethods.Contains(startingMethod))
+            
+            foreach (var node in AnalysedMethods)
             {
-                return;
+                if (node == startingMethod)
+                {
+                    if (node.IsLeaf && searchRadius > 0)
+                    {
+                        node.IsLeaf = false;
+                        goto SkipOverGeneration;
+                    }
+
+                    return;
+                }
             }
-
+            
+            startingMethod.IsLeaf = searchRadius == 0;
             AnalysedMethods.Add(startingMethod);
+            result.Add(startingMethod);
 
+            SkipOverGeneration:
+            
+
+            /*
             //checking incoming and outgoing references
 
-            foreach (var methodInvocation in startingMethod.InvokedByExternal)
+            foreach (var methodInvocation in startingMethod.MethodData.InvokedByExternal)
             {
                 //instantiate reference to method and maybe even the containing class
-                GenerateMethodGraph(methodInvocation.ContainingMethod, searchRadius - 1);
+                GenerateMethodGraph(methodInvocation.ContainingMethod, searchRadius - 1, result);
             }
 
-            foreach (var methodInvocation in startingMethod.IsInvokingExternalMethods)
+            foreach (var methodInvocation in startingMethod.MethodData.IsInvokingExternalMethods)
             {
                 //instantiate reference to method and maybe even the containing class
-                GenerateMethodGraph(methodInvocation.ReferencedMethod, searchRadius - 1);
+                GenerateMethodGraph(methodInvocation.ReferencedMethod, searchRadius - 1, result);
             }
 
-            foreach (var fieldAccess in startingMethod.IsAccessingExternalField)
+            foreach (var fieldAccess in startingMethod.MethodData.IsAccessingExternalField)
             {
                 // just instantiate the class if needed, this is a dead end and not currently shown
             }
 
-            foreach (var propertyAccess in startingMethod.IsAccessingExternalProperty)
+            foreach (var propertyAccess in startingMethod.MethodData.IsAccessingExternalProperty)
             {
                 // just instantiate the class if needed, this is a dead end and not currently shown
             }
+            */
+
+            foreach (var connectedMethod in startingMethod.MethodData.AllConnectedMethods)
+            {
+                GenerateMethodGraph(connectedMethod.MethodNode,searchRadius - 1, result);
+            }
+            
         }
     }
 }

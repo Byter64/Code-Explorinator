@@ -7,11 +7,8 @@ namespace CodeExplorinator
     public class MethodNode
     {
         public MethodData MethodData;
-        public Vector2 F;
-        /// <summary>
-        /// this position is used to calculate the position of the node and taking into consideration the width and height of the box
-        /// </summary>
-        public Vector2 position; //should this be the same as the position of the class? we just need to factor in the method connetions
+        
+        //these are for determining the connections between methods for the spring algo
         public List<MethodNode> ConnectedNodes;
         public List<MethodNode> NotConnectedNodes;
         public VisualElement VisualElement;
@@ -28,11 +25,6 @@ namespace CodeExplorinator
             IsLeaf = isLeaf;
             ConnectedNodes = new List<MethodNode>();
             NotConnectedNodes = new List<MethodNode>();
-            F = new Vector2();
-
-            
-            //i should probably change the position of 
-            position = new Vector2(VisualElement.style.marginLeft.value.value + VisualElement.style.width.value.value * 0.5f,VisualElement.style.marginTop.value.value + VisualElement.style.height.value.value * 0.5f);
         }
         
     }

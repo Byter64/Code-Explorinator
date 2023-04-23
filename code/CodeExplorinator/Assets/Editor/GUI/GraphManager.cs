@@ -12,11 +12,11 @@ namespace CodeExplorinator
 {
     public class GraphManager
     {
-        public ClassNode focusedNode;
+        public ClassNode focusedClassNode;
+        public MethodNode focusedMethodNode; //this is never set PLEASE IMPLEMENT
 
         private int shownDepth;
         private VisualElement graphRoot;
-        private BreadthSearch breadthSearch;
         private HashSet<ClassNode> nodes;
         private HashSet<ClassNode> shownNodes;
         private List<ConnectionGUI> shownConnections;
@@ -24,7 +24,6 @@ namespace CodeExplorinator
         {
             this.shownDepth = shownDepth;
             this.graphRoot = graphRoot;
-            breadthSearch = new BreadthSearch();
 
             nodes = new HashSet<ClassNode>();
             foreach(ClassData @class in data)
@@ -41,7 +40,7 @@ namespace CodeExplorinator
 
         public void UpdateFocusClass(ClassData classData)
         {
-            focusedNode = classData.ClassNode;
+            focusedClassNode = classData.ClassNode;
             RedrawGraph();
         }
 
@@ -52,14 +51,14 @@ namespace CodeExplorinator
         }
         private void RedrawGraph()
         {
-            breadthSearch.Reset();
+            BreadthSearch.Reset();
             RedrawNodes();
             RedrawConnections();
         }
 
         private void RedrawNodes()
         {
-            shownNodes = breadthSearch.GenerateSubgraph(nodes, focusedNode, shownDepth);
+            shownNodes = BreadthSearch.GenerateClassSubgraph(nodes, focusedClassNode, shownDepth);
             SpringEmbedderAlgorithm.StartAlgorithm(shownNodes.ToList(), 100000, 1000);
             AppendShownNodesToGraphRoot();
         }
@@ -69,34 +68,52 @@ namespace CodeExplorinator
             RemoveConnectionsFromGraphRoot();
             shownConnections = new List<ConnectionGUI>();
 
-            foreach(ClassNode tip in shownNodes) //tip and foot need to be swapped
+            foreach(ClassNode foot in shownNodes)
             {
-                foreach (ClassNode foot in tip.outgoingConnections)
+                if (foot.IsLeaf)
                 {
-                    if (tip == foot)
+                    foreach (ClassNode tip in foot.outgoingConnections)
                     {
-                        continue;
+                        if (foot == tip)
+                        {
+                            continue;
+                        }
+                        ClassNode shownTip = shownNodes.Contains(tip) ? tip : null;
+                        ConnectionGUI connection = new ConnectionGUI(foot, shownTip);
+                        connection.GenerateVisualElement();
+                        shownConnections.Add(connection);
                     }
-                    ClassNode shownFoot = shownNodes.Contains(foot) ? foot : null;
-                    ConnectionGUI connection = new ConnectionGUI(tip, shownFoot);
-                    connection.GenerateVisualElement();
-                    shownConnections.Add(connection);
+                    
+                    foreach (ClassNode tip in foot.ingoingConnections) //tip and foot here have opposite meanings
+                    {
+                        if (foot == tip)
+                        {
+                            continue;
+                        }
+                        
+                        ClassNode shownTip = shownNodes.Contains(tip) ? tip : null;
+                        ConnectionGUI connection = new ConnectionGUI(shownTip, foot);
+                        connection.GenerateVisualElement();
+                        shownConnections.Add(connection);
+                    }
+                    
                 }
+                else
+                {
+                    foreach (ClassNode tip in foot.outgoingConnections)
+                    {
+                        if (foot == tip)
+                        {
+                            continue;
+                        }
+                        ConnectionGUI connection = new ConnectionGUI(foot, tip);
+                        connection.GenerateVisualElement();
+                        shownConnections.Add(connection);
+                    }
+                }
+               
             }
 
-            /*
-             foreach (ClassNode foot in shownNodes)
-            {
-                foreach (ClassNode tip in foot.ingoingConnections)
-                {
-                    ClassNode showntip = shownNodes.Contains(tip) ? tip : null;
-                    ConnectionGUI connection = new ConnectionGUI(showntip, foot);
-                    connection.GenerateVisualElement();
-                    shownConnections.Add(connection);
-                }
-            }
-             */
-            
             AppendShownConnectionsToGraphRoot();
         }
 
@@ -155,6 +172,26 @@ namespace CodeExplorinator
             //Debug.Log("Visualelement: " + node.classGUI.style.marginLeft + "/" + node.classGUI.style.marginTop);
             classData.ClassNode = node;
             return node;
+        }
+
+        public void DrawMethodGraph()
+        {
+            HashSet<MethodNode> analysedMethodNodes = BreadthSearch.GenerateMethodSubgraph(focusedMethodNode, shownDepth);
+            HashSet<ClassNode> analysedClasses = AddMethodsToClasses(analysedMethodNodes);
+            SpringEmbedderAlgorithm.StartMethodAlgorithm(analysedClasses,analysedMethodNodes,100000,1000);
+        }
+
+        private HashSet<ClassNode> AddMethodsToClasses(HashSet<MethodNode> methodNodes)
+        {
+            HashSet<ClassNode> classNodes = new HashSet<ClassNode>();
+            
+            foreach (var methodNode in methodNodes)
+            {
+                methodNode.MethodData.ContainingClass.ClassNode.MethodNodes.Add(methodNode);
+                classNodes.Add(methodNode.MethodData.ContainingClass.ClassNode);
+            }
+
+            return classNodes;
         }
 
         public void AddNode(ClassNode node)

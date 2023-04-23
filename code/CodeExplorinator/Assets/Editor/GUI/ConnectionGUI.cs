@@ -225,10 +225,6 @@ namespace CodeExplorinator
             
             arrow.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x)*Mathf.Rad2Deg)));
 
-            //line.Add(arrow);
-
-            //return line;
-            
             parent.Add(line);
             parent.Add(arrow);
 
@@ -237,13 +233,15 @@ namespace CodeExplorinator
         
         private VisualElement CreateVisualElementArrowToRandom(ClassNode node, bool isIncomingArrow)
         {
-            //create vectors u and v that hold the position of the node anchored centered on top
+            //creates parent visual element
+            VisualElement parent = new VisualElement();
 
+            //create vectors u and v that hold the position of the node anchored centered on top
             Vector2 v = new Vector2(node.classGUI.VisualElement.style.marginLeft.value.value + node.classGUI.VisualElement.style.width.value.value * 0.5f,
                 node.classGUI.VisualElement.style.marginTop.value.value);;
             
 
-            //creates the vector from node to node
+            //creates a random vector from node to node
             Vector2 connection = new Vector2(Random.Range(-1000,1000), Random.Range(-1000,1000));
             
             //instantiates the line
@@ -264,6 +262,8 @@ namespace CodeExplorinator
             line.style.marginLeft = new StyleLength(line.style.marginLeft.value.value + connection.x * 0.5f);
             line.style.marginTop = new StyleLength(line.style.marginTop.value.value + connection.y * 0.5f);
 
+            parent.Add(line);
+            
             if (isIncomingArrow)
             {
                 //draws the arrow
@@ -278,10 +278,10 @@ namespace CodeExplorinator
             
                 arrow.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(-connection.y, -connection.x)*Mathf.Rad2Deg)));
 
-                line.Add(arrow);
+                parent.Add(arrow);
             }
 
-            return line;
+            return parent;
         }
         
     }
