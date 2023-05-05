@@ -177,7 +177,7 @@ namespace CodeExplorinator
 
                     foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
                     {
-                        if (shownNodes.Contains(parent.ClassNode))
+                        if (shownClassNodes.Contains(parent.ClassNode))
                         {
                             ConnectionGUI connection = new ConnectionGUI(foot, parent.ClassNode);
                             connection.GenerateVisualElement(true);
