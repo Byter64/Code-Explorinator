@@ -1,6 +1,4 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
@@ -16,6 +14,7 @@ namespace CodeExplorinator
 
         private Texture2D lineTexture;
         private Texture2D arrowTexture;
+        private Texture2D inheritanceArrowTexture;
         private ClassNode footNode;
         private ClassNode tipNode;
 
@@ -24,7 +23,9 @@ namespace CodeExplorinator
             this.footNode = footNode;
             this.tipNode = tipNode;
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
-            arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centeredt.png");
+            //arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centeredt.png");
+            arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centered_new.png");
+            inheritanceArrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Arrow_inheritance.png");
         }
 
         //██ This method is not updated. A similar method that replaces this one is in Graphmanager
@@ -33,7 +34,7 @@ namespace CodeExplorinator
         //    foreach (var analysedNode in Nodes)
         //    {
         //        //if there are many variables referencing the same class, the line is drawn multiple times, which is BAD!!!!
-                
+
         //        if (!analysedNode.IsLeaf)
         //        {
         //            foreach (var fieldReference in analysedNode.ClassData.IsReferencingExternalClassAsField)
@@ -49,11 +50,11 @@ namespace CodeExplorinator
         //        else
         //        {
         //            //draw arrows to classes which exist in the window and draw them to a random location if they dont 
-                    
+
         //            foreach (var fieldReference in analysedNode.ClassData.IsReferencingExternalClassAsField)
         //            {
         //                bool isClassFound = false;
-                        
+
         //                foreach (var node in Nodes)
         //                {
         //                    if (fieldReference.ReferencedClass == node.ClassData)
@@ -73,7 +74,7 @@ namespace CodeExplorinator
         //            foreach (var propertyReference in analysedNode.ClassData.IsReferencingExternalClassAsProperty)
         //            {
         //                bool isClassFound = false;
-                        
+
         //                foreach (var node in Nodes)
         //                {
         //                    if (propertyReference.ReferencedClass == node.ClassData)
@@ -83,7 +84,7 @@ namespace CodeExplorinator
         //                        break;
         //                    }
         //                }
-                        
+
         //                //if the class is not shown, we still want to draw an arrow, just to nowhere in particular
         //                if (!isClassFound)
         //                {
@@ -120,21 +121,25 @@ namespace CodeExplorinator
         //                        break;
         //                    }
         //                }
-                        
+
         //                if (!classExsists)
         //                {
         //                    CreateVisualElementArrowToRandom(analysedNode,true);
         //                }
         //            }
-                    
+
         //        }
-                
+
         //    }
         //}
 
-        public void GenerateVisualElement()
+        public void GenerateVisualElement(bool isInheritanceArrow = false)
         {
-            if(footNode == null)
+            if (isInheritanceArrow)
+            {
+                VisualElement = CreateVisualElementArrow(footNode, tipNode, true);
+            }
+            else if (footNode == null)
             {
                 VisualElement = CreateVisualElementArrowToRandom(tipNode, true);
             }
@@ -144,7 +149,7 @@ namespace CodeExplorinator
             }
             else
             {
-                VisualElement = CreateVisualElementArrow(footNode, tipNode);
+                VisualElement = CreateVisualElementArrow(footNode, tipNode, false);
             }
         }
 
@@ -182,19 +187,98 @@ namespace CodeExplorinator
         //    Graph.Add(line);
         //}
 
-        private VisualElement CreateVisualElementArrow(ClassNode footNode, ClassNode tipNode)
+        private VisualElement CreateVisualElementArrow(ClassNode footNode, ClassNode tipNode, bool isInheritanceArrow = false)
         {
             //creates parent visual element
             VisualElement parent = new VisualElement();
 
             //create vectors u and v that hold the position of the node anchored centered on top
-            Vector2 u = new Vector2(footNode.classGUI.VisualElement.style.marginLeft.value.value + footNode.classGUI.VisualElement.style.width.value.value * 0.5f,
+            Vector2 u = new Vector2(
+                footNode.classGUI.VisualElement.style.marginLeft.value.value +
+                footNode.classGUI.VisualElement.style.width.value.value * 0.5f,
                 footNode.classGUI.VisualElement.style.marginTop.value.value);
-            Vector2 v = new Vector2(tipNode.classGUI.VisualElement.style.marginLeft.value.value + tipNode.classGUI.VisualElement.style.width.value.value * 0.5f,
+            Vector2 v = new Vector2(
+                tipNode.classGUI.VisualElement.style.marginLeft.value.value +
+                tipNode.classGUI.VisualElement.style.width.value.value * 0.5f,
                 tipNode.classGUI.VisualElement.style.marginTop.value.value);
-            
+
             //creates the vector from node to node
             Vector2 connection = new Vector2(v.x - u.x, v.y - u.y);
+
+            
+            /*
+            //instantiates the line
+            VisualElement line = new VisualElement();
+            line.style.backgroundImage = new StyleBackground(lineTexture);
+            //sets the rotationpoint of the line to the position u (the rotationpoint of the line lies in the middle) the line is not rotated yet, thats why we use the magnitude
+            line.style.marginLeft = new StyleLength(u.x - connection.magnitude * 0.5f);
+            line.style.marginTop = new StyleLength(u.y);
+            line.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            line.style.height = lineTexture.height;
+            //the width of the line is the magnitude of the vector, as the line is not rotated yet
+            line.style.width = connection.magnitude;
+
+            //rotates the line to be parallel to the vector
+            line.style.rotate =
+                new StyleRotate(new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x) * Mathf.Rad2Deg)));
+
+            //repositions the line half of the vector further to complete the process
+            line.style.marginLeft = new StyleLength(line.style.marginLeft.value.value + connection.x * 0.5f);
+            line.style.marginTop = new StyleLength(line.style.marginTop.value.value + connection.y * 0.5f);
+            
+            */
+            
+            parent.Add(InstantiateLine(u,connection));
+            
+            /*
+            //draws the arrow
+            VisualElement arrow = new VisualElement();
+            arrow.style.backgroundImage = new StyleBackground(arrowTexture);
+            arrow.style.marginLeft = new StyleLength(v.x - arrowTexture.width * 0.5f);
+            arrow.style.marginTop = new StyleLength(v.y - arrowTexture.height * 0.5f);
+            arrow.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            arrow.style.height = arrowTexture.height;
+            arrow.style.width = arrowTexture.height;
+
+            arrow.style.rotate =
+                new StyleRotate(new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x) * Mathf.Rad2Deg)));
+                
+                */
+
+            if (isInheritanceArrow)
+            {
+                parent.Add(InstantiateArrow(v,connection,inheritanceArrowTexture));
+            }
+            else
+            {
+                parent.Add(InstantiateArrow(v,connection,arrowTexture));
+            }
+           
+            
+            //parent.Add(line);
+            //parent.Add(arrow);
+
+            return parent;
+        }
+
+        private VisualElement CreateVisualElementArrowToRandom(ClassNode node, bool isIncomingArrow)
+        {
+            //creates parent visual element
+            VisualElement parent = new VisualElement();
+
+            //creates vector u that holds the position of the node anchored centered on top
+            Vector2 u = new Vector2(
+                node.classGUI.VisualElement.style.marginLeft.value.value +
+                node.classGUI.VisualElement.style.width.value.value * 0.5f,
+                node.classGUI.VisualElement.style.marginTop.value.value);
+            ;
+
+
+            //creates a random vector from node to node
+            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)); //maybe normalise it to the same length
+
+            
+            /*
             
             //instantiates the line
             VisualElement line = new VisualElement();
@@ -202,88 +286,86 @@ namespace CodeExplorinator
             //sets the rotationpoint of the line to the position u (the rotationpoint of the line lies in the middle) the line is not rotated yet, thats why we use the magnitude
             line.style.marginLeft = new StyleLength(u.x - connection.magnitude * 0.5f);
             line.style.marginTop = new StyleLength(u.y);
-            line.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute); 
+            line.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
             line.style.height = lineTexture.height;
             //the width of the line is the magnitude of the vector, as the line is not rotated yet
             line.style.width = connection.magnitude;
 
             //rotates the line to be parallel to the vector
-            line.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x)*Mathf.Rad2Deg)));
-            
+            line.style.rotate =
+                new StyleRotate(new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x) * Mathf.Rad2Deg)));
+
             //repositions the line half of the vector further to complete the process
             line.style.marginLeft = new StyleLength(line.style.marginLeft.value.value + connection.x * 0.5f);
             line.style.marginTop = new StyleLength(line.style.marginTop.value.value + connection.y * 0.5f);
             
-            //draws the arrow
-            VisualElement arrow = new VisualElement();
-            arrow.style.backgroundImage = new StyleBackground(arrowTexture);
-            arrow.style.marginLeft = new StyleLength(v.x - arrowTexture.width * 0.5f);
-            arrow.style.marginTop = new StyleLength(v.y - arrowTexture.height * 0.5f);
-            arrow.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute); 
-            arrow.style.height = arrowTexture.height;
-            arrow.style.width = arrowTexture.height;
             
-            arrow.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x)*Mathf.Rad2Deg)));
+            */
 
-            parent.Add(line);
-            parent.Add(arrow);
-
-            return parent;
-        }
-        
-        private VisualElement CreateVisualElementArrowToRandom(ClassNode node, bool isIncomingArrow)
-        {
-            //creates parent visual element
-            VisualElement parent = new VisualElement();
-
-            //create vectors u and v that hold the position of the node anchored centered on top
-            Vector2 v = new Vector2(node.classGUI.VisualElement.style.marginLeft.value.value + node.classGUI.VisualElement.style.width.value.value * 0.5f,
-                node.classGUI.VisualElement.style.marginTop.value.value);;
+            //parent.Add(line);
             
+            parent.Add(InstantiateLine(u,connection));
 
-            //creates a random vector from node to node
-            Vector2 connection = new Vector2(Random.Range(-1000,1000), Random.Range(-1000,1000));
-            
-            //instantiates the line
-            VisualElement line = new VisualElement();
-            line.style.backgroundImage = new StyleBackground(lineTexture);
-            //sets the rotationpoint of the line to the position u (the rotationpoint of the line lies in the middle) the line is not rotated yet, thats why we use the magnitude
-            line.style.marginLeft = new StyleLength(v.x - connection.magnitude * 0.5f);
-            line.style.marginTop = new StyleLength(v.y);
-            line.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute); 
-            line.style.height = lineTexture.height;
-            //the width of the line is the magnitude of the vector, as the line is not rotated yet
-            line.style.width = connection.magnitude;
-
-            //rotates the line to be parallel to the vector
-            line.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x)*Mathf.Rad2Deg)));
-            
-            //repositions the line half of the vector further to complete the process
-            line.style.marginLeft = new StyleLength(line.style.marginLeft.value.value + connection.x * 0.5f);
-            line.style.marginTop = new StyleLength(line.style.marginTop.value.value + connection.y * 0.5f);
-
-            parent.Add(line);
-            
             if (isIncomingArrow)
             {
                 //draws the arrow
                 VisualElement arrow = new VisualElement();
                 arrow.style.backgroundImage = new StyleBackground(arrowTexture);
                 //centering v in the arrow image
-                arrow.style.marginLeft = new StyleLength(v.x - arrowTexture.width * 0.5f);
-                arrow.style.marginTop = new StyleLength(v.y - arrowTexture.height * 0.5f);
-                arrow.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute); 
+                arrow.style.marginLeft = new StyleLength(u.x - arrowTexture.width * 0.5f);
+                arrow.style.marginTop = new StyleLength(u.y - arrowTexture.height * 0.5f);
+                arrow.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
                 arrow.style.height = arrowTexture.height;
                 arrow.style.width = arrowTexture.height;
-            
-                arrow.style.rotate = new StyleRotate( new Rotate(new Angle(Mathf.Atan2(-connection.y, -connection.x)*Mathf.Rad2Deg)));
+
+                arrow.style.rotate =
+                    new StyleRotate(new Rotate(new Angle(Mathf.Atan2(-connection.y, -connection.x) * Mathf.Rad2Deg)));
 
                 parent.Add(arrow);
             }
 
             return parent;
         }
-        
+
+        private VisualElement InstantiateArrow(Vector2 v, Vector2 connection, Texture2D arrowTexture2D)
+        {
+            //draws the arrow
+            VisualElement arrow = new VisualElement();
+            arrow.style.backgroundImage = new StyleBackground(arrowTexture2D);
+            arrow.style.marginLeft = new StyleLength(v.x - arrowTexture2D.width * 0.5f);
+            arrow.style.marginTop = new StyleLength(v.y - arrowTexture2D.height * 0.5f);
+            arrow.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            arrow.style.height = arrowTexture2D.height;
+            arrow.style.width = arrowTexture2D.height;
+
+            arrow.style.rotate =
+                new StyleRotate(new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x) * Mathf.Rad2Deg)));
+
+            return arrow;
+        }
+
+        private VisualElement InstantiateLine(Vector2 u, Vector2 connection)
+        {
+            //instantiates the line
+            VisualElement line = new VisualElement();
+            line.style.backgroundImage = new StyleBackground(lineTexture);
+            //sets the rotationpoint of the line to the position u (the rotationpoint of the line lies in the middle) the line is not rotated yet, thats why we use the magnitude
+            line.style.marginLeft = new StyleLength(u.x - connection.magnitude * 0.5f);
+            line.style.marginTop = new StyleLength(u.y);
+            line.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            line.style.height = lineTexture.height;
+            //the width of the line is the magnitude of the vector, as the line is not rotated yet
+            line.style.width = connection.magnitude;
+
+            //rotates the line to be parallel to the vector
+            line.style.rotate =
+                new StyleRotate(new Rotate(new Angle(Mathf.Atan2(connection.y, connection.x) * Mathf.Rad2Deg)));
+
+            //repositions the line half of the vector further to complete the process
+            line.style.marginLeft = new StyleLength(line.style.marginLeft.value.value + connection.x * 0.5f);
+            line.style.marginTop = new StyleLength(line.style.marginTop.value.value + connection.y * 0.5f);
+
+            return line;
+        }
     }
 }
-

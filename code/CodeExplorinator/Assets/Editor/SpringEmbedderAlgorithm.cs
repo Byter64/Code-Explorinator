@@ -256,6 +256,7 @@ namespace CodeExplorinator
                                     if (randomNode == connectedMethod.MethodNode)
                                     {
                                         method.ConnectedNodes.Add(randomNode);
+                                        
                                     }
                                     else
                                     {
@@ -312,7 +313,7 @@ namespace CodeExplorinator
             return iterations % (coolingSpeed * t);
         }
 
-        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1,
+        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1.7f,
             float idealSpringLength = 1000f)
         {
             if (idealSpringLength == 0)

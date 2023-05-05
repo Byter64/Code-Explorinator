@@ -34,7 +34,8 @@ public static class CanIUseRoslyn
     [MenuItem("Test/Projekt analysieren")]
     public static void AnalizeProject()
     {
-        string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
+        //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
+        string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
 
         CSharpCompilation compilation = CSharpCompilation.Create("myAssembly");
         List<ClassData> classDatas = new List<ClassData>();
@@ -59,6 +60,7 @@ public static class CanIUseRoslyn
         ReferenceFinder.ReFillAllPublicMethodReferences(classDatas, compilation);
         ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
         ReferenceFinder.ReFillAllPublicPropertyAccesses(classDatas, compilation);
+        //ReferenceFinder.ReFillAllClassReferences(classDatas,compilation);
 
         foreach(ClassData classData in classDatas)
         {

@@ -56,6 +56,7 @@ namespace CodeExplorinator
         /// A list will all currently displayed connections between nodes
         /// </summary>
         private List<ConnectionGUI> shownConnections;
+
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
             this.shownDepth = shownDepth;
@@ -173,7 +174,22 @@ namespace CodeExplorinator
                         connection.GenerateVisualElement();
                         shownConnections.Add(connection);
                     }
-                    
+
+                    foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
+                    {
+                        if (shownNodes.Contains(parent.ClassNode))
+                        {
+                            ConnectionGUI connection = new ConnectionGUI(foot, parent.ClassNode);
+                            connection.GenerateVisualElement(true);
+                            shownConnections.Add(connection);
+                        }
+                        else
+                        {
+                            ConnectionGUI connection = new ConnectionGUI(foot, null);
+                            connection.GenerateVisualElement();
+                            shownConnections.Add(connection);
+                        }
+                    }
                 }
                 else
                 {
@@ -183,12 +199,19 @@ namespace CodeExplorinator
                         {
                             continue;
                         }
+
                         ConnectionGUI connection = new ConnectionGUI(foot, tip);
                         connection.GenerateVisualElement();
                         shownConnections.Add(connection);
                     }
+
+                    foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
+                    {
+                        ConnectionGUI connection = new ConnectionGUI(foot, parent.ClassNode);
+                        connection.GenerateVisualElement(true);
+                        shownConnections.Add(connection);
+                    }
                 }
-               
             }
 
             AppendShownConnectionsToGraphRoot();

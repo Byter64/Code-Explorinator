@@ -12,8 +12,9 @@ using UnityEngine;
 
 namespace CodeExplorinator
 {
-    public class ClassAnalyzer : MonoBehaviour
+    public static class ClassAnalyzer
     {
+        /*
         [MenuItem("Test/Test4")]
         public static void Test3()
         {
@@ -30,7 +31,7 @@ namespace CodeExplorinator
                 StreamReader streamReader = new StreamReader(cSharpScript);
                 SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(streamReader.ReadToEnd());
                 streamReader.Close();
-                
+
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
 
                 SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
@@ -39,13 +40,29 @@ namespace CodeExplorinator
                 GenerateAllClassInfo(root, semanticModel);
             }
         }
+        */
 
+        /// <summary>
+        /// checks if the file has multiple class declarations and generates the information for each class
+        /// </summary>
+        /// <param name="root">the root of the cs file</param>
+        /// <param name="model">the semantic model of the assembly</param>
+        /// <returns></returns>
         public static List<ClassData> GenerateAllClassInfo(CompilationUnitSyntax root, SemanticModel model)
         {
-            //checks if the file has multiple class declarations and generates the information for each class
-
-            IEnumerable<ClassDeclarationSyntax> classDeclarations = root.DescendantNodes()
+            /*IEnumerable<ClassDeclarationSyntax> classDeclarations = root.DescendantNodes()
                 .OfType<ClassDeclarationSyntax>();
+
+            List<ClassData> classDatas = new List<ClassData>();
+
+            foreach (var classDeclaration in classDeclarations)
+            {
+                classDatas.Add(GenerateClassInfo(classDeclaration, model));
+            }
+            */
+            
+            IEnumerable<TypeDeclarationSyntax> classDeclarations = root.DescendantNodes()
+                .OfType<TypeDeclarationSyntax>();
 
             List<ClassData> classDatas = new List<ClassData>();
 
@@ -57,40 +74,113 @@ namespace CodeExplorinator
             return classDatas;
         }
 
-        private static ClassData GenerateClassInfo(ClassDeclarationSyntax root, SemanticModel model)
+        /// <summary>
+        /// finds all variable and method declarations, saves them as FieldData/MethodData and sorts them for Accessibility, generates a ClassData
+        /// </summary>
+        /// <param name="root">root of the class, aka class declaration</param>
+        /// <param name="model">the semantic model of the assembly</param>
+        /// <returns></returns>
+        private static ClassData GenerateClassInfo(TypeDeclarationSyntax root, SemanticModel model)
         {
-            //finds all variable and method declarations, saves them as FieldData/MethodData and sorts them for Accessibility,
-            //generates a ClassData
             ClassData classData = new ClassData(model.GetDeclaredSymbol(root));
             //Debug.Log("CLASS NAME IS:" + classData.ClassInformation.Name);
 
-            List<IFieldSymbol>
-                allVariables = FindAllFieldDeclarations(root, model);
+            List<TypeInfo> allParentsAndInheritance = FindAllParentInformation(root, model);
+            classData.AllParentsAndInheritanceTypes.AddRange(allParentsAndInheritance);
+
+            List<IFieldSymbol> allVariables = FindAllFieldDeclarations(root, model);
             List<FieldData> publicVariables = getAllPublicFieldSymbols(allVariables, classData);
             List<FieldData> privateVariables = getAllPrivateFieldSymbols(allVariables, classData);
+            
+            classData.PublicVariables.AddRange(publicVariables);
+            classData.PrivateVariables.AddRange(privateVariables);
+            
 
             List<IPropertySymbol> allProperties = FindAllPropertyDeclarations(root, model);
             List<PropertyData> publicProperties = getAllPublicPropertySymbols(allProperties, classData);
             List<PropertyData> privateProperties = getAllPrivatePropertySymbols(allProperties, classData);
-
-            List<IMethodSymbol> allMethods = FindAllMethods(root, model);
-            List<MethodData> publicMethods = getAllPublicMethodSymbols(allMethods, classData);
-            List<MethodData> privateMethods = getAllPrivateMethodSymbols(allMethods, classData);
-
-            classData.PublicVariables.AddRange(publicVariables);
-            classData.PrivateVariables.AddRange(privateVariables);
             
             classData.PublicProperties.AddRange(publicProperties);
             classData.PrivateProperties.AddRange(privateProperties);
             
+
+            List<IMethodSymbol> allMethods = FindAllMethods(root, model);
+            List<MethodData> publicMethods = getAllPublicMethodSymbols(allMethods, classData);
+            List<MethodData> privateMethods = getAllPrivateMethodSymbols(allMethods, classData);
+            
             classData.PublicMethods.AddRange(publicMethods);
             classData.PrivateMethods.AddRange(privateMethods);
+            
 
             //classData.ReadOutMyInformation(); //for debugging purposes
-            
+
             return classData;
         }
+        
 
+        #region AnalyzingInheritance
+
+        private static List<TypeInfo> FindAllParentInformation(SyntaxNode root, SemanticModel model)
+        {
+            IEnumerable<SimpleBaseTypeSyntax> simpleBaseTypeSyntaxes = root.DescendantNodes()
+                .OfType<SimpleBaseTypeSyntax>();
+            
+            List<TypeInfo> parentTypes = new List<TypeInfo>();
+            foreach (var simpleBaseTypeSyntax in simpleBaseTypeSyntaxes)
+            {
+                IEnumerable<IdentifierNameSyntax> parents = simpleBaseTypeSyntax.DescendantNodes().OfType<IdentifierNameSyntax>();
+                foreach (var parent in parents)
+                {
+                    Debug.Log(model.GetTypeInfo(parent).Type.Name); //THIS WORKS!!!!
+                    parentTypes.Add(model.GetTypeInfo(parent));
+                    
+                    
+                    /*
+                    Debug.Log(model.GetTypeInfo(parent).GetType().GetType().GetType().Name);
+                    Debug.Log(model.GetDeclaredSymbol(parent).ContainingSymbol.Name);
+                    Debug.Log(model.GetSymbolInfo(parent).GetType().Name);
+                    var d = model.GetSymbolInfo(parent).Symbol as ITypeSymbol;
+                    
+                    Debug.Log(d.Name);
+                    */
+                }
+                /*
+
+                Debug.Log(model.GetSymbolInfo(simpleBaseTypeSyntax).ToString());
+                var f = model.GetSymbolInfo(simpleBaseTypeSyntax).Symbol as ITypeSymbol;
+                
+                Debug.Log(f.Name);
+                //parentSymbols.Add(model.GetTypeInfo(parent));
+                //var d = model.GetTypeInfo(parent);
+                //Debug.Log(model.GetDeclaredSymbol(parent).Name);
+                */
+            }
+
+
+            return parentTypes;
+        }
+
+        #endregion
+
+        #region AnalyzingMethods
+        private static List<IMethodSymbol> FindAllMethods(SyntaxNode root, SemanticModel model)
+        {
+            // Use the syntax model to find all methoddeclarations:
+            IEnumerable<MethodDeclarationSyntax> methodDeclarations = root.DescendantNodes()
+                .OfType<MethodDeclarationSyntax>();
+
+            List<IMethodSymbol> methodSymbols = new List<IMethodSymbol>();
+
+
+            //fill list with IMethodSymbols
+            foreach (var methodDeclacation in methodDeclarations)
+            {
+                IMethodSymbol methodSymbol = model.GetDeclaredSymbol(methodDeclacation);
+                methodSymbols.Add(methodSymbol);
+            }
+
+            return methodSymbols;
+        }
 
         private static List<MethodData> getAllPublicMethodSymbols(List<IMethodSymbol> methodSymbols,
             ClassData classData)
@@ -165,26 +255,59 @@ namespace CodeExplorinator
             return null;
         }
 
-        private static List<IMethodSymbol> FindAllMethods(ClassDeclarationSyntax root, SemanticModel model)
+        #endregion
+
+        #region AnalyzingFields
+
+         private static List<IFieldSymbol> FindAllFieldDeclarations(SyntaxNode root, SemanticModel model)
         {
+            // Use the syntax model to find all declarations:
+            IEnumerable<FieldDeclarationSyntax> fieldDeclarationSyntaxes = root.DescendantNodes()
+                .OfType<FieldDeclarationSyntax>();
 
-            // Use the syntax model to find all methoddeclarations:
-            IEnumerable<MethodDeclarationSyntax> methodDeclarations = root.DescendantNodes()
-                .OfType<MethodDeclarationSyntax>();
+            List<IFieldSymbol> fieldSymbols = new List<IFieldSymbol>();
 
-            List<IMethodSymbol> methodSymbols = new List<IMethodSymbol>();
-
-
-            //fill list with IMethodSymbols
-            foreach (var methodDeclacation in methodDeclarations)
+            foreach (FieldDeclarationSyntax fieldDeclarationSyntax in fieldDeclarationSyntaxes)
             {
-                IMethodSymbol methodSymbol = model.GetDeclaredSymbol(methodDeclacation);
-                methodSymbols.Add(methodSymbol);
+                foreach (VariableDeclaratorSyntax variableDeclaratorSyntax in fieldDeclarationSyntax.Declaration
+                             .Variables)
+                {
+                    fieldSymbols.Add(model.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol);
+                }
             }
 
-            return methodSymbols;
-        }
+            return fieldSymbols;
 
+            // remove later!!
+            foreach (var variableDeclaration in fieldDeclarationSyntaxes)
+            {
+                var f = variableDeclaration.DescendantNodes().OfType<VariableDeclaratorSyntax>();
+            }
+
+            foreach (var variableDeclaration in fieldDeclarationSyntaxes)
+            {
+                var vars = variableDeclaration; //hier aufgehört zu arbeiten
+                var something = model.GetDeclaredSymbol(variableDeclaration) as ITypeSymbol;
+                //var somethin = something.Name;
+                //.Log(somethin);
+                Debug.Log((model.GetSymbolInfo(variableDeclaration).Symbol.ContainingSymbol.GetType()));
+                Debug.Log((model.GetSymbolInfo(variableDeclaration).Symbol as ITypeSymbol).TypeKind);
+            }
+
+            List<ISymbol> variableSymbols = new List<ISymbol>();
+
+
+            //fill list with ISymbols
+            foreach (var variableDeclacation in fieldDeclarationSyntaxes)
+            {
+                IFieldSymbol varSymbol = model.GetSymbolInfo(variableDeclacation).Symbol as IFieldSymbol;
+                Debug.Log(varSymbol.Name + varSymbol.DeclaredAccessibility.ToString() + varSymbol.Kind +
+                          varSymbol.ContainingType);
+                //variableSymbols.Add(varSymbol);
+            }
+
+            return null;
+        }
 
         private static List<FieldData> getAllPublicFieldSymbols(List<IFieldSymbol> fieldSymbols, ClassData classData)
         {
@@ -254,58 +377,13 @@ namespace CodeExplorinator
 
             return null;
         }
+        
+        #endregion
 
-        private static List<IFieldSymbol> FindAllFieldDeclarations(ClassDeclarationSyntax root, SemanticModel model)
-        {
-            // Use the syntax model to find all declarations:
-            IEnumerable<FieldDeclarationSyntax> fieldDeclarationSyntaxes = root.DescendantNodes()
-                .OfType<FieldDeclarationSyntax>();
+        #region AnalyzingProperties
 
-            List<IFieldSymbol> fieldSymbols = new List<IFieldSymbol>();
-
-            foreach (FieldDeclarationSyntax fieldDeclarationSyntax in fieldDeclarationSyntaxes)
-            {
-                foreach (VariableDeclaratorSyntax variableDeclaratorSyntax in fieldDeclarationSyntax.Declaration
-                             .Variables)
-                {
-                    fieldSymbols.Add(model.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol);
-                }
-            }
-
-            return fieldSymbols;
-
-            // remove later!!
-            foreach (var variableDeclaration in fieldDeclarationSyntaxes)
-            {
-                var f = variableDeclaration.DescendantNodes().OfType<VariableDeclaratorSyntax>();
-            }
-
-            foreach (var variableDeclaration in fieldDeclarationSyntaxes)
-            {
-                var vars = variableDeclaration; //hier aufgehört zu arbeiten
-                var something = model.GetDeclaredSymbol(variableDeclaration) as ITypeSymbol;
-                //var somethin = something.Name;
-                //.Log(somethin);
-                Debug.Log((model.GetSymbolInfo(variableDeclaration).Symbol.ContainingSymbol.GetType()));
-                Debug.Log((model.GetSymbolInfo(variableDeclaration).Symbol as ITypeSymbol).TypeKind);
-            }
-
-            List<ISymbol> variableSymbols = new List<ISymbol>();
-
-
-            //fill list with ISymbols
-            foreach (var variableDeclacation in fieldDeclarationSyntaxes)
-            {
-                IFieldSymbol varSymbol = model.GetSymbolInfo(variableDeclacation).Symbol as IFieldSymbol;
-                Debug.Log(varSymbol.Name + varSymbol.DeclaredAccessibility.ToString() + varSymbol.Kind +
-                          varSymbol.ContainingType);
-                //variableSymbols.Add(varSymbol);
-            }
-
-            return null;
-        }
-
-        private static List<IPropertySymbol> FindAllPropertyDeclarations(ClassDeclarationSyntax root, SemanticModel model)
+          private static List<IPropertySymbol> FindAllPropertyDeclarations(SyntaxNode root,
+            SemanticModel model)
         {
             // Use the syntax model to find all declarations:
             IEnumerable<PropertyDeclarationSyntax> propertyDeclarationSyntaxes = root.DescendantNodes()
@@ -320,8 +398,9 @@ namespace CodeExplorinator
 
             return propertySymbols;
         }
-        
-        private static List<PropertyData> getAllPublicPropertySymbols(List<IPropertySymbol> propertySymbols, ClassData classData)
+
+        private static List<PropertyData> getAllPublicPropertySymbols(List<IPropertySymbol> propertySymbols,
+            ClassData classData)
         {
             try
             {
@@ -356,7 +435,8 @@ namespace CodeExplorinator
             return null;
         }
 
-        private static List<PropertyData> getAllPrivatePropertySymbols(List<IPropertySymbol> propertySymbols, ClassData classData)
+        private static List<PropertyData> getAllPrivatePropertySymbols(List<IPropertySymbol> propertySymbols,
+            ClassData classData)
         {
             try
             {
@@ -389,6 +469,8 @@ namespace CodeExplorinator
 
             return null;
         }
+
+        #endregion
         
     }
 }

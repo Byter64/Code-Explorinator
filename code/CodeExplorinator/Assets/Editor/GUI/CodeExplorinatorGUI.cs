@@ -114,11 +114,14 @@ namespace CodeExplorinator
                 CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
                 classDatas.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
-
+            
+            /*
             ReferenceFinder.ReFillAllPublicMethodReferences(classDatas, compilation);
             ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
             ReferenceFinder.ReFillAllPublicPropertyAccesses(classDatas, compilation);
             ReferenceFinder.ReFillAllClassReferences(classDatas, compilation);
+            */
+            ReferenceFinder.RefillAllReferences(classDatas,compilation);
 
             return classDatas;
         }

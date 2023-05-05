@@ -15,6 +15,16 @@ namespace CodeExplorinator
     /// </summary>
     public static class ReferenceFinder
     {
+
+        public static void RefillAllReferences(List<ClassData> classDatas, Compilation compilation)
+        {
+            ReFillAllPublicMethodReferences(classDatas, compilation);
+            ReFillAllPublicAccesses(classDatas, compilation);
+            ReFillAllPublicPropertyAccesses(classDatas, compilation);
+            ReFillAllClassReferences(classDatas, compilation);
+        }
+        
+        
         #region MethodReferences
 
         /// <summary>
@@ -445,6 +455,7 @@ namespace CodeExplorinator
             {
                 FindAllClassFields(classData, classDatas);
                 FindAllClassProperties(classData, classDatas);
+                FindAllInheritance(classData,classDatas);
             }
         }
 
@@ -523,6 +534,37 @@ namespace CodeExplorinator
                                 propertyData.ContainingClass.AllConnectedClasses.Add(referencedClass);
                             }
                         }
+                    }
+                }
+            }
+        }
+
+        //this still need to be tested
+        private static void FindAllInheritance(ClassData analyzedClass, IEnumerable<ClassData> classDatas)
+        {
+            foreach (var type in analyzedClass.AllParentsAndInheritanceTypes)
+            {
+                foreach (var randomClass in classDatas)
+                {
+                    if (SymbolEqualityComparer.Default.Equals(randomClass.ClassInformation, type.Type))
+                    {
+                        if (randomClass.ClassInformation.IsAbstract) //TO DO: we have to ask here if its an interface or not, not if its an abstract class
+                        {
+                            analyzedClass.ImplementingInterfaces.Add(randomClass);
+                            analyzedClass.AllConnectedClasses.Add(randomClass);
+
+                            randomClass.AllConnectedClasses.Add(analyzedClass);
+                            randomClass.ChildClasses.Add(analyzedClass);
+                        }
+                        else
+                        {
+                            analyzedClass.ParentClass = randomClass;
+                            analyzedClass.AllConnectedClasses.Add(randomClass);
+
+                            randomClass.AllConnectedClasses.Add(analyzedClass);
+                            randomClass.ChildClasses.Add(analyzedClass);
+                        }
+                        
                     }
                 }
             }

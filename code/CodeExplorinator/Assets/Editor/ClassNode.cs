@@ -19,9 +19,9 @@ namespace CodeExplorinator
         public List<ClassNode> ingoingConnections;
         public List<ClassNode> outgoingConnections;
         
-        //these are for determining the connections between classes for the spring algo
-        public HashSet<ClassNode> ConnectedNodes;
-        public HashSet<ClassNode> NotConnectedNodes;
+        //these are for determining the connections between classes for the spring algo, should this be a hashset or not?
+        public List<ClassNode> ConnectedNodes;
+        public List<ClassNode> NotConnectedNodes;
         
         public List<MethodNode> MethodNodes;
 
@@ -38,8 +38,8 @@ namespace CodeExplorinator
             classGUI.GenerateVisualElement();
             this.classGUI = classGUI;
             IsLeaf = isLeaf;
-            ConnectedNodes = new HashSet<ClassNode>();
-            NotConnectedNodes = new HashSet<ClassNode>();
+            ConnectedNodes = new List<ClassNode>();
+            NotConnectedNodes = new List<ClassNode>();
             ingoingConnections = new List<ClassNode>();
             outgoingConnections = new List<ClassNode>();
             MethodNodes = new List<MethodNode>();

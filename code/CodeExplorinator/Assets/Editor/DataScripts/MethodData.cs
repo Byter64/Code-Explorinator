@@ -278,7 +278,6 @@ namespace CodeExplorinator
             VIRTUAL,
             READONLY,
             
-            RECORD, //not implemented
             NEW, //not implemented
             UNSAFE, //not implemented
             
