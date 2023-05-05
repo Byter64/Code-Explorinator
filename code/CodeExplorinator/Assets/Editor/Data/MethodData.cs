@@ -23,7 +23,7 @@ namespace CodeExplorinator
         /// <summary>
         /// the graph node that belongs to this methodData
         /// </summary>
-        public MethodNode MethodNode;
+        public MethodNode MethodNode { get; set; }
         
         /// <summary>
         /// All invocations to this method within the project (Concatination of in and external invocations)

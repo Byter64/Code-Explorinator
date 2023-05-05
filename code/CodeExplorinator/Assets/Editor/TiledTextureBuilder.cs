@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -72,13 +73,20 @@ namespace CodeExplorinator
         /// 
         /// </summary>
         /// <param name="texture2D">the underlying base texture</param>
-        /// <param name="middleRectangle">the middle part of the texture in pixels that is going to be repeated if the texture is scaled up. !!CAUTION: (0|0) is in the bottom left corner!!</param>
+        /// <param name="middleRectangle">the middle part of the texture in pixels that is going to be repeated if the texture is scaled up. !!CAUTION: (0|0) is in the bottom left corner!! To each side there must be at least one pixel left</param>
         public TiledTextureBuilder(Texture2D texture2D, RectInt middleRectangle)
         {
             OriginalTexture = texture2D;
             splitPointBottomLeft = middleRectangle.position;
             splitPointTopRight = middleRectangle.position + new Vector2Int(middleRectangle.size.x, middleRectangle.size.y);
-            tiles = CreateTileDictionary(texture2D, splitPointBottomLeft, splitPointTopRight);
+            try
+            {
+                tiles = CreateTileDictionary(texture2D, splitPointBottomLeft, splitPointTopRight);
+            }
+            catch
+            {
+                throw new Exception($"Error while trying to slice {texture2D.name}. Try checking your middleRectangle if there is one pixel free to every side");
+            }
             scale = Vector2.one;
             size = new Vector2Int(texture2D.width, texture2D.height);
         }

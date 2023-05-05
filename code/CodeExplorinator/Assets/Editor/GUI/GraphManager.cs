@@ -12,43 +12,114 @@ namespace CodeExplorinator
 {
     public class GraphManager
     {
+        /// <summary>
+        /// the currently focused on classNode in the graph
+        /// </summary>
         public ClassNode focusedClassNode;
-        public MethodNode focusedMethodNode; //this is never set PLEASE IMPLEMENT
 
+        /// <summary>
+        /// The currently focused methodNode in the graph. This is null if the method layer is inactive
+        /// </summary>
+        public MethodNode focusedMethodNode;
+
+        /// <summary>
+        /// The maximum distance as edges from the focused nodes until which other nodes are still shown
+        /// </summary>
         private int shownDepth;
+
+        /// <summary>
+        /// The root visualElement of the editor window
+        /// </summary>
         private VisualElement graphRoot;
-        private HashSet<ClassNode> nodes;
-        private HashSet<ClassNode> shownNodes;
+
+        /// <summary>
+        /// all methodNodes in the currently analyzed project
+        /// </summary>
+        private HashSet<MethodNode> methodNodes;
+
+        /// <summary>
+        /// all methodNodes within the shownDepth from focusedMethodNode
+        /// </summary>
+        private HashSet<MethodNode> shownMethodNodes;
+
+        /// <summary>
+        /// all classNodes in the currently analyzed project
+        /// </summary>
+        private HashSet<ClassNode> classNodes;
+
+        /// <summary>
+        /// all classNodes within the shownDepth from focusedMethodNode
+        /// </summary>
+        private HashSet<ClassNode> shownClassNodes;
+
+        /// <summary>
+        /// A list will all currently displayed connections between nodes
+        /// </summary>
         private List<ConnectionGUI> shownConnections;
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
             this.shownDepth = shownDepth;
             this.graphRoot = graphRoot;
 
-            nodes = new HashSet<ClassNode>();
+            classNodes = new HashSet<ClassNode>();
+            methodNodes = new HashSet<MethodNode>();
+            shownMethodNodes = new HashSet<MethodNode>();
+            //populate the lists with data
             foreach(ClassData @class in data)
             {
-                nodes.Add(GenerateNode(@class));
+                classNodes.Add(GenerateNode(@class));
             }
-            ClassNode.CopyRerefencesFromClassData(nodes);
-
+            ClassNode.CopyRerefencesFromClassData(classNodes);
+            foreach(ClassNode classNode in classNodes)
+            {
+                foreach (MethodGUI methodGUI in classNode.classGUI.methodGUIs)
+                {
+                    methodNodes.Add(GenerateNode(methodGUI.data, methodGUI));
+                }
+            }
+            MethodNode.CopyRerefencesFromMethodData(methodNodes);
             shownConnections = new List<ConnectionGUI>();
-            //UpdateFocusClass(nodes.Where(x => x.ClassData.ToString().ToLower().Contains("classdata")).First().ClassData);
+            //UpdateFocusClass(classNodes.Where(x => x.ClassData.ToString().ToLower().Contains("classdata")).First().ClassData);
             
-            UpdateFocusClass(nodes.First().ClassData);
+            //Assign first focused class
+            UpdateFocusClass(classNodes.First().ClassData);
         }
 
+        /// <summary>
+        /// Changes the focus class and adapts the UI to it
+        /// </summary>
+        /// <param name="classData"></param>
         public void UpdateFocusClass(ClassData classData)
         {
             focusedClassNode = classData.ClassNode;
             RedrawGraph();
+            focusedClassNode.classGUI.VisualElement.BringToFront();
         }
 
+        /// <summary>
+        /// Changes the shownDepth and adapts the UI to it
+        /// </summary>
+        /// <param name="depth"></param>
         public void UpdateReferenceDepth(int depth)
         {
             shownDepth = depth;
             RedrawGraph();
         }
+
+        /// <summary>
+        /// Changes the focus method and adapths the UI to it
+        /// </summary>
+        /// <param name="methodData"></param>
+        public void UpdateFocusMethod(MethodData methodData)
+        {
+            focusedMethodNode = methodData.MethodNode;
+            DrawMethodGraph();
+            focusedMethodNode.MethodData.ContainingClass.ClassNode.classGUI.VisualElement.BringToFront();
+        }
+
+        /// <summary>
+        /// Redraws all VisualElements within the graph
+        /// </summary>
         private void RedrawGraph()
         {
             BreadthSearch.Reset();
@@ -56,19 +127,25 @@ namespace CodeExplorinator
             RedrawConnections();
         }
 
+        /// <summary>
+        /// Redraws all VisualElements that are nodes
+        /// </summary>
         private void RedrawNodes()
         {
-            shownNodes = BreadthSearch.GenerateClassSubgraph(nodes, focusedClassNode, shownDepth);
-            SpringEmbedderAlgorithm.StartAlgorithm(shownNodes.ToList(), 100000, 1000);
+            shownClassNodes = BreadthSearch.GenerateClassSubgraph(classNodes, focusedClassNode, shownDepth);
+            SpringEmbedderAlgorithm.StartAlgorithm(shownClassNodes.ToList(), 100000, 1000);
             AppendShownNodesToGraphRoot();
         }
 
+        /// <summary>
+        /// Redraws all VisualElements that are connections
+        /// </summary>
         private void RedrawConnections()
         {
             RemoveConnectionsFromGraphRoot();
             shownConnections = new List<ConnectionGUI>();
 
-            foreach(ClassNode foot in shownNodes)
+            foreach(ClassNode foot in shownClassNodes)
             {
                 if (foot.IsLeaf)
                 {
@@ -78,7 +155,7 @@ namespace CodeExplorinator
                         {
                             continue;
                         }
-                        ClassNode shownTip = shownNodes.Contains(tip) ? tip : null;
+                        ClassNode shownTip = shownClassNodes.Contains(tip) ? tip : null;
                         ConnectionGUI connection = new ConnectionGUI(foot, shownTip);
                         connection.GenerateVisualElement();
                         shownConnections.Add(connection);
@@ -91,7 +168,7 @@ namespace CodeExplorinator
                             continue;
                         }
                         
-                        ClassNode shownTip = shownNodes.Contains(tip) ? tip : null;
+                        ClassNode shownTip = shownClassNodes.Contains(tip) ? tip : null;
                         ConnectionGUI connection = new ConnectionGUI(shownTip, foot);
                         connection.GenerateVisualElement();
                         shownConnections.Add(connection);
@@ -117,6 +194,28 @@ namespace CodeExplorinator
             AppendShownConnectionsToGraphRoot();
         }
 
+        /// <summary>
+        /// Draws the method layer
+        /// </summary>
+        private void DrawMethodGraph()
+        {
+            foreach(MethodNode node in shownMethodNodes)
+            {
+                node.MethodGUI.ShowBackground(false);
+            }
+
+            shownMethodNodes = BreadthSearch.GenerateMethodSubgraph(focusedMethodNode, shownDepth);
+            foreach (MethodNode node in shownMethodNodes)
+            {
+                node.MethodGUI.ShowBackground(true);
+            }
+            //HashSet<ClassNode> classesWithMethods = AddMethodsToClasses(shownMethodNodes);
+            //SpringEmbedderAlgorithm.StartMethodAlgorithm(classesWithMethods, shownMethodNodes, 100000, 1000);
+        }
+
+        /// <summary>
+        /// Removes all VisualElements that are connections
+        /// </summary>
         private void RemoveConnectionsFromGraphRoot()
         {
             foreach (ConnectionGUI connection in shownConnections)
@@ -129,6 +228,9 @@ namespace CodeExplorinator
             }
         }
 
+        /// <summary>
+        /// Adds all VisualElements that are connections to the editor Window
+        /// </summary>
         private void AppendShownConnectionsToGraphRoot()
         {
             foreach (ConnectionGUI connection in shownConnections)
@@ -137,9 +239,12 @@ namespace CodeExplorinator
             }
         }
 
+        /// <summary>
+        /// Adds all VisualElements that are classNodes to the editor Window
+        /// </summary>
         private void AppendShownNodesToGraphRoot()
         {
-            foreach (ClassNode node in nodes)
+            foreach (ClassNode node in classNodes)
             {
                 if (graphRoot == node.classGUI.VisualElement.parent)
                 {
@@ -147,12 +252,17 @@ namespace CodeExplorinator
                 }
             }
 
-            foreach(ClassNode node in shownNodes)
+            foreach(ClassNode node in shownClassNodes)
             {
                 graphRoot.Add(node.classGUI.VisualElement);
             }
         }
 
+        /// <summary>
+        /// Generates a node out of a given classdata
+        /// </summary>
+        /// <param name="classData"></param>
+        /// <returns></returns>
         private ClassNode GenerateNode(ClassData classData)
         {
             GUIStyle classStyle = new GUIStyle
@@ -169,23 +279,43 @@ namespace CodeExplorinator
             //The ClassGUI should not be generated in here but should rather be given to this method as a parameter!!!!
             ClassGUI classGUI = new ClassGUI(new Vector2(UnityEngine.Random.Range(-50, 50) - graphRoot.style.marginLeft.value.value, UnityEngine.Random.Range(-50, 50) - graphRoot.style.marginTop.value.value), classData, classStyle, methodStyle, methodStyle, this);
             ClassNode node = new ClassNode(classData, classGUI);
-            //Debug.Log("Visualelement: " + node.classGUI.style.marginLeft + "/" + node.classGUI.style.marginTop);
             classData.ClassNode = node;
             return node;
         }
 
-        public void DrawMethodGraph()
+        /// <summary>
+        /// Generates a methodNode out of a given methodData
+        /// </summary>
+        /// <param name="methodData"></param>
+        /// <returns></returns>
+        private MethodNode GenerateNode(MethodData methodData, MethodGUI methodGUI)
         {
-            HashSet<MethodNode> analysedMethodNodes = BreadthSearch.GenerateMethodSubgraph(focusedMethodNode, shownDepth);
-            HashSet<ClassNode> analysedClasses = AddMethodsToClasses(analysedMethodNodes);
-            SpringEmbedderAlgorithm.StartMethodAlgorithm(analysedClasses,analysedMethodNodes,100000,1000);
+            GUIStyle methodStyle = new GUIStyle
+            {
+                alignment = TextAnchor.MiddleCenter,
+                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
+                fontSize = 20,
+                richText = true
+            };
+            methodStyle.alignment = TextAnchor.UpperLeft;
+
+            MethodNode node = new MethodNode(methodData, methodGUI);
+            //Debug.Log("Visualelement: " + node.methodGUI.style.marginLeft + "/" + node.methodGUI.style.marginTop);
+            methodData.MethodNode = node;
+
+            return node;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="methodNodes"></param>
+        /// <returns>A set of all classes which have been assigned a method by this method</returns>
         private HashSet<ClassNode> AddMethodsToClasses(HashSet<MethodNode> methodNodes)
         {
             HashSet<ClassNode> classNodes = new HashSet<ClassNode>();
             
-            foreach (var methodNode in methodNodes)
+            foreach (MethodNode methodNode in methodNodes)
             {
                 methodNode.MethodData.ContainingClass.ClassNode.MethodNodes.Add(methodNode);
                 classNodes.Add(methodNode.MethodData.ContainingClass.ClassNode);
@@ -196,27 +326,27 @@ namespace CodeExplorinator
 
         public void AddNode(ClassNode node)
         {
-            nodes.Add(node);
+            classNodes.Add(node);
         }
 
         public void AddNodes(IEnumerable<ClassNode> nodes)
         {
             foreach (ClassNode node in nodes)
             {
-                this.nodes.Add(node);
+                this.classNodes.Add(node);
             }
         }
 
         public void RemoveNode(ClassNode node)
         {
-            nodes.Remove(node);
+            classNodes.Remove(node);
         }
 
         public void RemoveNodes(IEnumerable<ClassNode> nodes)
         {
-            foreach(ClassNode node in nodes.Where(x => this.nodes.Contains(x)))
+            foreach(ClassNode node in nodes.Where(x => this.classNodes.Contains(x)))
             {
-                this.nodes.Remove(node);
+                this.classNodes.Remove(node);
             }
         }
     }

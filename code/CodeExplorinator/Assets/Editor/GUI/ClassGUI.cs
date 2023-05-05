@@ -1,23 +1,18 @@
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static CodeExplorinator.Color;
+using System.Collections.Generic;
 
 namespace CodeExplorinator
 {
     [System.Serializable]
-    public class ClassGUI
+    public class ClassGUI : BaseGUI
     {
         public Vector2 Position { get; set; }
-        public Vector2 Size
-        {
-            get { return new Vector2(backgroundTexture.width, backgroundTexture.height); }
-        }
-        
-        public VisualElement VisualElement { get; private set; }
+        public List<MethodGUI> methodGUIs { get; private set; }
 
         private static TiledTextureData BackgroundTextureData
         {
@@ -104,7 +99,6 @@ namespace CodeExplorinator
         private Texture2D backgroundTexture;
         private Texture2D headerTexture;
         private Texture2D lineTexture;
-        private GraphManager graphManager;
         private VisualElement header;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
@@ -115,7 +109,8 @@ namespace CodeExplorinator
         /// <param name="classStyle">The style in which the class name will be displayed</param>
         /// <param name="fieldStyle">The style in which fields AND properties will be displayed</param>
         /// <param name="methodStyle">The style in which methods will be displayed</param>
-        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphManager graphManager)
+        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphManager graphManager) :
+            base(graphManager)
         {
             if (!classStyle.font.dynamic)
             {
@@ -136,8 +131,14 @@ namespace CodeExplorinator
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
-            this.graphManager = graphManager;
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
+
+            methodGUIs = new List<MethodGUI>();
+            foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
+            {
+                MethodGUI methodGUI = new MethodGUI(methodData, methodStyle, graphManager);
+                methodGUIs.Add(methodGUI);
+            }
 
             BackgroundBuilder.Size = CalculateBackgroundSize();
             backgroundTexture = BackgroundBuilder.BuildTexture();
@@ -147,7 +148,7 @@ namespace CodeExplorinator
             headerTexture = HeaderBuilder.BuildTexture();
         }
 
-        public void GenerateVisualElement()
+        public override void GenerateVisualElement()
         {
             //Debug.LogWarning("Default font is used because I do not know how to change the default font");
             VisualElement classElement = new VisualElement();
@@ -204,18 +205,12 @@ namespace CodeExplorinator
 
             #region DrawMethods
             VisualElement methods = new VisualElement();
+
             methods.style.paddingLeft = intendation;
             classElement.Add(methods);
-            foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
+            foreach (MethodGUI methodGUI in methodGUIs)
             {
-                Label method = new Label(methodData.ToRichString());
-                StyleFont de = new StyleFont(methodStyle.font);
-                method.style.unityFont = de;
-                method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
-                method.style.fontSize = methodStyle.fontSize;
-                method.style.color = UnityEngine.Color.black;
-                new ClickBehaviour(method, null, null);
-                methods.Add(method);
+                methods.Add(methodGUI.VisualElement);
             }
             #endregion
 
@@ -236,13 +231,11 @@ namespace CodeExplorinator
             {
                 VisualElement.visible = true;
                 header.visible = true;
-                Debug.Log("Ich bin jetzt ausgeklappt: " + data);
             }
             else
             {
                 VisualElement.visible = false;
                 header.visible = true;
-                Debug.Log("Ich bin jetzt eingeklappt: " + data);
             }
         }
 
@@ -262,7 +255,6 @@ namespace CodeExplorinator
                 result.y += fieldStyle.lineHeight;
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(field.ToString()), out min, out max);
-                if(min != max) { Debug.LogWarning("min and max width were not the same for: \n" + field.ContainingClass.GetName() + "." + field.GetName()); };
 
                 //Debug.Log("For " + field.ToString() + " is " + min + " space needed");
 

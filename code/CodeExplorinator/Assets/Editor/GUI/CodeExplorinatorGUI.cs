@@ -48,7 +48,7 @@ namespace CodeExplorinator
             graph.style.marginTop = -0b1111111111111111111;
             #endregion
 
-
+            
             List<ClassData> classData = GenerateClassDataFromProject();
             graphManager = new GraphManager(classData, graph, 0);
             sliderBehaviour = CreateSearchRadiusSlider(rootVisualElement, graphManager);
@@ -123,5 +123,15 @@ namespace CodeExplorinator
             return classDatas;
         }
         
+        private List<MethodData> CollectAllMethodData(List<ClassData> classData)
+        {
+            List<MethodData> data = new List<MethodData>();
+            foreach(ClassData @class in classData)
+            {
+                data.AddRange(@class.PublicMethods.Concat(@class.PrivateMethods));
+            }
+
+            return data;
+        }
     }
 }

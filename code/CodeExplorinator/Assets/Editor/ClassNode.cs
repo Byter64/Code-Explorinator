@@ -42,6 +42,7 @@ namespace CodeExplorinator
             NotConnectedNodes = new HashSet<ClassNode>();
             ingoingConnections = new List<ClassNode>();
             outgoingConnections = new List<ClassNode>();
+            MethodNodes = new List<MethodNode>();
             F = new Vector2();
 
             position = new Vector2(this.classGUI.VisualElement.style.marginLeft.value.value + this.classGUI.VisualElement.style.width.value.value * 0.5f, this.classGUI.VisualElement.style.marginTop.value.value + this.classGUI.VisualElement.style.height.value.value * 0.5f);

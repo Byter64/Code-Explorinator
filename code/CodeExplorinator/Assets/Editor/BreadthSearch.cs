@@ -31,7 +31,7 @@ namespace CodeExplorinator
 
         /// <summary>
         /// Generates a subgraph from the full graph centered around the starting node with the given depth. It is not a real subgraph though because
-        /// the "leaf nodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
+        /// the "leaf classNodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
         /// </summary>
         /// <param name="startingNode">the node from which the breadth search will start</param>
         /// <param name="depth">How for away from the starting node should be gone away. If depth is 0 then only the starting node will be in the returned list. </param>
@@ -52,7 +52,7 @@ namespace CodeExplorinator
             
             //if the class was already analysed but we can still search, the node is not generated but the tree explored further
             //impacts the searchtime negatively tho
-            //if we wanted to perfectly run through all nodes we would have to save the highest searchradius that was gone trough, and go through
+            //if we wanted to perfectly run through all classNodes we would have to save the highest searchradius that was gone trough, and go through
             //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
             foreach (var node in AnalysedClasses)
             {
@@ -111,7 +111,7 @@ namespace CodeExplorinator
             }
             
             /*
-            foreach (var connectedClass in startingNode.ConnectedNodes) //connected nodes could be made to a hashset
+            foreach (var connectedClass in startingNode.ConnectedNodes) //connected classNodes could be made to a hashset
             {
                 GenerateClassGraph(connectedClass, searchRadius - 1, result);
             }
@@ -122,7 +122,7 @@ namespace CodeExplorinator
         
         /// <summary>
         /// Generates a subgraph from the full graph centered around the starting node with the given depth. It is not a real subgraph though because
-        /// the "leaf nodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
+        /// the "leaf classNodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
         /// </summary>
         /// <param name="startingNode">the node from which the breadth search will start</param>
         /// <param name="depth">How for away from the starting node should be gone away. If depth is 0 then only the starting node will be in the returned list. </param>

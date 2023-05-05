@@ -29,7 +29,7 @@ namespace CodeExplorinator
                 {
                     Vector2 resultRepulsion = Vector2.zero;
                     Vector2 resultSpring = Vector2.zero;
-                    //DetermineConnectionBetweenNodes(node, nodes);
+                    //DetermineConnectionBetweenNodes(node, classNodes);
 
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
@@ -60,7 +60,7 @@ namespace CodeExplorinator
                 t++;
             }
 
-            //CleanupMiddlePoint(nodes);
+            //CleanupMiddlePoint(classNodes);
         }
 
         //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
