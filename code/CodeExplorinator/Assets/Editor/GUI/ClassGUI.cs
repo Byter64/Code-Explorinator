@@ -270,7 +270,7 @@ namespace CodeExplorinator
 
         private void UpdateFocusClass()
         {
-            graphManager.AddFocusedClass(data);
+            graphManager.UpdateFocusClass(data);
         }
 
         private Vector2Int CalculateBackgroundSize()

@@ -96,7 +96,7 @@ namespace CodeExplorinator
 
         private void ActivateMethodLayer()
         {
-            graphManager.SetFocusedMethod(data);
+            graphManager.UpdateFocusMethod(data);
         }
 
         private void Test()

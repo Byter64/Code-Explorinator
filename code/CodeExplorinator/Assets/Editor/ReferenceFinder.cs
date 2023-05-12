@@ -11,9 +11,6 @@ using PlasticPipe.PlasticProtocol.Messages;
 
 namespace CodeExplorinator
 {
-    /// <summary>
-    ///!!!THIS CLASS SHOULD PROBABLY BE IN CLASSDATA!!!
-    /// </summary>
     public static class ReferenceFinder
     {
 
@@ -83,8 +80,8 @@ namespace CodeExplorinator
             }
         }
 
-        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation(
-            IEnumerable<ClassData> classDatas, Compilation compilation)
+        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation(IEnumerable<ClassData> classDatas, 
+                                                                                                 Compilation compilation)
         {
             List<MethodInvocationData> allInvocations = new List<MethodInvocationData>();
 
@@ -92,13 +89,11 @@ namespace CodeExplorinator
             {
                 allInvocations.AddRange(GenerateAllInvocationDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
-
-            allInvocations.RemoveAll(invocations => invocations == null);
             return allInvocations;
         }
 
-        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForSyntaxTree(
-            IEnumerable<ClassData> classDatas, Compilation compilation, SyntaxTree syntaxTree)
+        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForSyntaxTree(IEnumerable<ClassData> classDatas, 
+                                                                                                Compilation compilation, SyntaxTree syntaxTree)
         {
             SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
             if (semanticModel == null)
@@ -113,10 +108,10 @@ namespace CodeExplorinator
             foreach (InvocationExpressionSyntax invocation in invocations)
             {
                 MethodInvocationData data = GenerateMethodInvocationData(classDatas, semanticModel, invocation);
-                if(data != null)
-                    allInvocations.Add(data);
+                allInvocations.Add(data);
             }
 
+            allInvocations.RemoveAll(invocations => invocations == null);
             return allInvocations;
         }
 
@@ -137,10 +132,10 @@ namespace CodeExplorinator
             }
 
             if (syntaxNode == null) { return null; }
-
             IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
+            if(invocator == null) { return null; }
             containingMethod = FindMethodData(classDatas, invocator);
-
+            if(containingMethod == null) { return null; }
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the invoked method
             //███████████████████████████████████████████████████████████████████████████████
@@ -226,8 +221,7 @@ namespace CodeExplorinator
             {
                 allAccesses.AddRange(GenerateAllFieldAccessDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
-
-            allAccesses.RemoveAll(invocations => invocations == null);
+            
             return allAccesses;
         }
 
@@ -247,12 +241,9 @@ namespace CodeExplorinator
             foreach (IdentifierNameSyntax access in accesses)
             {
                 FieldAccessData accessData = TryGenerateFieldAccessData(classDatas, compilation, semanticModel, access);
-                if (accessData != null)
-                {
-                    allAccesses.Add(accessData);
-                }
+                allAccesses.Add(accessData);
             }
-
+            allAccesses.RemoveAll(invocations => invocations == null);
             return allAccesses;
         }
 
@@ -280,8 +271,9 @@ namespace CodeExplorinator
 
             if( syntaxNode == null) { return null; }
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
+            if(accessor == null) { return null; }
             containingMethod = FindMethodData(classDatas, accessor);
-
+            if(containingMethod == null ) { return null; }
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the accessed field
             //███████████████████████████████████████████████████████████████████████████████
@@ -367,7 +359,6 @@ namespace CodeExplorinator
                 allAccesses.AddRange(GenerateAllPropertyAccessDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
 
-            allAccesses.RemoveAll(invocations => invocations == null);
             return allAccesses;
         }
 
@@ -387,13 +378,9 @@ namespace CodeExplorinator
             foreach (IdentifierNameSyntax access in accesses)
             {
                 PropertyAccessData accessData = TryGeneratePropertyAccessData(classDatas, compilation, semanticModel, access);
-
-                if (accessData != null)
-                {
-                    allAccesses.Add(accessData);
-                }
+                allAccesses.Add(accessData);
             }
-
+            allAccesses.RemoveAll(invocations => invocations == null);
             return allAccesses;
         }
 
@@ -421,7 +408,9 @@ namespace CodeExplorinator
 
             if(syntaxNode == null) { return null; }
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
+            if (accessor != null) { return null; }
             containingMethod = FindMethodData(classDatas, accessor);
+            if(containingMethod == null ) { return null; }
 
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the accessed property
@@ -450,12 +439,11 @@ namespace CodeExplorinator
 
         #region ClassReferences
 
-        public static void
-            ReFillAllClassReferences(IEnumerable<ClassData> classDatas,
-                Compilation compilation) //not sure if this is overwriting information or just adding it
+        public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas,
+                                                    Compilation compilation) //not sure if this is overwriting information or just adding it
         {
             //creates all ClassFieldReferenceData and ClassPropertyReferenceData and inserts these references into the ClassData, FieldData and PropertyData
-            foreach (var classData in classDatas)
+            foreach (ClassData classData in classDatas)
             {
                 FindAllClassFields(classData, classDatas);
                 FindAllClassProperties(classData, classDatas);
@@ -467,9 +455,9 @@ namespace CodeExplorinator
         {
             //could be improved to ignore basic types
 
-            foreach (var fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
+            foreach (FieldData fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
             {
-                foreach (var referencedClass in classDatas)
+                foreach (ClassData referencedClass in classDatas)
                 {
                     //if the class is referenced by this field set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
@@ -502,9 +490,9 @@ namespace CodeExplorinator
         {
             //could be improved to ignore basic types
 
-            foreach (var propertyData in classData.PublicProperties.Concat(classData.PrivateProperties).ToList())
+            foreach (PropertyData propertyData in classData.PublicProperties.Concat(classData.PrivateProperties).ToList())
             {
-                foreach (var referencedClass in classDatas)
+                foreach (ClassData referencedClass in classDatas)
                 {
                     //if the class is referenced by this property set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetType()))
@@ -545,9 +533,9 @@ namespace CodeExplorinator
         //this still need to be tested
         private static void FindAllInheritance(ClassData analyzedClass, IEnumerable<ClassData> classDatas)
         {
-            foreach (var type in analyzedClass.AllParentsAndInheritanceTypes)
+            foreach (TypeInfo type in analyzedClass.AllParentsAndInheritanceTypes)
             {
-                foreach (var randomClass in classDatas)
+                foreach (ClassData randomClass in classDatas)
                 {
                     if (SymbolEqualityComparer.Default.Equals(randomClass.ClassInformation, type.Type))
                     {
