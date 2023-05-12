@@ -9,13 +9,12 @@ using System.Linq;
 using UnityEngine.UIElements;
 using UnityEngine.TextCore.Text;
 using UnityEditor.Graphs;
+using System;
 
 namespace CodeExplorinator
 {
     public class CodeExplorinatorGUI : EditorWindow
     {
-        [SerializeField, Tooltip("This file will be overwritten by the CodeExplorinator with the code graph")]
-        private VisualTreeAsset uxmlFile;
 
         //Only exists to prevent garbage collection from deleting the dragBehaviour object
         private DragBehaviour dragBehaviour;
@@ -52,28 +51,6 @@ namespace CodeExplorinator
             List<ClassData> classData = GenerateClassDataFromProject();
             graphManager = new GraphManager(classData, graph, 0);
             sliderBehaviour = CreateSearchRadiusSlider(rootVisualElement, graphManager);
-            #region YanniksAltesZeichenZeugs
-
-            //GUIStyle classStyle = new GUIStyle
-            //{
-            //    alignment = TextAnchor.MiddleCenter,
-            //    font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
-            //    fontSize = 20
-            //};
-            //GUIStyle methodStyle = new GUIStyle(classStyle);
-            //methodStyle.alignment = TextAnchor.UpperLeft;
-
-            //List<ClassData> data = CreateData();
-            //float xpos = 0;
-            //foreach (ClassData classData in data)
-            //{ 
-            //    ClassGUI testClass = new ClassGUI(new Vector2(xpos - graph.style.marginLeft.value.value, -graph.style.marginTop.value.value) , classData, classStyle, methodStyle, methodStyle, lineTexture);
-            //    classGUI testVisualElement = testClass.GenerateVisualElement();
-            //    graph.Add(testVisualElement);
-            //    xpos += testClass.Size.x;
-            //}
-
-            #endregion
         }
 
         private SearchRadiusSliderBehaviour CreateSearchRadiusSlider(VisualElement root, GraphManager graphManager)
@@ -92,7 +69,7 @@ namespace CodeExplorinator
         {
             //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
-            string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
+            string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
             
             CSharpCompilation compilation = CSharpCompilation.Create("myAssembly");

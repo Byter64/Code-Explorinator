@@ -72,15 +72,15 @@ namespace CodeExplorinator
         /// <summary>
         /// Height in pixels of the header for the class
         /// </summary>
-        private static int headerHeight = 88;
+        private const int headerHeight = 88;
         /// <summary>
         /// the amount of pixels which everything within the box is moved to the right
         /// </summary>
-        private static int intendation = 20;
+        private const int intendation = 20;
         /// <summary>
         /// How much empty space will be between the last element in the box and the bottom border of the box
         /// </summary>
-        private static int emptySpaceBottom = 10;
+        private const int emptySpaceBottom = 10;
         #endregion
 
         private static TiledTextureBuilder backgroundBuilder;
@@ -150,13 +150,13 @@ namespace CodeExplorinator
 
         public override void GenerateVisualElement()
         {
-            //Debug.LogWarning("Default font is used because I do not know how to change the default font");
             VisualElement classElement = new VisualElement();
             classElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
             classElement.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(widthInPixels, heightInPixels));
             classElement.style.height = heightInPixels;
             classElement.style.width = widthInPixels;
             classElement.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            classElement.style.alignContent = new StyleEnum<Align>(Align.Stretch);
             classElement.style.marginLeft = Position.x;
             classElement.style.marginTop = Position.y;
 
@@ -167,6 +167,7 @@ namespace CodeExplorinator
             header.style.backgroundImage = Background.FromTexture2D(headerTexture);
             header.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(headerTexture.width, headerTexture.height));
             header.style.unityFont = new StyleFont(classStyle.font);
+            header.style.unityFontDefinition = new StyleFontDefinition(classStyle.font);
             header.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperCenter);
             header.style.height = headerTexture.height;
             header.style.fontSize = classStyle.fontSize;
@@ -185,11 +186,30 @@ namespace CodeExplorinator
             {
                 Label field = new Label(fieldData.ToRichString());
                 field.style.unityFont = new StyleFont(fieldStyle.font);
+                header.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
 
                 fields.Add(field);
+            }
+            #endregion
+
+            #region DrawProperties
+            VisualElement properties = new VisualElement();
+            properties.style.paddingLeft = intendation;
+            classElement.Add(properties);
+
+            foreach (PropertyData propertyData in data.PublicProperties.Concat(data.PrivateProperties))
+            {
+                Label property = new Label(propertyData.ToRichString());
+                property.style.unityFont = new StyleFont(fieldStyle.font);
+                property.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                property.style.fontSize = fieldStyle.fontSize;
+                property.style.color = UnityEngine.Color.black;
+
+                properties.Add(property);
             }
             #endregion
 
@@ -231,17 +251,26 @@ namespace CodeExplorinator
             {
                 VisualElement.visible = true;
                 header.visible = true;
+                foreach(MethodGUI methodGUI in methodGUIs)
+                {
+                    methodGUI.SetVisible(true);
+                }
+                VisualElement.BringToFront();
             }
             else
             {
                 VisualElement.visible = false;
                 header.visible = true;
+                foreach (MethodGUI methodGUI in methodGUIs)
+                {
+                    methodGUI.SetVisible(false);
+                }
             }
         }
 
         private void UpdateFocusClass()
         {
-            graphManager.UpdateFocusClass(data);
+            graphManager.AddFocusedClass(data);
         }
 
         private Vector2Int CalculateBackgroundSize()
@@ -256,7 +285,19 @@ namespace CodeExplorinator
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(field.ToString()), out min, out max);
 
-                //Debug.Log("For " + field.ToString() + " is " + min + " space needed");
+                if (min > result.x)
+                {
+                    result.x = min;
+                }
+            }
+
+            foreach (PropertyData property in data.PublicProperties.Concat(data.PrivateProperties))
+            {
+                result.y += fieldStyle.lineHeight;
+                float min, max;
+                fieldStyle.CalcMinMaxWidth(new GUIContent(property.ToString()), out min, out max);
+
+                //Debug.Log("For " + property.ToString() + " is " + min + " space needed");
 
                 if (min > result.x)
                 {

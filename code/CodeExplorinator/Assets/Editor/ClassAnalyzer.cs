@@ -131,7 +131,7 @@ namespace CodeExplorinator
                 IEnumerable<IdentifierNameSyntax> parents = simpleBaseTypeSyntax.DescendantNodes().OfType<IdentifierNameSyntax>();
                 foreach (var parent in parents)
                 {
-                    Debug.Log(model.GetTypeInfo(parent).Type.Name); //THIS WORKS!!!!
+                    //Debug.Log(model.GetTypeInfo(parent).Type.Name); //THIS WORKS!!!!
                     parentTypes.Add(model.GetTypeInfo(parent));
                     
                     

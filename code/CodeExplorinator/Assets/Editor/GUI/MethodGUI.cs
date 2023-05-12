@@ -61,17 +61,16 @@ namespace CodeExplorinator
         public override void GenerateVisualElement()
         {
             VisualElement background = new VisualElement();
+            //IMPORTANT: Don't set the height here because it may give ugly result because of the auto layout
             background.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
             background.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(backgroundTexture.width, backgroundTexture.height));
             background.style.width = backgroundTexture.width;
-            background.style.height = backgroundTexture.height;
             background.style.flexShrink = 1;
             background.style.visibility = Visibility.Hidden;
 
             Label method = new Label(data.ToRichString());
-            method.style.height = backgroundTexture.height;
-            StyleFont de = new StyleFont(style.font);
-            method.style.unityFont = de;
+            method.style.unityFont = new StyleFont(style.font);
+            method.style.unityFontDefinition = new StyleFontDefinition(style.font);
             method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleLeft);
             method.style.fontSize = style.fontSize;
             method.style.color = UnityEngine.Color.black;
@@ -97,7 +96,7 @@ namespace CodeExplorinator
 
         private void ActivateMethodLayer()
         {
-            graphManager.UpdateFocusMethod(data);
+            graphManager.SetFocusedMethod(data);
         }
 
         private void Test()
@@ -118,6 +117,16 @@ namespace CodeExplorinator
             result.x = textSize.x;
 
             return new Vector2Int((int)result.x, (int)result.y);
+        }
+
+        public void SetVisible(bool visible)
+        {
+            VisualElement.Children().First().visible = visible;
+            //If will be hidden, make background hidden, too
+            if(!visible)
+            {
+                VisualElement.visible = visible;
+            }
         }
     }
 }

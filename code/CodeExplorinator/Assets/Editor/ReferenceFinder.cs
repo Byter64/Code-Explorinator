@@ -7,6 +7,7 @@ using System;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
+using PlasticPipe.PlasticProtocol.Messages;
 
 namespace CodeExplorinator
 {
@@ -111,7 +112,9 @@ namespace CodeExplorinator
                 .OfType<InvocationExpressionSyntax>();
             foreach (InvocationExpressionSyntax invocation in invocations)
             {
-                allInvocations.Add(GenerateMethodInvocationData(classDatas, semanticModel, invocation));
+                MethodInvocationData data = GenerateMethodInvocationData(classDatas, semanticModel, invocation);
+                if(data != null)
+                    allInvocations.Add(data);
             }
 
             return allInvocations;
@@ -128,12 +131,12 @@ namespace CodeExplorinator
             //Searching for the declaration of the method in which access is invoked
             //███████████████████████████████████████████████████████████████████████████████
             SyntaxNode syntaxNode = invocation;
-            while (syntaxNode != null && syntaxNode.GetType() != typeof(MethodDeclarationSyntax) &&
-                   syntaxNode.GetType() != typeof(PropertyDeclarationSyntax))
+            while (syntaxNode != null && syntaxNode.GetType() != typeof(MethodDeclarationSyntax))
             {
-                //} //Diese Klammer hab ich reingemacht, damit ich weiß, wo ich nächstes mal weitermachen muss
                 syntaxNode = syntaxNode.Parent;
             }
+
+            if (syntaxNode == null) { return null; }
 
             IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(classDatas, invocator);
@@ -275,6 +278,7 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
+            if( syntaxNode == null) { return null; }
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(classDatas, accessor);
 
@@ -382,8 +386,7 @@ namespace CodeExplorinator
                 syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>();
             foreach (IdentifierNameSyntax access in accesses)
             {
-                PropertyAccessData accessData =
-                    TryGeneratePropertyAccessData(classDatas, compilation, semanticModel, access);
+                PropertyAccessData accessData = TryGeneratePropertyAccessData(classDatas, compilation, semanticModel, access);
 
                 if (accessData != null)
                 {
@@ -416,6 +419,7 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
+            if(syntaxNode == null) { return null; }
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
             containingMethod = FindMethodData(classDatas, accessor);
 
@@ -505,8 +509,7 @@ namespace CodeExplorinator
                     //if the class is referenced by this property set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetType()))
                     {
-                        Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
-                                  propertyData.ContainingClass);
+                        //Debug.Log("found a reference to the class: " + referencedClass + " in class: " + propertyData.ContainingClass);
                         ClassPropertyReferenceData reference =
                             new ClassPropertyReferenceData(referencedClass, propertyData);
 

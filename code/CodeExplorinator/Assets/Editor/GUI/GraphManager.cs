@@ -15,12 +15,12 @@ namespace CodeExplorinator
         /// <summary>
         /// the currently focused on classNode in the graph
         /// </summary>
-        public ClassNode focusedClassNode;
+        public List<ClassNode> focusedClassNodes;
 
         /// <summary>
         /// The currently focused methodNode in the graph. This is null if the method layer is inactive
         /// </summary>
-        public MethodNode focusedMethodNode;
+        public List<MethodNode> focusedMethodNodes;
 
         /// <summary>
         /// The maximum distance as edges from the focused nodes until which other nodes are still shown
@@ -38,24 +38,14 @@ namespace CodeExplorinator
         private HashSet<MethodNode> methodNodes;
 
         /// <summary>
-        /// all methodNodes within the shownDepth from focusedMethodNode
-        /// </summary>
-        private HashSet<MethodNode> shownMethodNodes;
-
-        /// <summary>
         /// all classNodes in the currently analyzed project
         /// </summary>
         private HashSet<ClassNode> classNodes;
 
         /// <summary>
-        /// all classNodes within the shownDepth from focusedMethodNode
+        /// All subgraphs that are currently displayed
         /// </summary>
-        private HashSet<ClassNode> shownClassNodes;
-
-        /// <summary>
-        /// A list will all currently displayed connections between nodes
-        /// </summary>
-        private List<ConnectionGUI> shownConnections;
+        private List<Subgraph> subgraphs;
 
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
@@ -64,7 +54,9 @@ namespace CodeExplorinator
 
             classNodes = new HashSet<ClassNode>();
             methodNodes = new HashSet<MethodNode>();
-            shownMethodNodes = new HashSet<MethodNode>();
+            subgraphs = new List<Subgraph>();
+            focusedClassNodes = new List<ClassNode>();
+            focusedMethodNodes = new List<MethodNode>();
             //populate the lists with data
             foreach(ClassData @class in data)
             {
@@ -79,22 +71,34 @@ namespace CodeExplorinator
                 }
             }
             MethodNode.CopyRerefencesFromMethodData(methodNodes);
-            shownConnections = new List<ConnectionGUI>();
-            //UpdateFocusClass(classNodes.Where(x => x.ClassData.ToString().ToLower().Contains("classdata")).First().ClassData);
-            
+
             //Assign first focused class
-            UpdateFocusClass(classNodes.First().ClassData);
+            AddFocusedClass(classNodes.Where(x => x.ClassData.GetName().ToLower().Contains("ClassData".ToLower())).First().ClassData);
         }
 
         /// <summary>
-        /// Changes the focus class and adapts the UI to it
+        /// Adds the focus class and adapts the UI to it
         /// </summary>
         /// <param name="classData"></param>
-        public void UpdateFocusClass(ClassData classData)
+        public void AddFocusedClass(ClassData classData)
         {
-            focusedClassNode = classData.ClassNode;
+            focusedClassNodes.Add(classData.ClassNode);
             RedrawGraph();
-            focusedClassNode.classGUI.VisualElement.BringToFront();
+
+            foreach (ClassNode focusedClassNode in focusedClassNodes)
+            {
+                focusedClassNode.classGUI.VisualElement.BringToFront();
+            }
+        }
+
+        /// <summary>
+        /// Set the focus class and adapts the UI to it
+        /// </summary>
+        /// <param name="classData"></param>
+        public void SetFocusedClass(ClassData classData)
+        {
+            focusedClassNodes.Clear();
+            AddFocusedClass(classData);
         }
 
         /// <summary>
@@ -107,15 +111,31 @@ namespace CodeExplorinator
             RedrawGraph();
         }
 
+
         /// <summary>
         /// Changes the focus method and adapths the UI to it
         /// </summary>
         /// <param name="methodData"></param>
-        public void UpdateFocusMethod(MethodData methodData)
+        public void AddFocusedMethod(MethodData methodData)
         {
-            focusedMethodNode = methodData.MethodNode;
+            focusedMethodNodes.Add(methodData.MethodNode);
             DrawMethodGraph();
+
+            foreach (MethodNode methoNode in focusedClassNodes)
+            {
+                methoNode.classGUI.VisualElement.BringToFront();
+            }
             focusedMethodNode.MethodData.ContainingClass.ClassNode.classGUI.VisualElement.BringToFront();
+        }
+
+        /// <summary>
+        /// Changes the focus method and adapths the UI to it
+        /// </summary>
+        /// <param name="methodData"></param>
+        public void SetFocusedMethod(MethodData methodData)
+        {
+            focusedMethodNodes.Clear();
+            AddFocusedMethod(methodData);
         }
 
         /// <summary>
