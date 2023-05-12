@@ -9,60 +9,6 @@ namespace CodeExplorinator
 {
     public static class SpringEmbedderAlgorithm
     {
-        public static void CalculateOld(List<ClassNode> nodes, double threshold, int iterations)
-        {
-            int t = 1;
-
-
-            while (t <= iterations)
-            {
-                foreach (var node in nodes)
-                {
-                    if (node.F.magnitude > threshold) //somehow the threshold does nothing, even when 1?
-                    {
-                        return;
-                    }
-                }
-
-
-                foreach (var node in nodes)
-                {
-                    Vector2 resultRepulsion = Vector2.zero;
-                    Vector2 resultSpring = Vector2.zero;
-                    //DetermineConnectionBetweenNodes(node, classNodes);
-
-                    foreach (var connectedNode in node.ConnectedNodes)
-                    {
-                        resultRepulsion += ForceSpring(connectedNode, node);
-                    }
-
-                    foreach (var notConnectedNode in node.NotConnectedNodes)
-                    {
-                        resultSpring += ForceRepulsion(notConnectedNode, node);
-                    }
-
-                    node.F = resultRepulsion + resultSpring;
-                }
-
-                float cooling1 = coolingFactor(t, iterations);
-
-                foreach (var node in nodes)
-                {
-                    node.classGUI.VisualElement.style.marginLeft =
-                        node.classGUI.VisualElement.style.marginLeft.value.value + cooling1 * node.F.x;
-                    node.classGUI.VisualElement.style.marginTop =
-                        node.classGUI.VisualElement.style.marginTop.value.value + cooling1 * node.F.y;
-
-                    Debug.Log("Node " + node.ClassData.GetName() + ": " + node.classGUI.VisualElement.style.marginLeft +
-                              "/" + node.classGUI.VisualElement.style.marginTop);
-                }
-
-                t++;
-            }
-
-            //CleanupMiddlePoint(classNodes);
-        }
-
         //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
         public static void StartAlgorithm(List<ClassNode> nodes, double threshold, int iterations)
         {
@@ -88,12 +34,12 @@ namespace CodeExplorinator
 
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
-                        resultRepulsion += ForceSpring(connectedNode, node);
+                        resultSpring += ForceSpring(connectedNode, node);
                     }
 
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
-                        resultSpring += ForceRepulsion(notConnectedNode, node);
+                        resultRepulsion += ForceRepulsion(notConnectedNode, node);
                     }
 
                     node.F = resultRepulsion + resultSpring;
@@ -187,7 +133,6 @@ namespace CodeExplorinator
                     }
                 }
 
-
                 foreach (var node in nodes)
                 {
                     Vector2 resultRepulsion = Vector2.zero;
@@ -197,7 +142,7 @@ namespace CodeExplorinator
                     {
                         foreach (var connectedNode in methodNode.ConnectedNodes)
                         {
-                            resultRepulsion += ForceSpring(connectedNode.MethodData.ContainingClass.ClassNode, node);
+                            resultSpring += ForceSpring(connectedNode.MethodData.ContainingClass.ClassNode, node, 0.5f, 500f);
                         }
                     }
 
@@ -205,7 +150,7 @@ namespace CodeExplorinator
                     {
                         foreach (var notConnectedNode in methodNode.NotConnectedNodes)
                         {
-                            resultSpring += ForceRepulsion(notConnectedNode.MethodData.ContainingClass.ClassNode, node);
+                            resultRepulsion += ForceRepulsion(notConnectedNode.MethodData.ContainingClass.ClassNode, node, 1f);
                         }
                     }
 
@@ -219,7 +164,8 @@ namespace CodeExplorinator
                     node.position.x += cooling * node.F.x;
                     node.position.y += cooling * node.F.y;
 
-                    //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
+                    Debug.Log("Node " + node.ClassData.GetName() + ": " + node.position.x + "/" +
+                              node.position.y);
                 }
 
                 t++;
@@ -256,7 +202,6 @@ namespace CodeExplorinator
                                     if (randomNode == connectedMethod.MethodNode)
                                     {
                                         method.ConnectedNodes.Add(randomNode);
-                                        
                                     }
                                     else
                                     {
@@ -284,62 +229,61 @@ namespace CodeExplorinator
             }
         }
 
-        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v, float normFactor = 5f)
+        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v, float normFactor = 4f)
         {
             Vector2 unitVectorFromUtoV =
                 new Vector2(v.position.x - u.position.x, v.position.y - u.position.y).normalized;
 
-            double result1 = Math.Pow((v.position - u.position).magnitude, 2);
+            float result1 = Mathf.Pow((v.position - u.position).magnitude, 2);
+            if (result1 == 0) result1 = float.Epsilon;
+            if (float.IsInfinity(result1)) result1 = float.IsPositiveInfinity(result1) ? float.MaxValue : float.MinValue;
 
-            if (result1 == 0)
-            {
-                result1 = float.Epsilon;
-            }
+            float factor = normFactor / result1;
+            if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue;
 
-            float factor = (float)(normFactor / result1);
+            Vector2 result = new Vector2(factor * unitVectorFromUtoV.x, factor * unitVectorFromUtoV.y);
+            if (float.IsInfinity(result.x)) result.x = float.IsPositiveInfinity(result.x) ? float.MaxValue : float.MinValue;
+            if (float.IsInfinity(result.y)) result.y = float.IsPositiveInfinity(result.y) ? float.MaxValue : float.MinValue;
 
-            return new Vector2(factor * unitVectorFromUtoV.x, factor * unitVectorFromUtoV.y);
+            return result;
         }
 
-        private static float coolingFactor(int t, int iterations, int coolingSpeed = 2)
+        private static float coolingFactor(int t, int iterations, int coolingSpeed = 3)
         {
             //if half the iterationnumber is reached, the force becomes weaker
 
-            if (t == 0)
-            {
-                return 1;
-            }
+            if (t == 0) return 1;
+            if (coolingSpeed == 0) return 1;
 
             return iterations % (coolingSpeed * t);
         }
 
-        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1.7f,
-            float idealSpringLength = 1000f)
+        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 1.6f,
+            float idealSpringLength =
+                600f) //the bigger the ideal length, the shorter the lines; 500 is ca. the height of the standard class / the smaller the norm the stronger the force
         {
-            if (idealSpringLength == 0)
-            {
-                idealSpringLength = float.Epsilon;
-            }
+            if (idealSpringLength == 0) idealSpringLength = float.Epsilon;
 
             Vector2 unitVectorFromVtoU =
                 new Vector2(u.position.x - v.position.x, u.position.y - v.position.y).normalized;
 
-            double result1 = (u.position - v.position).magnitude / idealSpringLength;
-            if (result1 == 0)
-            {
-                result1 = float.Epsilon;
-            }
+            float result1 = (u.position - v.position).magnitude / idealSpringLength;
+            if (result1 == 0) result1 = float.Epsilon;
+            if (float.IsInfinity(result1)) result1 = float.IsPositiveInfinity(result1) ? float.MaxValue : float.MinValue;
 
-            double result2 = Math.Log10(result1);
+            float result2 = Mathf.Log10(result1);
 
-            if (result2 == 0)
-            {
-                result2 = float.Epsilon;
-            }
+            if (result2 == 0) result2 = float.Epsilon;
+            if (float.IsInfinity(result2)) result2 = float.IsPositiveInfinity(result2) ? float.MaxValue : float.MinValue;
 
-            float factor = normFactor * (float)result2;
+            float factor = normFactor * result2;
+            if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue;
 
-            return new Vector2(factor * unitVectorFromVtoU.x, factor * unitVectorFromVtoU.y);
+            Vector2 result = new Vector2(factor * unitVectorFromVtoU.x, factor * unitVectorFromVtoU.y);
+            if (float.IsInfinity(result.x)) result.x = float.IsPositiveInfinity(result.x) ? float.MaxValue : float.MinValue;
+            if (float.IsInfinity(result.y)) result.y = float.IsPositiveInfinity(result.y) ? float.MaxValue : float.MinValue;
+
+            return result;
         }
     }
 }

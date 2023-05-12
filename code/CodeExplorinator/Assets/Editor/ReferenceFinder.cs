@@ -36,7 +36,7 @@ namespace CodeExplorinator
         {
             foreach (ClassData classData in classDatas)
             {
-                classData.ClearAllPublicMethodInvocations();
+                classData.ClearAllPublicMethodInvocations(); //what does this do?
             }
 
             IEnumerable<MethodInvocationData> allinvocations =
