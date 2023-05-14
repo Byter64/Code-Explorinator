@@ -8,6 +8,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.Graphs;
+using Codice.Client.BaseCommands.CheckIn;
 
 namespace CodeExplorinator
 {
@@ -27,6 +28,46 @@ namespace CodeExplorinator
         {
             AnalysedClasses = new List<ClassNode>();
             AnalysedMethods = new List<MethodNode>();
+        }
+
+        /// <summary>
+        /// Calculates the distance in a graph between two nodes
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <returns>the minimum amount of edges that need to be travelled to go from start to end node</returns>
+        public static int CalculateDistance(IEnumerable<ClassNode> graph, ClassNode start, ClassNode end)
+        {
+            if(start == end) { return 0; }
+
+            int depth = 0;
+            //This is not very nicely implemented
+            HashSet<ClassNode> oldRound = start.ingoingConnections.Concat(start.outgoingConnections).ToHashSet();
+            HashSet<ClassNode> newRound = new HashSet<ClassNode>();
+            while(depth < graph.Count()) // :/
+            {
+                depth++;
+
+                foreach(ClassNode node in oldRound)
+                {
+                    if(node == end)
+                    {
+                        goto CalculateDistanceEnd;
+                    }
+
+                    //Only add nodes to the next iteration which are not in the current one. 
+                    //This doesn't guarantee that one node is only stepped through once but it should still catch a notable amount of these cases
+                    newRound.UnionWith(node.ingoingConnections.Where(x => !oldRound.Contains(x)));
+                    newRound.UnionWith(node.outgoingConnections.Where(x => !oldRound.Contains(x)));
+                }
+
+                oldRound = newRound;
+                newRound = new HashSet<ClassNode>();
+            }
+
+            CalculateDistanceEnd:
+            return depth;
         }
 
         /// <summary>

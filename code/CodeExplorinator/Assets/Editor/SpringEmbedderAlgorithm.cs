@@ -164,8 +164,8 @@ namespace CodeExplorinator
                     node.position.x += cooling * node.F.x;
                     node.position.y += cooling * node.F.y;
 
-                    Debug.Log("Node " + node.ClassData.GetName() + ": " + node.position.x + "/" +
-                              node.position.y);
+                    //Debug.Log("Node " + node.ClassData.GetName() + ": " + node.position.x + "/" +
+                    //          node.position.y);
                 }
 
                 t++;

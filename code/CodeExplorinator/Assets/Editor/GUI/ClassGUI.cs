@@ -240,8 +240,9 @@ namespace CodeExplorinator
 
         private void TryAssignClickBehaviours()
         {
-            bodyClick ??= new ClickBehaviour(VisualElement, null, UpdateFocusClass);
-            headerClick ??= new ClickBehaviour(header, SwapExpandedCollapsed, UpdateFocusClass);
+            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
+            bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
+            headerClick ??= new ClickBehaviour(header, SwapExpandedCollapsed, SetFocusClass);
         }
 
         private void SwapExpandedCollapsed()
@@ -268,9 +269,15 @@ namespace CodeExplorinator
             }
         }
 
-        private void UpdateFocusClass()
+        private void SetFocusClass()
         {
-            graphManager.UpdateFocusClass(data);
+            graphManager.AddSelectedClass(data.ClassNode);
+            graphManager.FocusOnSelectedClasses();
+        }
+
+        private void AddClassToSelected()
+        {
+            graphManager.AddSelectedClass(data.ClassNode);
         }
 
         private Vector2Int CalculateBackgroundSize()

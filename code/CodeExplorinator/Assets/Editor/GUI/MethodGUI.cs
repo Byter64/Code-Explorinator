@@ -91,17 +91,12 @@ namespace CodeExplorinator
 
         private void TryAssignClickBehaviours()
         {
-            clickBehaviour ??= new ClickBehaviour(VisualElement, ActivateMethodLayer, Test);
+            clickBehaviour ??= new ClickBehaviour(VisualElement, ActivateMethodLayer, null);
         }
 
         private void ActivateMethodLayer()
         {
             graphManager.UpdateFocusMethod(data);
-        }
-
-        private void Test()
-        {
-            ShowBackground(true);
         }
 
         private Vector2Int CalculateBackgroundSize()

@@ -7,18 +7,16 @@ using UnityEditor;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UIElements;
-using UnityEngine.TextCore.Text;
-using UnityEditor.Graphs;
-using System;
 
 namespace CodeExplorinator
 {
     public class CodeExplorinatorGUI : EditorWindow
     {
+        public static bool isControlDown = false;
 
-        //Only exists to prevent garbage collection from deleting the dragBehaviour object
+        //Only exists to prevent garbage collection from deleting the dragBehaviour object. Might not even be necessary
         private DragBehaviour dragBehaviour;
-        //Only exists to prevent garbage collection from deleting the zoomBehaviour object
+        //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
         private ZoomBehaviour zoomBehaviour;
         private SearchRadiusSliderBehaviour sliderBehaviour;
         private GraphManager graphManager;
@@ -53,6 +51,18 @@ namespace CodeExplorinator
             sliderBehaviour = CreateSearchRadiusSlider(rootVisualElement, graphManager);
         }
 
+        private void OnGUI()
+        {
+            Event @event = Event.current;
+            if(@event.type == EventType.KeyDown && (@event.keyCode == KeyCode.LeftControl || @event.keyCode == KeyCode.RightControl))
+            {
+                isControlDown = true;
+            }
+            else if(@event.type == EventType.KeyUp && (@event.keyCode == KeyCode.LeftControl || @event.keyCode == KeyCode.RightControl))
+            {
+                isControlDown = false;
+            }
+        }
         private SearchRadiusSliderBehaviour CreateSearchRadiusSlider(VisualElement root, GraphManager graphManager)
         {
             SliderInt slider = new SliderInt(0, 10);
