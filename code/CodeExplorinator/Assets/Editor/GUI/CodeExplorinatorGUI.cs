@@ -18,8 +18,8 @@ namespace CodeExplorinator
         private DragBehaviour dragBehaviour;
         //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
         private ZoomBehaviour zoomBehaviour;
-        private SearchRadiusSliderBehaviour sliderBehaviour;
         private GraphManager graphManager;
+        private MenuGUI menu;
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
         {
@@ -48,31 +48,15 @@ namespace CodeExplorinator
             
             List<ClassData> classData = GenerateClassDataFromProject();
             graphManager = new GraphManager(classData, graph, 0);
-            sliderBehaviour = CreateSearchRadiusSlider(rootVisualElement, graphManager);
+
+            menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
+            menu.GenerateVisualElement();
+            rootVisualElement.Add(menu.VisualElement);
         }
 
         private void OnGUI()
         {
-            Event @event = Event.current;
-            if(@event.type == EventType.KeyDown && (@event.keyCode == KeyCode.LeftControl || @event.keyCode == KeyCode.RightControl))
-            {
-                isControlDown = true;
-            }
-            else if(@event.type == EventType.KeyUp && (@event.keyCode == KeyCode.LeftControl || @event.keyCode == KeyCode.RightControl))
-            {
-                isControlDown = false;
-            }
-        }
-        private SearchRadiusSliderBehaviour CreateSearchRadiusSlider(VisualElement root, GraphManager graphManager)
-        {
-            SliderInt slider = new SliderInt(0, 10);
-            SearchRadiusSliderBehaviour sliderBehaviour = new SearchRadiusSliderBehaviour(slider, graphManager, 0);
-            slider.style.position = new StyleEnum<Position>(Position.Absolute);
-            slider.style.marginLeft = 20;
-            slider.style.marginTop = 20;
-            root.Add(slider);
-
-            return sliderBehaviour;
+            CheckControlKeys();
         }
 
         private List<ClassData> GenerateClassDataFromProject()
@@ -122,6 +106,19 @@ namespace CodeExplorinator
             }
 
             return data;
+        }
+
+        public static void CheckControlKeys()
+        {
+            Event @event = Event.current;
+            if (@event.type == EventType.KeyDown && (@event.keyCode == KeyCode.LeftControl || @event.keyCode == KeyCode.RightControl))
+            {
+                isControlDown = true;
+            }
+            else if (@event.type == EventType.KeyUp && (@event.keyCode == KeyCode.LeftControl || @event.keyCode == KeyCode.RightControl))
+            {
+                isControlDown = false;
+            }
         }
     }
 }

@@ -10,13 +10,13 @@ namespace CodeExplorinator
     public class SearchRadiusSliderBehaviour : PointerManipulator
     {
         private int value = 2;
-        private GraphManager graphManager;
+        private MenuGUI menu;
         private SliderInt slider;
 
-        public SearchRadiusSliderBehaviour(SliderInt slider, GraphManager graphManager, int startValue)
+        public SearchRadiusSliderBehaviour(SliderInt slider, MenuGUI menu, int startValue)
         {
             this.slider = slider;
-            this.graphManager = graphManager;
+            this.menu = menu;
             target = slider;
             value = startValue;
             slider.value = startValue;
@@ -45,7 +45,7 @@ namespace CodeExplorinator
             if (slider.value != value)
             {
                 value = slider.value;
-                graphManager.UpdateReferenceDepth(value);
+                menu.SetShownDepth(value);
             }
 
             if (target.HasPointerCapture(context.pointerId))

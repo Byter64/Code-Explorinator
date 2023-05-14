@@ -13,13 +13,18 @@ namespace CodeExplorinator
     public class GraphManager
     {
         /// <summary>
+        /// all ClassNodes in the currently analyzed project
+        /// </summary>
+        public HashSet<ClassNode> ClassNodes { get; private set; }
+
+        /// <summary>
         /// the currently focused on focusNode in the oldFocusNode
         /// </summary>
         public ClassNode focusedClassNode;
 
-        public HashSet<ClassNode> focusedClassNodes;
+        private HashSet<ClassNode> focusedClassNodes;
 
-        public HashSet<ClassNode> selectedClassNodes;
+        private HashSet<ClassNode> selectedClassNodes;
 
         /// <summary>
         /// The currently focused methodNode in the oldFocusNode. This is null if the method layer is inactive
@@ -47,12 +52,7 @@ namespace CodeExplorinator
         private HashSet<MethodNode> shownMethodNodes;
 
         /// <summary>
-        /// all classNodes in the currently analyzed project
-        /// </summary>
-        private HashSet<ClassNode> classNodes;
-
-        /// <summary>
-        /// all classNodes within the maxDistance from focusedMethodNode
+        /// all ClassNodes within the maxDistance from focusedMethodNode
         /// </summary>
         private HashSet<ClassNode> shownClassNodes;
 
@@ -68,7 +68,7 @@ namespace CodeExplorinator
             this.shownDepth = shownDepth;
             this.graphRoot = graphRoot;
 
-            classNodes = new HashSet<ClassNode>();
+            ClassNodes = new HashSet<ClassNode>();
             methodNodes = new HashSet<MethodNode>();
             shownMethodNodes = new HashSet<MethodNode>();
             classGraphs = new List<ClassGraph>();
@@ -77,11 +77,11 @@ namespace CodeExplorinator
             //populate the lists with data
             foreach (ClassData @class in data)
             {
-                classNodes.Add(GenerateNode(@class));
+                ClassNodes.Add(GenerateNode(@class));
             }
 
-            ClassNode.CopyRerefencesFromClassData(classNodes);
-            foreach (ClassNode classNode in classNodes)
+            ClassNode.CopyRerefencesFromClassData(ClassNodes);
+            foreach (ClassNode classNode in ClassNodes)
             {
                 foreach (MethodGUI methodGUI in classNode.classGUI.methodGUIs)
                 {
@@ -96,7 +96,7 @@ namespace CodeExplorinator
             shownConnections = new List<ConnectionGUI>();
 
             //Assign first focused class
-            UpdateFocusClass(classNodes.Where(x => x.ClassData.GetName().ToLower().Contains("classdata")).First().ClassData);
+            UpdateFocusClass(ClassNodes.Where(x => x.ClassData.GetName().ToLower().Contains("classdata")).First().ClassData);
         }
 
         #region NEWSHIT
@@ -107,9 +107,20 @@ namespace CodeExplorinator
 
         public void FocusOnSelectedClasses()
         {
+            focusedClassNodes.Clear();
+            focusedClassNodes.UnionWith(selectedClassNodes);
             ChangeGraph(selectedClassNodes, shownDepth);
-            focusedClassNodes = selectedClassNodes;
             selectedClassNodes.Clear();
+        }
+
+        /// <summary>
+        /// Changes the maxDistance and adapts the UI to it
+        /// </summary>
+        /// <param name="depth"></param>
+        public void ChangeDepth(int depth)
+        {
+            shownDepth = depth;
+            ChangeGraph(focusedClassNodes, depth);
         }
 
         private void ChangeGraph(HashSet<ClassNode> focusClasses, int shownDepth)
@@ -133,7 +144,7 @@ namespace CodeExplorinator
         private void UpdateSubGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
         {
             classGraphs.Clear();
-            classGraphs = GenerateOptimalSubgraphs(classNodes, focusClasses, shownDepth);
+            classGraphs = GenerateOptimalSubgraphs(ClassNodes, focusClasses, shownDepth);
         }
 
         private void AddGraphGUI()
@@ -229,20 +240,6 @@ namespace CodeExplorinator
         }
 
         /// <summary>
-        /// Changes the maxDistance and adapts the UI to it
-        /// </summary>
-        /// <param name="depth"></param>
-        public void UpdateReferenceDepth(int depth)
-        {
-            shownDepth = depth;
-            ChangeGraph(focusedClassNodes, depth);
-
-            //Old. can be deleted as soon as the new methods for multiple focusclasses work
-            //shownDepth = depth;
-            //RedrawGraph();
-        }
-
-        /// <summary>
         /// Changes the focus method and adapths the UI to it
         /// </summary>
         /// <param name="methodData"></param>
@@ -268,7 +265,7 @@ namespace CodeExplorinator
         /// </summary>
         private void RedrawNodes()
         {
-            shownClassNodes = BreadthSearch.GenerateClassSubgraph(classNodes, focusedClassNode, shownDepth);
+            shownClassNodes = BreadthSearch.GenerateClassSubgraph(ClassNodes, focusedClassNode, shownDepth);
             SpringEmbedderAlgorithm.StartAlgorithm(shownClassNodes.ToList(), 100000, 1000);
             AppendShownNodesToGraphRoot();
         }
@@ -484,11 +481,11 @@ namespace CodeExplorinator
         }
 
         /// <summary>
-        /// Adds all VisualElements that are classNodes to the editor Window
+        /// Adds all VisualElements that are ClassNodes to the editor Window
         /// </summary>
         private void AppendShownNodesToGraphRoot()
         {
-            foreach (ClassNode node in classNodes)
+            foreach (ClassNode node in ClassNodes)
             {
                 if (graphRoot == node.classGUI.VisualElement.parent)
                 {
@@ -568,32 +565,6 @@ namespace CodeExplorinator
             }
 
             return classNodes;
-        }
-
-        public void AddNode(ClassNode node)
-        {
-            classNodes.Add(node);
-        }
-
-        public void AddNodes(IEnumerable<ClassNode> nodes)
-        {
-            foreach (ClassNode node in nodes)
-            {
-                this.classNodes.Add(node);
-            }
-        }
-
-        public void RemoveNode(ClassNode node)
-        {
-            classNodes.Remove(node);
-        }
-
-        public void RemoveNodes(IEnumerable<ClassNode> nodes)
-        {
-            foreach (ClassNode node in nodes.Where(x => this.classNodes.Contains(x)))
-            {
-                this.classNodes.Remove(node);
-            }
         }
     }
 }

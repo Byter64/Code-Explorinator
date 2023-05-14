@@ -17,7 +17,7 @@ namespace CodeExplorinator
         #region Test4
 
         /*
-    [MenuItem("Test/Test4")]
+    [MenuItem("KeyDownHandler/Test4")]
     public static void Test3()
     {
         string[] allCSharpScripts =
