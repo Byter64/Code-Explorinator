@@ -5,6 +5,7 @@ Erledigt:
 - tested if explicit parameters work
 
 Dringend:
+- multiple selection fixen (shift drücken wird weird erkannt) & man kann nicht suchen und danach noch mehr sachen auswählen
 
 Extras:
 - method overrides oder implementation references still need to be shown
