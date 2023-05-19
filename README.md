@@ -1,3 +1,6 @@
+- implemented interfaces etc. |
+| - improved spring embedder |
+
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
 `All final deliverables (code, executable game, report, trailer and poster) have to be committed, tagged as final and pushed to your GitLab repository.`
@@ -5,8 +8,6 @@
 # GameLab Project Repository
 
 |  General Info  |  |
-| - implemented interfaces etc. |
-| - improved spring embedder |
 |   |
 | ---|---|
 | Working Title | `Code Explorinator` |
