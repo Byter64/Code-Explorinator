@@ -8,6 +8,10 @@ Dringend:
 Extras:
 - method overrides oder implementation references still need to be shown
 
+Arbeitszeiten:
+19.05.23:
+10:00-15:00 Uhr: Springalgorithmus drüber geschaut, Mehrfachauswahl für Methodenebene angefangen (Y)
+
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
 `All final deliverables (code, executable game, report, trailer and poster) have to be committed, tagged as final and pushed to your GitLab repository.`
