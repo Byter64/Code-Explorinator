@@ -96,7 +96,8 @@ namespace CodeExplorinator
             shownConnections = new List<ConnectionGUI>();
 
             //Assign first focused class
-            UpdateFocusClass(ClassNodes.Where(x => x.ClassData.GetName().ToLower().Contains("classdata")).First().ClassData);
+            AddSelectedClass(ClassNodes.Where(x => x.ClassData.GetName().ToLower().Contains("classdata")).First());
+            FocusOnSelectedClasses();
         }
 
         #region NEWSHIT
@@ -230,16 +231,6 @@ namespace CodeExplorinator
         #endregion
 
         /// <summary>
-        /// Changes the focus class and adapts the UI to it
-        /// </summary>
-        /// <param name="classData"></param>
-        public void UpdateFocusClass(ClassData classData)
-        {
-            focusedClassNodes = new HashSet<ClassNode>() { classData.ClassNode };
-            ChangeGraph(focusedClassNodes, shownDepth);
-        }
-
-        /// <summary>
         /// Changes the focus method and adapths the UI to it
         /// </summary>
         /// <param name="methodData"></param>
@@ -249,115 +240,6 @@ namespace CodeExplorinator
             RedrawMethodGraph();
             focusedMethodNode.MethodData.ContainingClass.ClassNode.classGUI.VisualElement.BringToFront();
         }
-
-        /// <summary>
-        /// Redraws all VisualElements within the oldFocusNode
-        /// </summary>
-        private void RedrawGraph()
-        {
-            BreadthSearch.Reset();
-            RedrawNodes();
-            RedrawConnections();
-        }
-
-        /// <summary>
-        /// Redraws all VisualElements that are nodes
-        /// </summary>
-        private void RedrawNodes()
-        {
-            shownClassNodes = BreadthSearch.GenerateClassSubgraph(ClassNodes, focusedClassNode, shownDepth);
-            SpringEmbedderAlgorithm.StartAlgorithm(shownClassNodes.ToList(), 100000, 1000);
-            AppendShownNodesToGraphRoot();
-        }
-
-        /// <summary>
-        /// Redraws all VisualElements that are connections
-        /// </summary>
-        private void RedrawConnections()
-        {
-            RemoveConnectionsFromGraphRoot();
-            shownConnections.Clear();
-
-            foreach (ClassNode foot in shownClassNodes)
-            {
-                if (foot.IsLeaf)
-                {
-                    foreach (ClassNode tip in foot.outgoingConnections)
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        VisualElement shownTip = shownClassNodes.Contains(tip) ? tip.classGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            shownTip);
-                        connection.GenerateVisualElement();
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (ClassNode tip in foot.ingoingConnections) //tip and foot here have opposite meanings
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        VisualElement shownTip = shownClassNodes.Contains(tip) ? tip.classGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(shownTip,
-                            foot.classGUI.VisualElement);
-                        connection.GenerateVisualElement();
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
-                    {
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            shownClassNodes.Contains(parent.ClassNode)
-                                ? parent.ClassNode.classGUI.VisualElement
-                                : null);
-                        connection.GenerateVisualElement(true);
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (var child in
-                             foot.ClassData.ChildClasses) //tip(aka child) and foot here have opposite meanings
-                    {
-                        ConnectionGUI connection = new ConnectionGUI(
-                            shownClassNodes.Contains(child.ClassNode) ? child.ClassNode.classGUI.VisualElement : null,
-                            foot.classGUI.VisualElement);
-                        connection.GenerateVisualElement(true);
-                        shownConnections.Add(connection);
-                    }
-                }
-                else
-                {
-                    foreach (ClassNode tip in foot.outgoingConnections)
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        ConnectionGUI connection =
-                            new ConnectionGUI(foot.classGUI.VisualElement, tip.classGUI.VisualElement);
-                        connection.GenerateVisualElement();
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
-                    {
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            parent.ClassNode.classGUI.VisualElement);
-                        connection.GenerateVisualElement(true);
-                        shownConnections.Add(connection);
-                    }
-                }
-            }
-
-            AppendShownConnectionsToGraphRoot();
-        }
-
 
         /// <summary>
         /// Draws the method layer
