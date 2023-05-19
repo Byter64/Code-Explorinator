@@ -3,6 +3,7 @@ Erledigt:
 - improved spring embedder
 - explicit interface implementation supported
 - tested if explicit parameters work
+-  => syntax für methoden unterstützt
 
 Dringend:
 - multiple selection fixen (shift drücken wird weird erkannt) & man kann nicht suchen und danach noch mehr sachen auswählen
