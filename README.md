@@ -6,6 +6,7 @@ Erledigt:
 Dringend:
 
 Extras:
+- method overrides oder implementation references still need to be shown
 
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
