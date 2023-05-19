@@ -267,7 +267,7 @@ namespace CodeExplorinator
         {
             Vector2 direction = (v.position - u.position);
 
-            //factor = repulsionContant / (direction.magnitude²)
+            //factor = repulsionContant / (direction.magnitudeï¿½)
             float factor = direction.magnitude * direction.magnitude;
             factor = (factor == 0) ? float.Epsilon : factor;
             
@@ -301,7 +301,7 @@ namespace CodeExplorinator
         /// <param name="attractionConstant"></param>
         /// <param name="idealSpringLength"></param>
         /// <returns></returns>
-       private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 4f,
+       private static Vector2 ForceSpring(ClassNode u, ClassNode v, float attractionConstant = 4f,
             float idealSpringLength = 6000f) //500 is ca. the height of the standard class
         {
             if (idealSpringLength == 0) idealSpringLength = float.Epsilon;
