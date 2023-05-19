@@ -7,8 +7,7 @@
 
 # GameLab Project Repository
 
-|  General Info  |  |
-|   |
+|  General Info  | |
 | ---|---|
 | Working Title | `Code Explorinator` |
 | Final Title | `Edit me!` |
