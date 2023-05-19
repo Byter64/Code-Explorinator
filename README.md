@@ -1,6 +1,7 @@
 Erledigt:
 - implemented interfaces etc.
 - improved spring embedder
+- explicit interface implementation supported
 
 Dringend:
 
