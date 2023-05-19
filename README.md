@@ -1,5 +1,10 @@
-- implemented interfaces etc. |
-| - improved spring embedder |
+Erledigt:
+- implemented interfaces etc.
+- improved spring embedder
+
+Dringend:
+
+Extras:
 
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
