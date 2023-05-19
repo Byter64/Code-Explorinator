@@ -2,6 +2,7 @@ Erledigt:
 - implemented interfaces etc.
 - improved spring embedder
 - explicit interface implementation supported
+- tested if explicit parameters work
 
 Dringend:
 
@@ -11,6 +12,7 @@ Extras:
 Arbeitszeiten:
 19.05.23:
 10:00-15:00 Uhr: Springalgorithmus drüber geschaut, Mehrfachauswahl für Methodenebene angefangen (Y)
+10:00-15:00 Uhr: interfaces/records/structs implementiert, spring algo verbessert, getestet ob explizite parameter und explizite interfaces funktionieren, modifier testen angefangen (V)
 
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
