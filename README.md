@@ -4,7 +4,10 @@
 
 # GameLab Project Repository
 
-|  General Info  | |
+|  General Info  |  |
+| - implemented interfaces etc. |
+| - improved spring embedder |
+|   |
 | ---|---|
 | Working Title | `Code Explorinator` |
 | Final Title | `Edit me!` |
