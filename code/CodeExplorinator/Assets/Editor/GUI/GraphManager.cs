@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = System.Random;
 
 namespace CodeExplorinator
 {
@@ -62,6 +63,11 @@ namespace CodeExplorinator
         private List<ConnectionGUI> shownConnections;
 
         private List<ClassGraph> classGraphs;
+        
+        /// <summary>
+        /// random with a seed to spawn the classes random, but always on the same spot (i chose the seed number randomly)
+        /// </summary>
+        private Random random = new Random(0987653); 
 
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
@@ -268,7 +274,7 @@ namespace CodeExplorinator
 
             shownClassNodes = FindClassNodes(shownMethodNodes);
 
-            SpringEmbedderAlgorithm.StartMethodAlgorithm(shownClassNodes, shownMethodNodes, 100000, 1000);
+            SpringEmbedderAlgorithm.StartMethodAlgorithm(shownClassNodes, shownMethodNodes);
             AppendShownNodesToGraphRoot();
         }
 
@@ -399,10 +405,12 @@ namespace CodeExplorinator
             GUIStyle methodStyle = new GUIStyle(classStyle);
             methodStyle.alignment = TextAnchor.UpperLeft;
 
+            
+            
             //The ClassGUI should not be generated in here but should rather be given to this method as a parameter!!!!
             ClassGUI classGUI = new ClassGUI(
-                new Vector2(UnityEngine.Random.Range(-50, 50) - graphRoot.style.marginLeft.value.value,
-                    UnityEngine.Random.Range(-50, 50) - graphRoot.style.marginTop.value.value), classData, classStyle,
+                new Vector2(random.Next(-500, 500) - graphRoot.style.marginLeft.value.value,
+                    random.Next(-500, 500) - graphRoot.style.marginTop.value.value), classData, classStyle,
                 methodStyle, methodStyle, this);
             ClassNode node = new ClassNode(classData, classGUI);
             classData.ClassNode = node;

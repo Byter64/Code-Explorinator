@@ -267,6 +267,7 @@ namespace CodeExplorinator
             SEALED,
             RECORD,
             STRUCT,
+            INTERFACE,
 
             PARTIAL //not implemented
         }
@@ -319,7 +320,7 @@ namespace CodeExplorinator
 
             if (ClassInformation.IsAbstract)
             {
-                ClassModifiersList.Add(ClassModifiers.ABSTRACT);
+                ClassModifiersList.Add((ClassInformation.TypeKind == TypeKind.Interface) ? ClassModifiers.INTERFACE : ClassModifiers.ABSTRACT);
             }
 
             if (ClassInformation.IsSealed)

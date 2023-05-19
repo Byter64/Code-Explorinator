@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = UnityEngine.Random;
 
 
 namespace CodeExplorinator
 {
     public static class SpringEmbedderAlgorithm
     {
-        
-        public static void StartAlgorithm(List<ClassNode> nodes, double threshold, int iterations)
+
+        //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
+        public static void StartAlgorithm(List<ClassNode> nodes, double threshold = 0.01, int iterations = 1000)
         {
             int t = 1;
 
@@ -19,15 +21,8 @@ namespace CodeExplorinator
 
             while (t <= iterations)
             {
-                foreach (var node in nodes)
-                {
-                    if (node.F.magnitude > threshold)
-                    {
-                        return;
-                    }
-                }
+                
 
-                //Berechne für alle Knoten die insgesamte Kraft, die auf sie wirkt
                 foreach (var node in nodes)
                 {
                     Vector2 resultRepulsion = Vector2.zero;
@@ -35,22 +30,38 @@ namespace CodeExplorinator
 
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
-                        //Anziehung 
+                        //the force of attraction
                         resultSpring += ForceSpring(connectedNode, node);
                     }
 
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
-                        //Abstoßung
+                        //the force of repulsion
                         resultRepulsion += ForceRepulsion(notConnectedNode, node);
                     }
 
-                    node.F = resultRepulsion + resultSpring;
+                    node.F = (resultRepulsion + resultSpring);
                 }
+                
+                float maxForce = 0;
+                
+                foreach (var node in nodes) //checking if the forces are small, aka if the graph has stabilized, to end the calculations
+                {
+                    if (maxForce < node.F.magnitude)
+                    {
+                        maxForce = node.F.magnitude;
+                    }
+                }
+                
+                if (maxForce < threshold)
+                {
+                    Debug.Log("we stopped the spring algo at " + t + " iterations");
+                    return;
+                }
+                
 
                 float cooling = coolingFactor(t, iterations);
 
-                //Wende die Kraft auf die Position (als Geschwindigkeit??) an
                 foreach (var node in nodes)
                 {
                     node.position.x += cooling * node.F.x;
@@ -62,7 +73,7 @@ namespace CodeExplorinator
                 t++;
             }
 
-            //Aktualisier Position auf VisualElements
+            //set the position for the visual elements
             //as we incorporated the height and width into the Node.position Vector2, we now have to undo this:
             foreach (var node in nodes)
             {
@@ -122,7 +133,7 @@ namespace CodeExplorinator
         }
 
         public static void StartMethodAlgorithm(HashSet<ClassNode> nodes, HashSet<MethodNode> allMethods,
-            double threshold, int iterations)
+            double threshold = 0.01, int iterations = 1000)
         {
             int t = 1;
 
@@ -130,13 +141,7 @@ namespace CodeExplorinator
 
             while (t <= iterations)
             {
-                foreach (var node in nodes)
-                {
-                    if (node.F.magnitude > threshold)
-                    {
-                        return;
-                    }
-                }
+                
 
                 foreach (var node in nodes)
                 {
@@ -161,6 +166,23 @@ namespace CodeExplorinator
 
                     node.F = resultRepulsion + resultSpring;
                 }
+                
+                float maxForce = 0;
+                
+                foreach (var node in nodes) //checking if the forces are small, aka if the graph has stabilized, to end the calculations
+                {
+                    if (maxForce < node.F.magnitude)
+                    {
+                        maxForce = node.F.magnitude;
+                    }
+                }
+                
+                if (maxForce < threshold)
+                {
+                    Debug.Log("we stopped the spring algo at " + t + " iterations");
+                    return;
+                }
+                
 
                 float cooling = coolingFactor(t, iterations);
 
@@ -241,7 +263,7 @@ namespace CodeExplorinator
         /// <param name="v"></param>
         /// <param name="repulsionConstant"></param>
         /// <returns></returns>
-        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v, float repulsionConstant = 4f)
+        private static Vector2 ForceRepulsion(ClassNode u, ClassNode v, float repulsionConstant = 40f)
         {
             Vector2 direction = (v.position - u.position);
 
@@ -261,14 +283,14 @@ namespace CodeExplorinator
             return result;
         }
 
-        private static float coolingFactor(int t, int iterations, int coolingSpeed = 3)
+        private static float coolingFactor(int t, int iterations, float coolingSpeed = 0.5f)
         {
             //if half the iterationnumber is reached, the force becomes weaker
 
             if (t == 0) return 1;
             if (coolingSpeed == 0) return 1;
 
-            return iterations % (coolingSpeed * t);
+            return iterations / (coolingSpeed * t);
         }
 
         /// <summary>
@@ -279,7 +301,8 @@ namespace CodeExplorinator
         /// <param name="attractionConstant"></param>
         /// <param name="idealSpringLength"></param>
         /// <returns></returns>
-        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float attractionConstant = 1.6f, float idealSpringLength = 600f) //the bigger the ideal length, the shorter the lines; 500 is ca. the height of the standard class / the smaller the norm the stronger the force
+       private static Vector2 ForceSpring(ClassNode u, ClassNode v, float normFactor = 4f,
+            float idealSpringLength = 6000f) //500 is ca. the height of the standard class
         {
             if (idealSpringLength == 0) idealSpringLength = float.Epsilon;
 

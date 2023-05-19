@@ -457,6 +457,14 @@ namespace CodeExplorinator
 
             foreach (FieldData fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
             {
+                /* TODO WORK IN PROGRESS
+                if (fieldData.FieldSymbol.Type.)
+                {
+                    Debug.Log(fieldData.GetName() + " is a generic type");
+                    continue;
+                }
+                */
+                
                 foreach (ClassData referencedClass in classDatas)
                 {
                     //if the class is referenced by this field set information

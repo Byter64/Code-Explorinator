@@ -50,7 +50,7 @@ namespace CodeExplorinator
 
         private void DoAutoLayout()
         {
-            SpringEmbedderAlgorithm.StartAlgorithm(classNodes.ToList(), 100000, 1000);
+            SpringEmbedderAlgorithm.StartAlgorithm(classNodes.ToList());
         }
 
         private void GenerateVisualElementGraph()
