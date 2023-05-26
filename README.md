@@ -28,10 +28,16 @@ Für nach der Expo:
 - Delegate unterstützen
 - dictionaries einbauen, code umstrukturieren, symbolfinder benutzen (SymbolFinder.FindReferencesAsync/.FindOverridesAsync/.FindImplementedInterfaceMembersAsync/.FindImplementationsAsync)
 
-Arbeitszeiten:
+**Arbeitszeiten:**
 19.05.23:
+
 10:00-15:00 Uhr: Springalgorithmus drüber geschaut, Mehrfachauswahl für Methodenebene angefangen (Y)
+
 10:00-15:00 Uhr: interfaces/records/structs implementiert, spring algo verbessert, getestet ob explizite parameter und explizite interfaces funktionieren, modifier testen angefangen (V)
+
+26.05.23:
+
+10:00-14:00: Bug bei Merfachauswahl gefixt, weiter an Methodenebene gearbeitet (Y)
 
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
