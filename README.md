@@ -6,7 +6,6 @@ Erledigt:
 -  => syntax für methoden unterstützt
 
 Dringend:
-- BUG: multiple selection fixen (shift drücken wird weird erkannt) & man kann nicht suchen und danach noch mehr sachen auswählen
 - Methodenebene hinzufügen
 - Vererbung von Methoden unterstützen
 - Alle Modifier unterstützen
