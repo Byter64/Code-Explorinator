@@ -154,32 +154,12 @@ namespace CodeExplorinator
             {
                 FieldModifiersList.Add(FieldModifiers.STATIC);
             }
-            
-            if (FieldSymbol.IsAbstract)
-            {
-                FieldModifiersList.Add(FieldModifiers.ABSTRACT);
-            }
 
             if (FieldSymbol.IsExtern)
             {
                 FieldModifiersList.Add(FieldModifiers.EXTERN);
             }
 
-            if ( FieldSymbol.IsOverride)
-            {
-                FieldModifiersList.Add(FieldModifiers.OVERRIDE);
-            }
-
-            if (FieldSymbol.IsSealed)
-            {
-                FieldModifiersList.Add(FieldModifiers.SEALED);
-            }
-
-            if (FieldSymbol.IsVirtual)
-            {
-                FieldModifiersList.Add(FieldModifiers.VIRTUAL);
-            }
-            
             if ( FieldSymbol.IsReadOnly)
             {
                 FieldModifiersList.Add(FieldModifiers.READONLY);
@@ -195,30 +175,22 @@ namespace CodeExplorinator
                 FieldModifiersList.Add(FieldModifiers.VOLATILE);
             }
             
-
-            //dunno what this does but it sounds like we could use it:
-            //MethodSymbol.IsConditional;
-            //MethodSymbol.IsVararg;
-            //MethodSymbol.IsExtensionMethod;
         }
 
         public enum FieldModifiers
         {
             STATIC,
-            ABSTRACT,
-            CONST,
-            OVERRIDE,
-            READONLY,
-            SEALED,
-            VOLATILE,
-            VIRTUAL,
-            EXTERN,
+            CONST, 
+            READONLY, 
+            VOLATILE, 
+            EXTERN, //i guess this could exist but i havent managed to make it work
             
-            NEW, //not implemented
-            FIXED, //not implemented
-            UNSAFE, //not implemented
+            NEW, //not implemented, but exists
+            FIXED, //not implemented, but exists
+            UNSAFE, //not implemented, doesnt work cuz not enabled in compiler
             
             //not sure if these count:
+            //(event must be of delegate type)
             EVENT
             
         }

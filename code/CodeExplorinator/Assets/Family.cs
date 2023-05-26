@@ -9,4 +9,9 @@ public interface Family
         Mom mom;
         mom = new Mom();
     }
+
+    public void fjkasndf()
+    {
+        
+    }
 }

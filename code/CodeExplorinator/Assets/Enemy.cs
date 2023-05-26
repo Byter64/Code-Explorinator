@@ -21,6 +21,8 @@ public abstract class Enemy : MonoBehaviour
     uint actionCounter;
     public string noteFromPlayer;
     private Player player;
+    
+    public abstract void mlem();
 
     void Start()
     {

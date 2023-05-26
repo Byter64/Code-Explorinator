@@ -105,7 +105,7 @@ namespace CodeExplorinator
                 string result = "";
                 foreach (ClassModifiers modifier in ClassModifiersList)
                 {
-                    result += modifier.ToString() + " ";
+                    result += modifier + " ";
                 }
 
                 //If not empty, remove the last space
@@ -269,7 +269,7 @@ namespace CodeExplorinator
             STRUCT,
             INTERFACE,
 
-            PARTIAL //not implemented
+            PARTIAL //only implementable with var isPartial = classDeclaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         }
 
         public void ClearAllPublicMethodInvocations()
@@ -325,7 +325,8 @@ namespace CodeExplorinator
 
             if (ClassInformation.IsSealed)
             {
-                ClassModifiersList.Add(ClassModifiers.SEALED);
+                ClassModifiersList.Add((ClassInformation.IsReferenceType)? ClassModifiers.SEALED : ClassModifiers.STRUCT);
+                
             }
 
             if (ClassInformation.IsRecord)
@@ -333,9 +334,10 @@ namespace CodeExplorinator
                 ClassModifiersList.Add(ClassModifiers.RECORD);
             }
 
-            if (!ClassInformation.IsReferenceType)
+            if (ClassInformation.DeclaringSyntaxReferences.Length > 1) //https://github.com/dotnet/roslyn/issues/19386 
             {
-                ClassModifiersList.Add(ClassModifiers.STRUCT);
+                //if the class is declared as partial but not declared twice, it doesnt get recognised as partial
+                ClassModifiersList.Add(ClassModifiers.PARTIAL); 
             }
         }
     }

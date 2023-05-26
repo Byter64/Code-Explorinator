@@ -1,12 +1,13 @@
 using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
     public static Player instance;
-    public string nickname { get; private set; }
+    public virtual string nickname { get;  set; }
 
     private int health;
     private int maxHealth;
@@ -35,6 +36,11 @@ public class Player : MonoBehaviour
         {
             Die();
         }
+    }
+
+    public virtual void Help()
+    {
+        
     }
 
     private bool IsDead()

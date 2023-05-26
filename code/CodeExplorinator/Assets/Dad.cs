@@ -2,9 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Dad
+public static class Dad
 {
-  public Player son;
-  public Mom fiance;
-  public Sister daughter;
+  public static Player son;
+  public  static Mom fiance;
+  public static Sister daughter;
+
+  public static void dfasjkfd()
+  {
+    
+  }
 }

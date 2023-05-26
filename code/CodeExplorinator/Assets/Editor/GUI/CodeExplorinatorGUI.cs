@@ -61,7 +61,7 @@ namespace CodeExplorinator
 
         private List<ClassData> GenerateClassDataFromProject()
         {
-            //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
+            //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
 
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
@@ -87,7 +87,18 @@ namespace CodeExplorinator
             }
             
             ReferenceFinder.RefillAllReferences(classDatas,compilation);
+            
+            /*
+            TODO: we need for that: Microsoft.CodeAnalysis.Workspaces.MSBuild
+             
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            Solution solution = await workspace.OpenSolutionAsync(nancyApp);
+            
+            var solution = Solution.Create(SolutionId.CreateNewId()).AddCSharpProject("Foo", "Foo").Solution;
 
+            Roslyn.Services.Workspace.LoadSolution
+            */
+            
             return classDatas;
         }
         
