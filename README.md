@@ -38,6 +38,7 @@ Für nach der Expo:
 26.05.23:
 
 10:00-14:00: Bug bei Merfachauswahl gefixt, weiter an Methodenebene gearbeitet (Y)
+10:00-15:00: Testing, angefangen override und implement von Methoden zu implementieren, einen Modifier implementiert (V)
 
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
