@@ -7,16 +7,15 @@ Erledigt:
 
 Dringend:
 - Methodenebene hinzufügen
-- Vererbung von Methoden unterstützen
-- Alle Modifier unterstützen
 - Fokusklassen sollen am selben Ort bleiben
 - anordnung verbessern
 
 Wichtig:
 - Einstellungen des Nutzers abspeichern
+- Vererbung von Methoden unterstützen
+- Alle Modifier unterstützen (fixed, new, unsafe and event dont work)
 
 Extras:
-- method overrides oder implementation references still need to be shown
 - Fokussierte Klassen/Methoden hervorheben
 - Warnung einabuen, dass Dateien mit Sonderzeichen mit der richtigen Codierung abgespeichert gemeint
 - compiler fragen, ob kompilierbar, falls nicht, evtl nur ein teilprojekt anzeigen (oder halt einfach sagen ne machen wir nicht)
