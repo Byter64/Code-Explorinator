@@ -26,6 +26,7 @@ Für nach der Expo:
 - Typkonvertierung unterstützen
 - Operatorenüberladung unterstützen
 - Delegate unterstützen
+- dictionaries einbauen, code umstrukturieren, symbolfinder benutzen (SymbolFinder.FindReferencesAsync/.FindOverridesAsync/.FindImplementedInterfaceMembersAsync/.FindImplementationsAsync)
 
 Arbeitszeiten:
 19.05.23:
