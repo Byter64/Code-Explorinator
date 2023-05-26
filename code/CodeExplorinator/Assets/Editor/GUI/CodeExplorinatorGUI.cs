@@ -86,12 +86,6 @@ namespace CodeExplorinator
                 classDatas.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
             
-            /*
-            ReferenceFinder.ReFillAllPublicMethodReferences(classDatas, compilation);
-            ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
-            ReferenceFinder.ReFillAllPublicPropertyAccesses(classDatas, compilation);
-            ReferenceFinder.ReFillAllClassReferences(classDatas, compilation);
-            */
             ReferenceFinder.RefillAllReferences(classDatas,compilation);
 
             return classDatas;
@@ -119,6 +113,11 @@ namespace CodeExplorinator
             {
                 isControlDown = false;
             }
+        }
+
+        public static void SetControlKey(bool isPressed)
+        {
+            isControlDown = isPressed;
         }
     }
 }

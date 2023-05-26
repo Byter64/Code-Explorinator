@@ -1,4 +1,5 @@
 
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,17 +13,17 @@ namespace CodeExplorinator
         private Dictionary<string, ClassNode> classNodes;
         private Dictionary<string, SearchListEntry> searchListEntries;
         private ScrollView scrollView;
-        private SearchRadiusSliderBehaviour slider;
+        private Slider classDepthSlider;
+        private Slider methodDepthSlider;
         private TextField searchInput;
         private Vector2Int size;
+
         public MenuGUI(GraphManager graphManager, Vector2Int size) : base(graphManager) 
         {
             this.size = size;
 
             classNodes = new Dictionary<string, ClassNode>();
             searchListEntries = new Dictionary<string, SearchListEntry>();
-            searchInput = new TextField();
-            searchInput.RegisterCallback<KeyDownEvent>(KeyDownHandler);
             UpdateDataBase();
         }
 
@@ -35,12 +36,27 @@ namespace CodeExplorinator
             VisualElement.style.height = size.y;
             VisualElement.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
 
-            slider = CreateSearchRadiusSlider();
-            VisualElement.Add(slider.target);
+            #region Sliders
+
+            classDepthSlider = new Slider(0, 10, 0, SetClassDepth);
+            methodDepthSlider = new Slider(0, 10, 0, SetMethodDepth);
+            RegisterControlKeyChecks(classDepthSlider.target);
+            RegisterControlKeyChecks(methodDepthSlider.target);
+            VisualElement.Add(new Label("Class Depth"));
+            VisualElement.Add(classDepthSlider.target);
+            VisualElement.Add(new Label("Method Depth"));
+            VisualElement.Add(methodDepthSlider.target);
+
+            #endregion
+
 
             Label searchtext = new Label("Search");
             searchtext.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             VisualElement.Add(searchtext);
+
+            searchInput = new TextField();
+            searchInput.RegisterCallback<KeyDownEvent>(KeyDownHandler);
+            RegisterControlKeyChecks(searchInput);
             VisualElement.Add(searchInput);
 
             scrollView = new ScrollView();
@@ -81,9 +97,14 @@ namespace CodeExplorinator
             }
         }
 
-        public void SetShownDepth(int depth)
+        public void SetClassDepth(int depth)
         {
-            graphManager.ChangeDepth(depth);
+            graphManager.ChangeClassDepth(depth);
+        }
+
+        public void SetMethodDepth(int depth)
+        {
+            graphManager.ChangeMethodDepth(depth);
         }
 
         private void KeyDownHandler(KeyDownEvent context)
@@ -119,14 +140,10 @@ namespace CodeExplorinator
             }
         }
 
-        private SearchRadiusSliderBehaviour CreateSearchRadiusSlider()
+        private void RegisterControlKeyChecks(VisualElement target)
         {
-            SliderInt slider = new SliderInt(0, 10);
-            SearchRadiusSliderBehaviour sliderBehaviour = new SearchRadiusSliderBehaviour(slider, this, 0);
-            slider.style.marginBottom = 20;
-            slider.style.marginTop = 20;
-
-            return sliderBehaviour;
+            target.RegisterCallback<KeyDownEvent>((KeyDownEvent x) => { CodeExplorinatorGUI.SetControlKey(true); });
+            target.RegisterCallback<KeyUpEvent>((KeyUpEvent x) => { CodeExplorinatorGUI.SetControlKey(false); });
         }
     }
 }
