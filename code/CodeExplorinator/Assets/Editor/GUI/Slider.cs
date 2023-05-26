@@ -1,25 +1,24 @@
 using CodeExplorinator;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
+using System;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
 {
-    public class SearchRadiusSliderBehaviour : PointerManipulator
+    public class Slider : PointerManipulator
     {
         private int value = 2;
-        private MenuGUI menu;
+        private Action<int> onValueChange;
         private SliderInt slider;
 
-        public SearchRadiusSliderBehaviour(SliderInt slider, MenuGUI menu, int startValue)
+        public Slider(int min, int max, int startValue, Action<int> onValueChange)
         {
-            this.slider = slider;
-            this.menu = menu;
+            slider = new SliderInt(min, max);
             target = slider;
+
             value = startValue;
             slider.value = startValue;
+
+            this.onValueChange = onValueChange;
         }
 
         protected override void RegisterCallbacksOnTarget()
@@ -45,7 +44,7 @@ namespace CodeExplorinator
             if (slider.value != value)
             {
                 value = slider.value;
-                menu.SetShownDepth(value);
+                onValueChange.Invoke(value);
             }
 
             if (target.HasPointerCapture(context.pointerId))

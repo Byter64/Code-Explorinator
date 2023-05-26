@@ -45,7 +45,7 @@ namespace CodeExplorinator
         private Texture2D backgroundTexture;
         private ClickBehaviour clickBehaviour;
 
-        public MethodGUI(MethodData data, GUIStyle style, GraphManager graphManager) : base(graphManager)
+        public MethodGUI(MethodData data, GUIStyle style, GraphVisualizer graphManager) : base(graphManager)
         {
             this.data = data;
             this.style = style;
@@ -91,12 +91,20 @@ namespace CodeExplorinator
 
         private void TryAssignClickBehaviours()
         {
-            clickBehaviour ??= new ClickBehaviour(VisualElement, ActivateMethodLayer, null);
+            clickBehaviour ??= new ClickBehaviour(VisualElement, SetFocusMethod, null);
+            clickBehaviour.RegisterOnControlMonoClick(AddSelectedMethod);
         }
 
-        private void ActivateMethodLayer()
+        private void AddSelectedMethod()
         {
-            graphManager.UpdateFocusMethod(data);
+            graphManager.AddSelectedMethod(data.MethodNode);
+        }
+
+        private void SetFocusMethod()
+        {
+            graphManager.ChangeToMethodLayer();
+            graphManager.AddSelectedMethod(data.MethodNode);
+            graphManager.FocusOnSelectedMethods();
         }
 
         private Vector2Int CalculateBackgroundSize()
