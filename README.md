@@ -7,9 +7,23 @@ Erledigt:
 
 Dringend:
 - multiple selection fixen (shift drücken wird weird erkannt) & man kann nicht suchen und danach noch mehr sachen auswählen
+- Methodenebene hinzufügen
+- Vererbung von Methoden unterstützen
+- Alle Modifier unterstützen
+- Delegate unterstützen
+- Fokusklassen sollen am selben Ort bleiben
+- Einstellungen des Nutzers abspeichern
 
 Extras:
 - method overrides oder implementation references still need to be shown
+-Fokussierte Klassen/Methoden hervorheben
+Warnung einabuen, dass Dateien mit Sonderzeichen mit der richtigen Codierung abgespeichert gemeint
+
+Für nach der Expo:
+- BUG: Zoom fokoussiert nicht perfekt auf Mauszeiger
+- Alle Klassen außer Fokusklassen am Anfang einklappen
+- Typkonvertierung unterstützen (ist vllt schon unterstützt)
+- Operatorenüberladung unterstützen (ist vllt schon unterstützt)
 
 Arbeitszeiten:
 19.05.23:
