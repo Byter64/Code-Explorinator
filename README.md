@@ -13,6 +13,7 @@ Dringend:
 - Delegate unterstützen
 - Fokusklassen sollen am selben Ort bleiben
 - Einstellungen des Nutzers abspeichern
+- anordnung verbessern
 
 Extras:
 - method overrides oder implementation references still need to be shown
