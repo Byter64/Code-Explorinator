@@ -19,6 +19,7 @@ Extras:
 - method overrides oder implementation references still need to be shown
 -Fokussierte Klassen/Methoden hervorheben
 Warnung einabuen, dass Dateien mit Sonderzeichen mit der richtigen Codierung abgespeichert gemeint
+-compiler fragen, ob kompilierbar, falls nicht, evtl nur ein teilprojekt anzeigen (oder halt einfach sagen ne machen wir nicht)
 
 Für nach der Expo:
 - BUG: Zoom fokoussiert nicht perfekt auf Mauszeiger
