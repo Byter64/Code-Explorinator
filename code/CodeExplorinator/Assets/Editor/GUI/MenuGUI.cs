@@ -18,7 +18,7 @@ namespace CodeExplorinator
         private TextField searchInput;
         private Vector2Int size;
 
-        public MenuGUI(GraphManager graphManager, Vector2Int size) : base(graphManager) 
+        public MenuGUI(GraphVisualizer graphManager, Vector2Int size) : base(graphManager) 
         {
             this.size = size;
 
@@ -90,6 +90,7 @@ namespace CodeExplorinator
 
         public void ApplySelectedClasses()
         {
+            graphManager.ChangeToClassLayer();
             graphManager.FocusOnSelectedClasses();
             foreach(SearchListEntry entry in searchListEntries.Values)
             {

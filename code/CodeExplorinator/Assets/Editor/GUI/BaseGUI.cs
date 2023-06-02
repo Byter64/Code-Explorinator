@@ -7,9 +7,9 @@ namespace CodeExplorinator
     {
         public VisualElement VisualElement { get; protected set; }
 
-        protected GraphManager graphManager;
+        protected GraphVisualizer graphManager;
 
-        protected BaseGUI(GraphManager graphManager)
+        protected BaseGUI(GraphVisualizer graphManager)
         {
             this.graphManager = graphManager;
         }

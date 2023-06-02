@@ -18,7 +18,7 @@ namespace CodeExplorinator
         private DragBehaviour dragBehaviour;
         //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
         private ZoomBehaviour zoomBehaviour;
-        private GraphManager graphManager;
+        private GraphVisualizer graphManager;
         private MenuGUI menu;
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
@@ -47,7 +47,7 @@ namespace CodeExplorinator
 
             
             List<ClassData> classData = GenerateClassDataFromProject();
-            graphManager = new GraphManager(classData, graph, 0);
+            graphManager = new GraphVisualizer(classData, graph, 0);
 
             menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
             menu.GenerateVisualElement();

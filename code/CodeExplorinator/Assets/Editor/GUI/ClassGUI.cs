@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace CodeExplorinator
 {
     [System.Serializable]
-    public class ClassGUI : BaseGUI
+    public class ClassGUI : BaseGUI, IPositionBackup
     {
         public Vector2 Position { get; set; }
         public List<MethodGUI> methodGUIs { get; private set; }
@@ -91,7 +91,7 @@ namespace CodeExplorinator
         private bool isExpanded;
         private int widthInPixels;
         private int heightInPixels;
-
+        private Vector2 positionBackup;
         private GUIStyle classStyle;
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
@@ -109,7 +109,7 @@ namespace CodeExplorinator
         /// <param name="classStyle">The style in which the class name will be displayed</param>
         /// <param name="fieldStyle">The style in which fields AND properties will be displayed</param>
         /// <param name="methodStyle">The style in which methods will be displayed</param>
-        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphManager graphManager) :
+        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphVisualizer graphManager) :
             base(graphManager)
         {
             if (!classStyle.font.dynamic)
@@ -238,6 +238,23 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
+        /// <summary>
+        /// Saves the current position internally. Call RestorePositionBackup to restore the position.
+        /// </summary>
+        public void MakePositionBackup()
+        {
+            positionBackup = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
+        }
+
+        /// <summary>
+        /// Restores the position which was last saved by MakePositionBackup
+        /// </summary>
+        public void RestorePositionBackup()
+        {
+            VisualElement.style.marginLeft = positionBackup.x;
+            VisualElement.style.marginTop = positionBackup.y;
+        }
+
         private void TryAssignClickBehaviours()
         {
             bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
@@ -271,6 +288,7 @@ namespace CodeExplorinator
 
         private void SetFocusClass()
         {
+            graphManager.ChangeToClassLayer();
             graphManager.AddSelectedClass(data.ClassNode);
             graphManager.FocusOnSelectedClasses();
         }

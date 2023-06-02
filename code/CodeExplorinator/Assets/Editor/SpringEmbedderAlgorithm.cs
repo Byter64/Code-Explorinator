@@ -55,7 +55,7 @@ namespace CodeExplorinator
                 
                 if (maxForce < threshold)
                 {
-                    Debug.Log("we stopped the spring algo at " + t + " iterations");
+                    //Debug.Log("we stopped the spring algo at " + t + " iterations");
                     return;
                 }
                 
@@ -179,7 +179,7 @@ namespace CodeExplorinator
                 
                 if (maxForce < threshold)
                 {
-                    Debug.Log("we stopped the spring algo at " + t + " iterations");
+                    //Debug.Log("we stopped the spring algo at " + t + " iterations");
                     return;
                 }
                 

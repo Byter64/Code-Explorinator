@@ -15,12 +15,12 @@ namespace CodeExplorinator
         /// <summary>
         /// This graph's root element
         /// </summary>
-        public VisualElement root { get; private set; }
+        public VisualElement Root { get; private set; }
 
         /// <summary>
         /// All ClassNodes that this graph contains
         /// </summary>
-        private HashSet<ClassNode> classNodes;
+        public  HashSet<ClassNode> classNodes;
 
         /// <summary>
         /// All currently focused Classes in this graph
@@ -36,36 +36,27 @@ namespace CodeExplorinator
 
         public ClassGraph(HashSet<ClassNode> classNodes, HashSet<ClassNode> focusedClassNodes, int classDepth)
         {
-            root = new VisualElement();
+            Root = new VisualElement();
             connections = new HashSet<ConnectionGUI>();
 
             this.classNodes = classNodes;
             this.focusedClassNodes = focusedClassNodes;
             this.classDepth = classDepth;
-
-            DoAutoLayout();
-            GenerateConnections();
-            GenerateVisualElementGraph();
         }
 
-        private void DoAutoLayout()
-        {
-            SpringEmbedderAlgorithm.StartAlgorithm(classNodes.ToList());
-        }
-
-        private void GenerateVisualElementGraph()
+        public void GenerateVisualElementGraph()
         {
             foreach (ConnectionGUI connection in connections)
             {
-                root.Add(connection.VisualElement);
+                Root.Add(connection.VisualElement);
             }
             foreach (ClassNode node in classNodes)
             {
-                root.Add(node.classGUI.VisualElement);
+                Root.Add(node.classGUI.VisualElement);
             }
         }
 
-        private void GenerateConnections()
+        public void GenerateConnectionsBetweenClasses()
         {
             foreach (ClassNode foot in classNodes)
             {
@@ -138,6 +129,58 @@ namespace CodeExplorinator
                         ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
                             parent.ClassNode.classGUI.VisualElement);
                         connection.GenerateVisualElement(true);
+                        connections.Add(connection);
+                    }
+                }
+            }
+        }
+
+        public void GenerateConnectionsBetweenMethods(HashSet<MethodNode> shownMethodNodes)
+        {
+            foreach (MethodNode foot in shownMethodNodes)
+            {
+                if (foot.IsLeaf)
+                {
+                    foreach (MethodNode tip in foot.outgoingConnections)
+                    {
+                        if (foot == tip)
+                        {
+                            continue;
+                        }
+
+                        VisualElement shownTip = shownMethodNodes.Contains(tip) ? tip.MethodGUI.VisualElement : null;
+                        ConnectionGUI connection = new ConnectionGUI(foot.MethodGUI.VisualElement,
+                            shownTip);
+                        connection.GenerateVisualElement(false, true);
+                        connections.Add(connection);
+                    }
+
+                    foreach (MethodNode tip in foot.ingoingConnections) //tip and foot here have opposite meanings
+                    {
+                        if (foot == tip)
+                        {
+                            continue;
+                        }
+
+                        VisualElement shownTip = shownMethodNodes.Contains(tip) ? tip.MethodGUI.VisualElement : null;
+                        ConnectionGUI connection = new ConnectionGUI(shownTip,
+                            foot.MethodGUI.VisualElement);
+                        connection.GenerateVisualElement(false, true);
+                        connections.Add(connection);
+                    }
+                }
+                else
+                {
+                    foreach (MethodNode tip in foot.outgoingConnections)
+                    {
+                        if (foot == tip)
+                        {
+                            continue;
+                        }
+
+                        ConnectionGUI connection =
+                            new ConnectionGUI(foot.MethodGUI.VisualElement, tip.MethodGUI.VisualElement);
+                        connection.GenerateVisualElement(false, true);
                         connections.Add(connection);
                     }
                 }

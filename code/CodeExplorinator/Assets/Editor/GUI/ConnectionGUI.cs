@@ -8,10 +8,10 @@ using Random = UnityEngine.Random;
 
 namespace CodeExplorinator
 {
-    public class ConnectionGUI
+    public class ConnectionGUI : IPositionBackup
     {
         public VisualElement VisualElement { get; private set; }
-
+        private Vector2 positionBackup;
         private Texture2D lineTexture;
         private Texture2D arrowTexture;
         private Texture2D inheritanceArrowTexture;
@@ -41,6 +41,23 @@ namespace CodeExplorinator
             {
                 VisualElement = CreateConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceArrow);
             }
+        }
+
+        /// <summary>
+        /// Saves the current position internally. Call RestorePositionBackup to restore the position.
+        /// </summary>
+        public void MakePositionBackup()
+        {
+            positionBackup = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
+        }
+
+        /// <summary>
+        /// Restores the position which was last saved by MakePositionBackup
+        /// </summary>
+        public void RestorePositionBackup()
+        {
+            VisualElement.style.marginLeft = positionBackup.x;
+            VisualElement.style.marginTop = positionBackup.y;
         }
 
         private VisualElement CreateConnection(Vector2 footPos, Vector2 tipPos, bool isInheritanceArrow)
