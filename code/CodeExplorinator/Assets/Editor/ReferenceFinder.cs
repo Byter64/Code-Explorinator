@@ -561,7 +561,7 @@ namespace CodeExplorinator
                 /* TODO WORK IN PROGRESS, check if the type is a simple type, if so, ignore it for performance reasons
                 if (fieldData.FieldSymbol.Type.)
                 {
-                    Debug.Log(fieldData.GetName() + " is a generic type");
+                    Debug.Log(fieldData.GetName() + " is a simple type");
                     continue;
                 }
                 */
@@ -580,8 +580,7 @@ namespace CodeExplorinator
                         }
                     }
                     */
-                    
-                    
+
                     //if the class is referenced by this field, set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
                     {
