@@ -141,23 +141,23 @@ namespace CodeExplorinator
         public void ChangeMethodDepth(int depth)
         {
             shownMethodDepth = depth;
+            if (state != State.MethodLayer) { return; }
 
             ChangeMethodGraph(focusedMethodNodes, depth);
-
         }
 
         public void ChangeToMethodLayer()
         {
-            graphVisualizer.ShowHideMethodLayer(true);
-            graphVisualizer.ShowHideClassLayer(false);
+            graphVisualizer.ShowClassLayer(false);
+            graphVisualizer.ShowMethodLayer(true, GetAllMethodGUIs(shownMethodNodes));
 
             state = State.MethodLayer;
         }
 
         public void ChangeToClassLayer()
         {
-            graphVisualizer.ShowHideClassLayer(true);
-            graphVisualizer.ShowHideMethodLayer(false);
+            graphVisualizer.ShowMethodLayer(false);
+            graphVisualizer.ShowClassLayer(true);
 
             state = State.ClassLayer;
         }
@@ -166,8 +166,20 @@ namespace CodeExplorinator
         {
             UpdateSubGraphs(focusClasses, shownDepth);
             HashSet<ClassGUI> classGUIs = GetAllClassGUIs(classGraphs);
-            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIS(classGraphs);
+            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(classGraphs);
+            
             graphVisualizer.SetClassLayer(classGUIs, connectionGUIs);
+            graphVisualizer.ShowClassLayer(true);
+        }
+
+        private void ChangeMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
+        {
+            UpdateMethodGraph(focusMethods, shownDepth);
+            HashSet<ClassGUI> classGUIs = GetAllClassGUIs(new HashSet<ClassGraph>() { methodGraph });
+            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(new HashSet<ClassGraph>() { methodGraph });
+            
+            graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs);
+            graphVisualizer.ShowMethodLayer(true, GetAllMethodGUIs(shownMethodNodes));
         }
 
         private void UpdateSubGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
@@ -191,32 +203,11 @@ namespace CodeExplorinator
             }
         }
 
-        private void ChangeMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
-        {
-            RemoveMethodGraphGUI();
-            UpdateMethodGraph(focusMethods, shownDepth);
-            graphRoot.Add(methodGraph.Root);
-            HashSet<ClassGUI> classes = new HashSet<ClassGUI>();
-            foreach (ClassNode node in methodGraph.classNodes)
-            {
-
-            }
-        }
-
-        private void RemoveMethodGraphGUI()
-        {
-            if (methodGraph == null || methodGraph.Root == null) { return; }
-            if (graphRoot.Contains(methodGraph.Root))
-            {
-                graphRoot.Remove(methodGraph.Root);
-            }
-        }
-
         private void UpdateMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
         {
             foreach (MethodNode node in shownMethodNodes)
             {
-                node.MethodGUI.ShowBackground(false);
+                node.MethodGUI.ShowHighlight(false);
             }
             BreadthSearch.Reset();
             shownMethodNodes.Clear();
@@ -231,14 +222,7 @@ namespace CodeExplorinator
             {
                 focusedClasses.Add(node.MethodData.ContainingClass.ClassNode);
             }
-            foreach (MethodNode node in shownMethodNodes)
-            {
-                node.MethodGUI.ShowBackground(true);
-            }
-            foreach(MethodNode node in shownMethodNodes)
-            {
-                node.MethodData.ContainingClass.ClassNode.classGUI.VisualElement.visible = true;
-            }
+
             //Create classgraph that contains each class which contains a shown method
             methodGraph = new ClassGraph(this, FindClassNodes(shownMethodNodes), focusedClasses, shownDepth);
 
@@ -412,17 +396,26 @@ namespace CodeExplorinator
             return classGUI;
         }
 
-        private HashSet<ConnectionGUI> GetAllConnectionGUIS(IEnumerable<ClassGraph> classGraphs)
+        private HashSet<ConnectionGUI> GetAllConnectionGUIs(IEnumerable<ClassGraph> classGraphs)
         {
-            HashSet<ConnectionGUI> ConnectionGUI = new HashSet<ConnectionGUI>();
+            HashSet<ConnectionGUI> connectionGUIs = new HashSet<ConnectionGUI>();
             foreach (ClassGraph classGraph in classGraphs)
             {
                 foreach (ConnectionGUI connection in classGraph.connections)
                 {
-                    ConnectionGUI.Add(connection);
+                    connectionGUIs.Add(connection);
                 }
             }
-            return ConnectionGUI;
+            return connectionGUIs;
+        }
+        private HashSet<MethodGUI> GetAllMethodGUIs(IEnumerable<MethodNode> methodNodes)
+        {
+            HashSet<MethodGUI> methodGUIs = new HashSet<MethodGUI>();
+            foreach (MethodNode node in methodNodes)
+            {
+                methodGUIs.Add(node.MethodGUI);
+            }
+            return methodGUIs;
         }
     }
 }

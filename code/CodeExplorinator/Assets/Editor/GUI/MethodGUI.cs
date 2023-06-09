@@ -81,9 +81,9 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        public void ShowBackground(bool isShowingBackground)
+        public void ShowHighlight(bool isShowingHighlight)
         {
-            Visibility visiBackground = isShowingBackground ? Visibility.Visible : Visibility.Hidden;
+            Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
 
             VisualElement.style.visibility = visiBackground;
             VisualElement.Children().First().style.visibility = Visibility.Visible;
@@ -102,9 +102,9 @@ namespace CodeExplorinator
 
         private void SetFocusMethod()
         {
-            graphManager.ChangeToMethodLayer();
             graphManager.AddSelectedMethod(data.MethodNode);
             graphManager.FocusOnSelectedMethods();
+            graphManager.ChangeToMethodLayer();
         }
 
         private Vector2Int CalculateBackgroundSize()
