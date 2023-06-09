@@ -22,23 +22,26 @@ namespace CodeExplorinator
         /// </summary>
         public  HashSet<ClassNode> classNodes;
 
+        public HashSet<ConnectionGUI> connections;
+
         /// <summary>
         /// All currently focused Classes in this graph
         /// </summary>
         private HashSet<ClassNode> focusedClassNodes;
-
-        private HashSet<ConnectionGUI> connections;
 
         /// <summary>
         /// The maximum distance from a ClassNode to its closest focused ClassNode (0 == only focused classes)
         /// </summary>
         private int classDepth;
 
-        public ClassGraph(HashSet<ClassNode> classNodes, HashSet<ClassNode> focusedClassNodes, int classDepth)
+        private GraphManager graphManager;
+
+        public ClassGraph(GraphManager graphManager, HashSet<ClassNode> classNodes, HashSet<ClassNode> focusedClassNodes, int classDepth)
         {
             Root = new VisualElement();
             connections = new HashSet<ConnectionGUI>();
 
+            this.graphManager = graphManager;
             this.classNodes = classNodes;
             this.focusedClassNodes = focusedClassNodes;
             this.classDepth = classDepth;
@@ -70,7 +73,7 @@ namespace CodeExplorinator
                         }
 
                         VisualElement shownTip = classNodes.Contains(tip) ? tip.classGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement, shownTip);
+                        ConnectionGUI connection = new ConnectionGUI(graphManager, foot.classGUI.VisualElement, shownTip);
                         connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
@@ -83,7 +86,7 @@ namespace CodeExplorinator
                         }
 
                         VisualElement shownTip = classNodes.Contains(tip) ? tip.classGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(shownTip,
+                        ConnectionGUI connection = new ConnectionGUI(graphManager, shownTip,
                             foot.classGUI.VisualElement);
                         connection.GenerateVisualElement();
                         connections.Add(connection);
@@ -91,21 +94,21 @@ namespace CodeExplorinator
 
                     foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
                     {
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
+                        ConnectionGUI connection = new ConnectionGUI(graphManager, foot.classGUI.VisualElement,
                             classNodes.Contains(parent.ClassNode)
                                 ? parent.ClassNode.classGUI.VisualElement
-                                : null);
-                        connection.GenerateVisualElement(true);
+                                : null, true);
+                        connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
 
                     foreach (var child in
                              foot.ClassData.ChildClasses) //tip(aka child) and foot here have opposite meanings
                     {
-                        ConnectionGUI connection = new ConnectionGUI(
+                        ConnectionGUI connection = new ConnectionGUI(graphManager,
                             classNodes.Contains(child.ClassNode) ? child.ClassNode.classGUI.VisualElement : null,
-                            foot.classGUI.VisualElement);
-                        connection.GenerateVisualElement(true);
+                            foot.classGUI.VisualElement, true);
+                        connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
                 }
@@ -119,16 +122,16 @@ namespace CodeExplorinator
                         }
 
                         ConnectionGUI connection =
-                            new ConnectionGUI(foot.classGUI.VisualElement, tip.classGUI.VisualElement);
+                            new ConnectionGUI(graphManager, foot.classGUI.VisualElement, tip.classGUI.VisualElement);
                         connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
 
                     foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
                     {
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            parent.ClassNode.classGUI.VisualElement);
-                        connection.GenerateVisualElement(true);
+                        ConnectionGUI connection = new ConnectionGUI(graphManager, foot.classGUI.VisualElement,
+                            parent.ClassNode.classGUI.VisualElement, true);
+                        connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
                 }
@@ -149,9 +152,9 @@ namespace CodeExplorinator
                         }
 
                         VisualElement shownTip = shownMethodNodes.Contains(tip) ? tip.MethodGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(foot.MethodGUI.VisualElement,
-                            shownTip);
-                        connection.GenerateVisualElement(false, true);
+                        ConnectionGUI connection = new ConnectionGUI(graphManager, foot.MethodGUI.VisualElement,
+                            shownTip, false, true);
+                        connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
 
@@ -163,9 +166,9 @@ namespace CodeExplorinator
                         }
 
                         VisualElement shownTip = shownMethodNodes.Contains(tip) ? tip.MethodGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(shownTip,
-                            foot.MethodGUI.VisualElement);
-                        connection.GenerateVisualElement(false, true);
+                        ConnectionGUI connection = new ConnectionGUI(graphManager,shownTip,
+                            foot.MethodGUI.VisualElement, false, true);
+                        connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
                 }
@@ -179,8 +182,8 @@ namespace CodeExplorinator
                         }
 
                         ConnectionGUI connection =
-                            new ConnectionGUI(foot.MethodGUI.VisualElement, tip.MethodGUI.VisualElement);
-                        connection.GenerateVisualElement(false, true);
+                            new ConnectionGUI(graphManager, foot.MethodGUI.VisualElement, tip.MethodGUI.VisualElement, false, true);
+                        connection.GenerateVisualElement();
                         connections.Add(connection);
                     }
                 }

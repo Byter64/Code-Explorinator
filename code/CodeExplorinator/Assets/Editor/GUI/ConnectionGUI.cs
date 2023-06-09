@@ -8,9 +8,10 @@ using Random = UnityEngine.Random;
 
 namespace CodeExplorinator
 {
-    public class ConnectionGUI : IPositionBackup
+    public class ConnectionGUI : BaseGUI, IPositionBackup
     {
-        public VisualElement VisualElement { get; private set; }
+        private bool isInheritanceConnection;
+        private bool isMethod;
         private Vector2 positionBackup;
         private Texture2D lineTexture;
         private Texture2D arrowTexture;
@@ -18,29 +19,36 @@ namespace CodeExplorinator
         private VisualElement footNode;
         private VisualElement tipNode;
 
-        public ConnectionGUI(VisualElement footNode, VisualElement tipNode)
+        public ConnectionGUI(GraphManager graphManager, VisualElement footNode, VisualElement tipNode, bool isInheritanceConnection = false, bool isMethod = false) : base(graphManager)
         {
             this.footNode = footNode;
             this.tipNode = tipNode;
+            this.isMethod = isMethod;
+            this.isInheritanceConnection = isInheritanceConnection;
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
             arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centered_new.png");
             inheritanceArrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Arrow_inheritance.png");
         }
-        
-        public void GenerateVisualElement(bool isInheritanceArrow = false, bool isMethod = false)
+
+        public override void GenerateVisualElement()
         {
             if (footNode == null)
             {
-                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), true, isInheritanceArrow);
+                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), true, isInheritanceConnection);
             }
             else if (tipNode == null)
             {
-                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), false, isInheritanceArrow);
+                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), false, isInheritanceConnection);
             }
             else
             {
-                VisualElement = CreateConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceArrow);
+                VisualElement = CreateConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceConnection);
             }
+        }
+
+        public override void SetVisible(bool isVisible)
+        {
+            VisualElement.visible = isVisible;
         }
 
         /// <summary>
@@ -173,5 +181,6 @@ namespace CodeExplorinator
                 node.parent.style.marginTop.value.value + (
                     node.style.marginTop.value.value + node.style.height.value.value * 0.5f));
         }
+
     }
 }

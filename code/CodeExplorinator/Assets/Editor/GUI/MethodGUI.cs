@@ -45,7 +45,7 @@ namespace CodeExplorinator
         private Texture2D backgroundTexture;
         private ClickBehaviour clickBehaviour;
 
-        public MethodGUI(MethodData data, GUIStyle style, GraphVisualizer graphManager) : base(graphManager)
+        public MethodGUI(MethodData data, GUIStyle style, GraphManager graphManager) : base(graphManager)
         {
             this.data = data;
             this.style = style;
@@ -122,7 +122,7 @@ namespace CodeExplorinator
             return new Vector2Int((int)result.x, (int)result.y);
         }
 
-        public void SetVisible(bool visible)
+        public override void SetVisible(bool visible)
         {
             VisualElement.Children().First().visible = visible;
             //If will be hidden, make background hidden, too

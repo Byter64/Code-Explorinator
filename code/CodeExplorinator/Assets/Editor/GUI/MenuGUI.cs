@@ -18,7 +18,7 @@ namespace CodeExplorinator
         private TextField searchInput;
         private Vector2Int size;
 
-        public MenuGUI(GraphVisualizer graphManager, Vector2Int size) : base(graphManager) 
+        public MenuGUI(GraphManager graphManager, Vector2Int size) : base(graphManager) 
         {
             this.size = size;
 
@@ -74,6 +74,10 @@ namespace CodeExplorinator
             OrderEntriesByAlphabet();
         }
 
+        public override void SetVisible(bool isVisible)
+        {
+            VisualElement.visible = isVisible;
+        }
 
         public void UpdateDataBase()
         {

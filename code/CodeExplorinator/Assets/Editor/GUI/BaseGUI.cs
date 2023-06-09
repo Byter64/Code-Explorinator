@@ -7,13 +7,14 @@ namespace CodeExplorinator
     {
         public VisualElement VisualElement { get; protected set; }
 
-        protected GraphVisualizer graphManager;
+        protected GraphManager graphManager;
 
-        protected BaseGUI(GraphVisualizer graphManager)
+        protected BaseGUI(GraphManager graphManager)
         {
             this.graphManager = graphManager;
         }
 
         public abstract void GenerateVisualElement();
+        public abstract void SetVisible(bool isVisible);
     }
 }
