@@ -114,9 +114,19 @@ namespace CodeExplorinator
 
         private void KeyDownHandler(KeyDownEvent context)
         {
-            if (context.keyCode != KeyCode.Return) { return; }
+            string query = searchInput.text;
 
-            string query = searchInput.text.ToLower();
+            if (char.GetUnicodeCategory(context.character) != System.Globalization.UnicodeCategory.Control)
+            {
+                query += context.character;
+            }
+
+            if(context.keyCode == KeyCode.Backspace)
+            {
+                query = query.Substring(0, query.Length - 1);
+            }
+
+            query = query.ToLower();
             UpdateResultEntries(query);
             OrderEntriesByAlphabet();
         }
