@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dd7c0bd4b2c6c86439c2f622d61742df, type: 3}
-  m_Name: Method
+  m_Name: FocusedMethod
   m_EditorClassIdentifier: 
-  graphicsPath: "box dunkel t\xFCrkis.png"
+  graphicsPath: "box hell t\xFCrkis.png"
   middleRectangle:
     x: 30
     y: 1

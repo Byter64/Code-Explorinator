@@ -16,59 +16,10 @@ namespace CodeExplorinator
         public Vector2 Position { get; set; }
         public List<MethodGUI> methodGUIs { get; private set; }
 
-        private static TiledTextureData BackgroundTextureData
-        {
-            get
-            {
-                if (backgroundData == null)
-                {
-                    backgroundData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Class.asset", typeof(TiledTextureData));
-                }
-                return backgroundData;
-            }
-        }
-
-        private static TiledTextureData HeaderTextureData
-        {
-            get
-            {
-                if (headerData == null)
-                {
-                    headerData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Header.asset", typeof(TiledTextureData));
-                }
-                return headerData;
-            }
-        }
-
-        private static TiledTextureBuilder BackgroundBuilder
-        {
-            get
-            {
-                if(backgroundBuilder == null)
-                {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + BackgroundTextureData.graphicsPath);
-                    Texture2D texture = new Texture2D(1, 1);
-                    ImageConversion.LoadImage(texture, fileData);
-                    backgroundBuilder = new TiledTextureBuilder(texture, BackgroundTextureData.middleRectangle);
-                }
-                return backgroundBuilder;
-            }
-        }
-
-        private static TiledTextureBuilder HeaderBuilder
-        {
-            get
-            {
-                if (headerBuilder == null)
-                {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + HeaderTextureData.graphicsPath);
-                    Texture2D texture = new Texture2D(1, 1);
-                    ImageConversion.LoadImage(texture, fileData);
-                    headerBuilder = new TiledTextureBuilder(texture, HeaderTextureData.middleRectangle);
-                }
-                return headerBuilder;
-            }
-        }
+        private const string classTexturePath = "Assets/Editor/TiledTextures/Class.asset";
+        private const string headerTexturePath = "Assets/Editor/TiledTextures/Header.asset";
+        private const string focusedClassTexturePath = "Assets/Editor/TiledTextures/FocusedClass.asset";
+        private const string focusedHeaderTexturePath = "Assets/Editor/TiledTextures/FocusedHeader.asset";
 
         #region Defines for the graphics
         /// <summary>
@@ -86,9 +37,7 @@ namespace CodeExplorinator
         #endregion
 
         private static TiledTextureBuilder backgroundBuilder;
-        private static TiledTextureData backgroundData;
         private static TiledTextureBuilder headerBuilder;
-        private static TiledTextureData headerData;
 
         private bool isExpanded;
         private int widthInPixels;
@@ -100,6 +49,8 @@ namespace CodeExplorinator
         private ClassData data;
         private Texture2D backgroundTexture;
         private Texture2D headerTexture;
+        private Texture2D focusedBackgroundTexture;
+        private Texture2D focusedHeaderTexture;
         private Texture2D lineTexture;
         private VisualElement header;
         private ClickBehaviour bodyClick;
@@ -144,12 +95,12 @@ namespace CodeExplorinator
                 methodGUIs.Add(methodGUI);
             }
 
-            BackgroundBuilder.Size = CalculateBackgroundSize();
-            backgroundTexture = BackgroundBuilder.BuildTexture();
+            backgroundTexture = Create9SlicedTexture(classTexturePath, CalculateBackgroundSize());
+            focusedBackgroundTexture = Create9SlicedTexture(focusedClassTexturePath, CalculateBackgroundSize());
             widthInPixels = backgroundTexture.width;
             heightInPixels = backgroundTexture.height;
-            HeaderBuilder.Size = new Vector2Int(widthInPixels, 0);
-            headerTexture = HeaderBuilder.BuildTexture();
+            headerTexture = Create9SlicedTexture(headerTexturePath, new Vector2Int(widthInPixels, 0));
+            focusedHeaderTexture = Create9SlicedTexture(focusedHeaderTexturePath, new Vector2Int(widthInPixels, 0));
         }
 
         public override void GenerateVisualElement()
@@ -266,6 +217,21 @@ namespace CodeExplorinator
                 methodGUI.SetVisible(isVisible);
             }
         }
+
+        public void SetFocused(bool isFocused)
+        {
+            if(isFocused)
+            {
+                VisualElement.style.backgroundImage = Background.FromTexture2D(focusedBackgroundTexture);
+                header.style.backgroundImage = Background.FromTexture2D(focusedHeaderTexture);
+            }
+            else
+            {
+                VisualElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
+                header.style.backgroundImage = Background.FromTexture2D(headerTexture);
+            }
+        }
+
         private void TryAssignClickBehaviours()
         {
             bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);

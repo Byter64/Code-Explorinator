@@ -12,37 +12,15 @@ namespace CodeExplorinator
     public class MethodGUI : BaseGUI
     {
         public MethodData data { get; private set; }
-        private static TiledTextureData BackgroundTextureData
-        {
-            get
-            {
-                if (backgroundData == null)
-                {
-                    backgroundData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Method.asset", typeof(TiledTextureData));
-                }
-                return backgroundData;
-            }
-        }
 
-        private static TiledTextureBuilder BackgroundBuilder
-        {
-            get
-            {
-                if (backgroundBuilder == null)
-                {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + BackgroundTextureData.graphicsPath);
-                    Texture2D texture = new Texture2D(1, 1);
-                    ImageConversion.LoadImage(texture, fileData);
-                    backgroundBuilder = new TiledTextureBuilder(texture, BackgroundTextureData.middleRectangle);
-                }
-                return backgroundBuilder;
-            }
-        }
+        private const string methodTexturePath = "Assets/Editor/TiledTextures/Method.asset";
+        private const string focusedMethodTexturePath = "Assets/Editor/TiledTextures/FocusedMethod.asset";
         private static TiledTextureData backgroundData;
         private static TiledTextureBuilder backgroundBuilder;
 
         private GUIStyle style;
         private Texture2D backgroundTexture;
+        private Texture2D focusedBackgroundTexture;
         private ClickBehaviour clickBehaviour;
 
         public MethodGUI(MethodData data, GUIStyle style, GraphManager graphManager) : base(graphManager)
@@ -50,8 +28,8 @@ namespace CodeExplorinator
             this.data = data;
             this.style = style;
 
-            BackgroundBuilder.Size = CalculateBackgroundSize();
-            backgroundTexture = BackgroundBuilder.BuildTexture();
+            backgroundTexture = Create9SlicedTexture(methodTexturePath, CalculateBackgroundSize());
+            focusedBackgroundTexture = Create9SlicedTexture(focusedMethodTexturePath, CalculateBackgroundSize());
             GenerateVisualElement();
         }
 
@@ -89,6 +67,18 @@ namespace CodeExplorinator
             VisualElement.Children().First().style.visibility = Visibility.Visible;
         }
 
+        public void SetFocused(bool isFocused)
+        {
+            if (isFocused)
+            {
+                VisualElement.style.backgroundImage = Background.FromTexture2D(focusedBackgroundTexture);
+            }
+            else
+            {
+                VisualElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
+            }
+        }
+
         private void TryAssignClickBehaviours()
         {
             clickBehaviour ??= new ClickBehaviour(VisualElement, SetFocusMethod, null);
@@ -110,7 +100,7 @@ namespace CodeExplorinator
         private Vector2Int CalculateBackgroundSize()
         {
             Vector2 result = Vector2.zero;
-            result.y = BackgroundBuilder.OriginalSize.y;
+            result.y = 0; //because y depends on the texture, we don't know it yet.
 
             Label tempLabel = new Label();
             tempLabel.style.unityFont = style.font;

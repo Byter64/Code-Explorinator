@@ -1,5 +1,6 @@
 ﻿using Codice.Client.BaseCommands.CheckIn;
 using Codice.Client.Common.TreeGrouper;
+using Codice.CM.SEIDInfo;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 using System;
@@ -306,8 +307,14 @@ namespace CodeExplorinator
             UpdateSubGraphs(focusClasses, shownDepth);
             HashSet<ClassGUI> classGUIs = GetAllClassGUIs(classGraphs);
             HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(classGraphs);
-            
-            graphVisualizer.SetClassLayer(classGUIs, connectionGUIs);
+            HashSet<ClassGUI> focusedGuis = new();
+            HashSet<ClassGUI> unfocusedGUIs = new();
+
+            focusedGuis.UnionWith(GetAllClassGUIs(focusClasses));
+            unfocusedGUIs.UnionWith(classGUIs);
+            unfocusedGUIs.ExceptWith(focusedGuis);
+
+            graphVisualizer.SetClassLayer(focusedGuis, unfocusedGUIs, connectionGUIs);
             graphVisualizer.ShowClassLayer(true);
         }
 
@@ -316,10 +323,15 @@ namespace CodeExplorinator
             UpdateMethodGraph(focusMethods, shownDepth);
             HashSet<ClassGUI> classGUIs = GetAllClassGUIs(new HashSet<ClassGraph>() { methodGraph });
             HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(new HashSet<ClassGraph>() { methodGraph });
-            
-            graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs);
-            graphVisualizer.ShowMethodLayer(true, GetAllMethodGUIs(shownMethodNodes));
-        }
+            HashSet<MethodGUI> methodGUIs = GetAllMethodGUIs(shownMethodNodes);
+            HashSet<MethodGUI> focusedMethods = GetAllMethodGUIs(focusMethods);
+            HashSet<MethodGUI> unfocusedMethods = new();
+            unfocusedMethods.UnionWith(methodGUIs); 
+            unfocusedMethods.ExceptWith(focusedMethods);
+            string x;
+            graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs, focusedMethods, unfocusedMethods);
+            graphVisualizer.ShowMethodLayer(true, methodGUIs);
+        } 
 
         private void UpdateSubGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
         {
@@ -527,10 +539,17 @@ namespace CodeExplorinator
             HashSet<ClassGUI> classGUI = new HashSet<ClassGUI>();
             foreach (ClassGraph classGraph in classGraphs)
             {
-                foreach (ClassNode classNode in classGraph.classNodes)
-                {
-                    classGUI.Add(classNode.classGUI);
-                }
+                classGUI.UnionWith(GetAllClassGUIs(classGraph.classNodes));
+            }
+            return classGUI;
+        }
+
+        private HashSet<ClassGUI> GetAllClassGUIs(HashSet<ClassNode> classNodes)
+        {
+            HashSet<ClassGUI> classGUI = new HashSet<ClassGUI>();
+            foreach (ClassNode classNode in classNodes)
+            {
+                classGUI.Add(classNode.classGUI);
             }
             return classGUI;
         }

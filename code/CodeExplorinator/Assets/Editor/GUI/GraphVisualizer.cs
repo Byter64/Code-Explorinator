@@ -15,7 +15,10 @@ namespace CodeExplorinator
     public class GraphVisualizer
     {
         private HashSet<ClassGUI> methodLayer = new();
-        private HashSet<ClassGUI> classLayer = new();
+        private HashSet<ClassGUI> classLayerUnfocused = new();
+        private HashSet<ClassGUI> classLayerFocused = new();
+        private HashSet<MethodGUI> methodLayerUnfocused = new();
+        private HashSet<MethodGUI> methodLayerFocused = new();
         private HashSet<ConnectionGUI> methodLayerConnections = new();
         private HashSet<ConnectionGUI> classLayerConnections = new();
         private VisualElement methodLayerRoot = new();
@@ -50,7 +53,7 @@ namespace CodeExplorinator
 
         public void ShowClassLayer(bool isVisible)
         {
-            foreach (ClassGUI classGUI in classLayer)
+            foreach (ClassGUI classGUI in classLayerUnfocused)
             {
                 classGUI.SetVisible(isVisible);
             }
@@ -61,28 +64,51 @@ namespace CodeExplorinator
             }
         }
 
-        public void SetMethodLayer(HashSet<ClassGUI> methodLayer, HashSet<ConnectionGUI> connections)
+        public void SetMethodLayer(HashSet<ClassGUI> methodLayer, HashSet<ConnectionGUI> connections, HashSet<MethodGUI> focusedMethods, HashSet<MethodGUI> unfocusedMethods)
         {
             TryRemoveGUIsFromRoot(this.methodLayer, methodLayerRoot);
             TryRemoveGUIsFromRoot(this.methodLayerConnections, methodLayerRoot);
 
+            foreach(MethodGUI methodGUI in focusedMethods)
+            {
+                methodGUI.SetFocused(true);
+            }
+            foreach(MethodGUI methodGUI in unfocusedMethods)
+            {
+                methodGUI.SetFocused(false);
+            }
+
             this.methodLayer = methodLayer;
             this.methodLayerConnections = connections;
+            this.methodLayerFocused = focusedMethods;
+            this.methodLayerUnfocused = unfocusedMethods;
 
             TryAddGUIsToRoot(connections, methodLayerRoot);
             TryAddGUIsToRoot(methodLayer, methodLayerRoot);
         }
 
-        public void SetClassLayer(HashSet<ClassGUI> classLayer, HashSet<ConnectionGUI> connections)
+        public void SetClassLayer(HashSet<ClassGUI> focusedClasses, HashSet<ClassGUI> unfocusedClasses, HashSet<ConnectionGUI> connections)
         {
-            TryRemoveGUIsFromRoot(this.classLayer, classLayerRoot);
+            TryRemoveGUIsFromRoot(this.classLayerUnfocused, classLayerRoot);
             TryRemoveGUIsFromRoot(this.classLayerConnections, classLayerRoot);
+            TryRemoveGUIsFromRoot(this.classLayerFocused, classLayerRoot);
 
-            this.classLayer = classLayer;
+            foreach(ClassGUI classGUI in focusedClasses)
+            {
+                classGUI.SetFocused(true);
+            }
+            foreach(ClassGUI classGUI in unfocusedClasses)
+            {
+                classGUI.SetFocused(false);
+            }
+
+            this.classLayerUnfocused = unfocusedClasses;
+            this.classLayerFocused = focusedClasses;
             this.classLayerConnections = connections;
 
             TryAddGUIsToRoot(connections, classLayerRoot);
-            TryAddGUIsToRoot(classLayer, classLayerRoot);
+            TryAddGUIsToRoot(unfocusedClasses, classLayerRoot);
+            TryAddGUIsToRoot(focusedClasses, classLayerRoot);
         }
 
         private void TryRemoveGUIsFromRoot(HashSet<ClassGUI> guis, VisualElement root)
