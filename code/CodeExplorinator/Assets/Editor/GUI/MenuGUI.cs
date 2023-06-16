@@ -125,7 +125,14 @@ namespace CodeExplorinator
 
             if(context.keyCode == KeyCode.Backspace && query.Length > 0)
             {
-                query = query.Substring(0, query.Length - 1);
+                if (searchInput.textSelection.HasSelection())
+                {
+                    query = RemoveSelection(query);
+                }
+                else
+                {
+                    query = query.Substring(0, query.Length - 1);
+                }
             }
 
             query = query.ToLower();
@@ -133,12 +140,30 @@ namespace CodeExplorinator
             OrderEntriesByAlphabet();
         }
 
+        private string RemoveSelection(string query)
+        {
+            int lowIndex = searchInput.selectIndex;
+            int highIndex = searchInput.cursorIndex;
+
+            if (highIndex < lowIndex)
+            {
+                int temp = highIndex;
+                highIndex = lowIndex;
+                lowIndex = temp;
+            }
+
+            int selectionLength = highIndex - lowIndex;
+
+            return query.Remove(lowIndex, selectionLength);
+        }
+
         private void UpdateResultEntries(string query)
         {
 
             foreach(string name in searchListEntries.Keys)
             {
-                bool isVisible = name.ToLower().Contains(query);
+                //bool isVisible = name.ToLower().Contains(query);
+                bool isVisible = DieserEineAlgoDessenNamenIchNichtWeiß(name.ToLower(), query);
                 if (!isVisible && scrollView.Contains(searchListEntries[name]))
                 {
                     searchListEntries[name].parent.Remove(searchListEntries[name]);
@@ -149,6 +174,25 @@ namespace CodeExplorinator
                 }
             }
         }
+
+        private bool DieserEineAlgoDessenNamenIchNichtWeiß(string text, string matcher)
+        {
+            if(matcher.Length == 0) { return true; }
+
+            int index = 0;
+            for(int i = 0; i < text.Length; i++)
+            {
+                if (text[i] == matcher[index])
+                {
+                    index++;
+                }
+
+                if(index == matcher.Length) { return true; }
+            }
+
+            return false;
+        }
+
         private void OrderEntriesByAlphabet()
         {
             foreach(var entry in searchListEntries.OrderBy(x => x.Key.ToLower()))

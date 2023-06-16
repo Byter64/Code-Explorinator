@@ -55,7 +55,18 @@ namespace CodeExplorinator
 
         private List<ClassData> GenerateClassDataFromProject()
         {
-            //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs");
+            
+
+
+
+
+
+
+
+
+
+
+
 
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
