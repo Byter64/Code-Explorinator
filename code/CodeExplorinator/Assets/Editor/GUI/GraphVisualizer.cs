@@ -69,8 +69,8 @@ namespace CodeExplorinator
             this.methodLayer = methodLayer;
             this.methodLayerConnections = connections;
 
-            TryAddGUIsFromRoot(connections, methodLayerRoot);
-            TryAddGUIsFromRoot(methodLayer, methodLayerRoot);
+            TryAddGUIsToRoot(connections, methodLayerRoot);
+            TryAddGUIsToRoot(methodLayer, methodLayerRoot);
         }
 
         public void SetClassLayer(HashSet<ClassGUI> classLayer, HashSet<ConnectionGUI> connections)
@@ -81,8 +81,8 @@ namespace CodeExplorinator
             this.classLayer = classLayer;
             this.classLayerConnections = connections;
 
-            TryAddGUIsFromRoot(connections, classLayerRoot);
-            TryAddGUIsFromRoot(classLayer, classLayerRoot);
+            TryAddGUIsToRoot(connections, classLayerRoot);
+            TryAddGUIsToRoot(classLayer, classLayerRoot);
         }
 
         private void TryRemoveGUIsFromRoot(HashSet<ClassGUI> guis, VisualElement root)
@@ -107,7 +107,7 @@ namespace CodeExplorinator
             }
         }
 
-        private void TryAddGUIsFromRoot(HashSet<ClassGUI> guis, VisualElement root)
+        private void TryAddGUIsToRoot(HashSet<ClassGUI> guis, VisualElement root)
         {
             foreach (BaseGUI gui in guis)
             {
@@ -118,7 +118,7 @@ namespace CodeExplorinator
             }
         }
 
-        private void TryAddGUIsFromRoot(HashSet<ConnectionGUI> guis, VisualElement root)
+        private void TryAddGUIsToRoot(HashSet<ConnectionGUI> guis, VisualElement root)
         {
             foreach (BaseGUI gui in guis)
             {

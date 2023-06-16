@@ -103,7 +103,7 @@ namespace CodeExplorinator
         private void SetFocusMethod()
         {
             graphManager.AddSelectedMethod(data.MethodNode);
-            graphManager.FocusOnSelectedMethods();
+            graphManager.AdjustGraphToSelectedMethods();
             graphManager.ChangeToMethodLayer();
         }
 

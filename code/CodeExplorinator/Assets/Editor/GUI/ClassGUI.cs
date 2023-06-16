@@ -297,7 +297,7 @@ namespace CodeExplorinator
         private void SetFocusClass()
         {
             graphManager.AddSelectedClass(data.ClassNode);
-            graphManager.FocusOnSelectedClasses();
+            graphManager.AdjustGraphToSelectedClasses();
             graphManager.ChangeToClassLayer();
         }
 

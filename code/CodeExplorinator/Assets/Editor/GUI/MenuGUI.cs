@@ -95,7 +95,7 @@ namespace CodeExplorinator
         public void ApplySelectedClasses()
         {
             graphManager.ChangeToClassLayer();
-            graphManager.FocusOnSelectedClasses();
+            graphManager.AdjustGraphToSelectedClasses();
             foreach(SearchListEntry entry in searchListEntries.Values)
             {
                 entry.SetUnselected();
@@ -105,11 +105,13 @@ namespace CodeExplorinator
         public void SetClassDepth(int depth)
         {
             graphManager.ChangeClassDepth(depth);
+            classDepthSlider.SetValue(depth);
         }
 
         public void SetMethodDepth(int depth)
         {
             graphManager.ChangeMethodDepth(depth);
+            methodDepthSlider.SetValue(depth);
         }
 
         private void KeyDownHandler(KeyDownEvent context)
@@ -121,7 +123,7 @@ namespace CodeExplorinator
                 query += context.character;
             }
 
-            if(context.keyCode == KeyCode.Backspace)
+            if(context.keyCode == KeyCode.Backspace && query.Length > 0)
             {
                 query = query.Substring(0, query.Length - 1);
             }
