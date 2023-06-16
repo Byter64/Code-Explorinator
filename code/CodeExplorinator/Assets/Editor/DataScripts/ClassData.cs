@@ -102,10 +102,32 @@ namespace CodeExplorinator
         {
             get
             {
+                bool isStruct = false, isRecord = false, isInterface = false;
+
                 string result = "";
                 foreach (ClassModifiers modifier in ClassModifiersList)
                 {
-                    result += modifier + " ";
+                    result += modifier.ToString().ToLower() + " ";
+                    if(modifier == ClassModifiers.STRUCT) { isStruct = true; }
+                    if(modifier == ClassModifiers.RECORD) { isRecord = true; }
+                    if(modifier == ClassModifiers.INTERFACE) { isInterface = true; }
+                }
+
+                if(isStruct)
+                {
+                    result += "struct ";
+                }
+                else if(isRecord)
+                {
+                    result += "record ";
+                }
+                else if(isInterface)
+                {
+                    result += "interface ";
+                }
+                else
+                {
+                    result += "class ";
                 }
 
                 //If not empty, remove the last space

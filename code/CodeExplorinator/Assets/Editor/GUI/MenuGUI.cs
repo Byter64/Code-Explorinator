@@ -83,7 +83,7 @@ namespace CodeExplorinator
         {
             foreach(ClassNode classnode in graphManager.ClassNodes)
             {
-                classNodes.Add(classnode.ClassData.GetName(), classnode);
+                classNodes.Add(classnode.classGUI.ClassModifiers + " " + classnode.classGUI.ClassName, classnode);
             }
         }
 
@@ -120,7 +120,7 @@ namespace CodeExplorinator
 
             if (char.GetUnicodeCategory(context.character) != System.Globalization.UnicodeCategory.Control)
             {
-                query += context.character;
+                query = query.Insert(searchInput.cursorIndex, context.character.ToString());
             }
 
             if(context.keyCode == KeyCode.Backspace && query.Length > 0)
@@ -129,9 +129,9 @@ namespace CodeExplorinator
                 {
                     query = RemoveSelection(query);
                 }
-                else
+                else if(searchInput.cursorIndex > 0)
                 {
-                    query = query.Substring(0, query.Length - 1);
+                    query = query.Remove(searchInput.cursorIndex - 1, 1);
                 }
             }
 
@@ -162,7 +162,6 @@ namespace CodeExplorinator
 
             foreach(string name in searchListEntries.Keys)
             {
-                //bool isVisible = name.ToLower().Contains(query);
                 bool isVisible = DieserEineAlgoDessenNamenIchNichtWeiﬂ(name.ToLower(), query);
                 if (!isVisible && scrollView.Contains(searchListEntries[name]))
                 {

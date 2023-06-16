@@ -11,6 +11,8 @@ namespace CodeExplorinator
     [System.Serializable]
     public class ClassGUI : BaseGUI, IPositionBackup
     {
+        public string ClassName { get; private set; }
+        public string ClassModifiers { get; private set; }
         public Vector2 Position { get; set; }
         public List<MethodGUI> methodGUIs { get; private set; }
 
@@ -131,8 +133,10 @@ namespace CodeExplorinator
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
+            
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
-
+            ClassModifiers = "<<" + data.ClassModifiersAsString + ">>";
+            ClassName = data.GetName();
             methodGUIs = new List<MethodGUI>();
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
@@ -161,8 +165,7 @@ namespace CodeExplorinator
             classElement.style.marginTop = Position.y;
 
             #region DrawHeader
-            string headerText = data.ClassModifiersList.Count == 0 ? "" : ColorText("<<" + data.ClassModifiersAsString + ">>", className);
-            headerText += "\n" + ColorText(data.GetName(), className);
+            string headerText = ColorText(ClassModifiers + "\n" + ClassName, className);
             Label header = new Label(headerText);
             header.style.backgroundImage = Background.FromTexture2D(headerTexture);
             header.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(headerTexture.width, headerTexture.height));
