@@ -45,7 +45,7 @@ namespace CodeExplorinator
         private Texture2D backgroundTexture;
         private ClickBehaviour clickBehaviour;
 
-        public MethodGUI(MethodData data, GUIStyle style, GraphVisualizer graphManager) : base(graphManager)
+        public MethodGUI(MethodData data, GUIStyle style, GraphManager graphManager) : base(graphManager)
         {
             this.data = data;
             this.style = style;
@@ -81,9 +81,9 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        public void ShowBackground(bool isShowingBackground)
+        public void ShowHighlight(bool isShowingHighlight)
         {
-            Visibility visiBackground = isShowingBackground ? Visibility.Visible : Visibility.Hidden;
+            Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
 
             VisualElement.style.visibility = visiBackground;
             VisualElement.Children().First().style.visibility = Visibility.Visible;
@@ -102,9 +102,9 @@ namespace CodeExplorinator
 
         private void SetFocusMethod()
         {
-            graphManager.ChangeToMethodLayer();
             graphManager.AddSelectedMethod(data.MethodNode);
             graphManager.FocusOnSelectedMethods();
+            graphManager.ChangeToMethodLayer();
         }
 
         private Vector2Int CalculateBackgroundSize()
@@ -122,7 +122,7 @@ namespace CodeExplorinator
             return new Vector2Int((int)result.x, (int)result.y);
         }
 
-        public void SetVisible(bool visible)
+        public override void SetVisible(bool visible)
         {
             VisualElement.Children().First().visible = visible;
             //If will be hidden, make background hidden, too

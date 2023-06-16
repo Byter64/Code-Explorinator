@@ -109,7 +109,7 @@ namespace CodeExplorinator
         /// <param name="classStyle">The style in which the class name will be displayed</param>
         /// <param name="fieldStyle">The style in which fields AND properties will be displayed</param>
         /// <param name="methodStyle">The style in which methods will be displayed</param>
-        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphVisualizer graphManager) :
+        public ClassGUI(Vector2 position, ClassData data, GUIStyle classStyle, GUIStyle fieldStyle, GUIStyle methodStyle, GraphManager graphManager) :
             base(graphManager)
         {
             if (!classStyle.font.dynamic)
@@ -255,6 +255,14 @@ namespace CodeExplorinator
             VisualElement.style.marginTop = positionBackup.y;
         }
 
+        public override void SetVisible(bool isVisible) 
+        {
+            VisualElement.visible = isVisible;
+            foreach(MethodGUI methodGUI in methodGUIs)
+            {
+                methodGUI.SetVisible(isVisible);
+            }
+        }
         private void TryAssignClickBehaviours()
         {
             bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
@@ -288,9 +296,9 @@ namespace CodeExplorinator
 
         private void SetFocusClass()
         {
-            graphManager.ChangeToClassLayer();
             graphManager.AddSelectedClass(data.ClassNode);
             graphManager.FocusOnSelectedClasses();
+            graphManager.ChangeToClassLayer();
         }
 
         private void AddClassToSelected()
