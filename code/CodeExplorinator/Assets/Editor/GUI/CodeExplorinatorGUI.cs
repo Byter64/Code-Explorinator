@@ -14,12 +14,15 @@ namespace CodeExplorinator
     {
         public static bool isControlDown = false;
 
+        private const string settingsKey = "CodeExplorinatorSettings";
+
         //Only exists to prevent garbage collection from deleting the dragBehaviour object. Might not even be necessary
-        private DragBehaviour dragBehaviour;
+        private static DragBehaviour dragBehaviour;
         //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
-        private ZoomBehaviour zoomBehaviour;
-        private GraphManager graphManager;
-        private MenuGUI menu;
+        private static ZoomBehaviour zoomBehaviour;
+        private static GraphManager graphManager;
+        private static VisualElement graph;
+        private static MenuGUI menu;
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
         {
@@ -27,36 +30,27 @@ namespace CodeExplorinator
             editorWindow.titleContent = new GUIContent("Code Explorinator");
         }
 
-
         private void CreateGUI()
         {
-            VisualElement graph = new VisualElement();
-            graph.style.scale = Vector2.one;
-            dragBehaviour = new DragBehaviour(graph);
-            zoomBehaviour = new ZoomBehaviour(graph, 1.05f);
-            #region Create Background
+            if (graphManager == null)
+            {
+                Initialize();
+            }
             rootVisualElement.Add(graph);
-            graph.style.position = new StyleEnum<Position>(Position.Absolute);
-            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0b11111111111111111111, 0b11111111111111111111));
-            graph.style.width = 0b11111111111111111111;
-            graph.style.height = 0b11111111111111111111;
-            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
-            graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
-            graph.style.marginTop = -0b1111111111111111111;
-            #endregion
-
-            
-            List<ClassData> classData = GenerateClassDataFromProject();
-            graphManager = new GraphManager(classData, graph, 0);
-
-            menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
-            menu.GenerateVisualElement();
             rootVisualElement.Add(menu.VisualElement);
         }
 
         private void OnGUI()
         {
             CheckControlKeys();
+        }
+
+        //This is called everytime the window is closed (therefore destroyed)
+        private void OnDestroy()
+        {
+            string saveData = graphManager.Serialize(true);
+
+            EditorPrefs.SetString(settingsKey, saveData);
         }
 
         private List<ClassData> GenerateClassDataFromProject()
@@ -100,6 +94,38 @@ namespace CodeExplorinator
             */
             
             return classDatas;
+        }
+
+        private void Initialize()
+        {
+            graph = new VisualElement();
+            graph.style.scale = Vector2.one;
+            dragBehaviour = new DragBehaviour(graph);
+            zoomBehaviour = new ZoomBehaviour(graph, 1.05f);
+
+            #region Create Background
+            graph.style.position = new StyleEnum<Position>(Position.Absolute);
+            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0xFFFFF, 0xFFFFF));
+            graph.style.width = 0xFFFFF;
+            graph.style.height = 0xFFFFF;
+            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            graph.style.marginLeft = -0x7FFFF; //Bigger numbers resulted in the background being not on the start view anymore :(
+            graph.style.marginTop = -0x7FFFF;
+            #endregion
+
+            List<ClassData> classData = GenerateClassDataFromProject();
+            graphManager = new GraphManager(classData, graph, 0);
+            menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
+            menu.GenerateVisualElement();
+
+            string settings = EditorPrefs.GetString(settingsKey);
+            Debug.Log("Loaded settings: \n" + settings);
+            if (settings != null && settings != string.Empty)
+            {
+                GraphManager.SerializationData data = graphManager.DeSerialize(settings);
+                menu.SetClassDepth(data.shownClassDepth);
+                menu.SetMethodDepth(data.shownMethodDepth);
+            }
         }
         
         private List<MethodData> CollectAllMethodData(List<ClassData> classData)

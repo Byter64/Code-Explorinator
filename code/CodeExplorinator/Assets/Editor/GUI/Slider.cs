@@ -1,5 +1,6 @@
 using CodeExplorinator;
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
@@ -19,6 +20,11 @@ namespace CodeExplorinator
             slider.value = startValue;
 
             this.onValueChange = onValueChange;
+        }
+
+        public void SetValue(int value)
+        {
+            slider.value = value;
         }
 
         protected override void RegisterCallbacksOnTarget()

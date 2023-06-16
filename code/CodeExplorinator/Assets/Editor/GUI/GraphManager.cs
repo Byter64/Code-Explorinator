@@ -1,6 +1,7 @@
 ﻿using Codice.Client.BaseCommands.CheckIn;
 using Codice.Client.Common.TreeGrouper;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -14,11 +15,87 @@ namespace CodeExplorinator
 {
     public class GraphManager
     {
+        public struct SerializationData
+        {
+            public int shownClassDepth;
+            public int shownMethodDepth;
+            public State state;
+            public string[] focusedClassNodes;
+            public string[] focusedMethodNodes;
+
+            public SerializationData(int shownClassDepth, int shownMethodDepth, State state, HashSet<ClassNode> focusedClassNodes, HashSet<MethodNode> focusedMethodNodes)
+            {
+                this.shownClassDepth = shownClassDepth;
+                this.shownMethodDepth = shownMethodDepth;
+                this.state = state;
+                this.focusedClassNodes = ToStringArray(focusedClassNodes);
+                this.focusedMethodNodes = ToStringArray(focusedMethodNodes);
+            }
+
+            private static string[] ToStringArray(HashSet<ClassNode> classNodes)
+            {
+                ClassNode[] classNodesArray = classNodes.ToArray();
+                string[] result = new string[classNodes.Count];
+
+                for(int i = 0; i < result.Length; i++)
+                {
+                    result[i] = classNodesArray[i].ClassData.ClassInformation.ToDisplayString();
+                }
+                return result;
+            }
+
+            private static string[] ToStringArray(HashSet<MethodNode> methodNode)
+            {
+                MethodNode[] methodNodesArray = methodNode.ToArray();
+                string[] result = new string[methodNode.Count];
+
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result[i] = methodNodesArray[i].MethodData.MethodSymbol.ToDisplayString();
+                }
+                return result;
+            }
+
+            public static HashSet<ClassNode> ToClassNodes(string[] displayStrings)
+            {
+                HashSet<ClassNode> result = new();
+                
+                foreach(string instance in displayStrings)
+                {
+                    IEnumerable<ClassNode> nodes = Instance.ClassNodes.Where(x => x.ClassData.ClassInformation.ToDisplayString().Equals(instance));
+                    if(nodes.Count() == 1)
+                    {
+                        result.Add(nodes.First());
+                    }
+                }
+
+                return result;
+            }
+
+            public static HashSet<MethodNode> ToMethodNodes(string[] displayStrings)
+            {
+                HashSet<MethodNode> result = new();
+
+                foreach (string instance in displayStrings)
+                {
+                    IEnumerable<MethodNode> nodes = Instance.methodNodes.Where(x => x.MethodData.MethodSymbol.ToDisplayString().Equals(instance));
+                    if (nodes.Count() == 1)
+                    {
+                        result.Add(nodes.First());
+                    }
+                }
+
+                return result;
+            }
+        }
+
         public enum State
         {
             ClassLayer,
             MethodLayer
         }
+
+        public static GraphManager Instance { get; private set; }
 
         /// <summary>
         /// all ClassNodes in the currently analyzed project
@@ -39,7 +116,7 @@ namespace CodeExplorinator
         /// <summary>
         /// The currently focused methodNode in the oldFocusNode. This is null if the method layer is inactive
         /// </summary>
-        public MethodNode focusedMethodNode;
+        public MethodNode focusedMethodNode; //TODO: Delete this 
 
         /// <summary>
         /// The root visualElement of the editor window
@@ -70,6 +147,7 @@ namespace CodeExplorinator
 
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
+            Instance = this;
             shownClassDepth = shownDepth;
             shownMethodDepth = shownDepth;
             this.graphRoot = graphRoot;
@@ -101,7 +179,15 @@ namespace CodeExplorinator
             selectedClassNodes.Add(selectedClass);
         }
 
-        public void FocusOnSelectedClasses()
+        public void AddSelectedClasses(IEnumerable<ClassNode> selectedClasses)
+        {
+            foreach(ClassNode node in selectedClasses)
+            {
+                AddSelectedClass(node);
+            }
+        }
+
+        public void AdjustGraphToSelectedClasses()
         {
             focusedClassNodes.Clear();
             focusedClassNodes.UnionWith(selectedClassNodes);
@@ -114,7 +200,15 @@ namespace CodeExplorinator
             selectedMethodNodes.Add(selectedMethod);
         }
 
-        public void FocusOnSelectedMethods()
+        public void AddSelectedMethods(IEnumerable<MethodNode> selectedMethods)
+        {
+            foreach (MethodNode node in selectedMethods)
+            {
+                AddSelectedMethod(node);
+            }
+        }
+
+        public void AdjustGraphToSelectedMethods()
         {
             focusedMethodNodes.Clear();
             focusedMethodNodes.UnionWith(selectedMethodNodes);
@@ -162,6 +256,51 @@ namespace CodeExplorinator
             state = State.ClassLayer;
         }
 
+        public string Serialize(bool prettyPrint)
+        {
+            SerializationData data = new SerializationData(shownClassDepth, shownMethodDepth, state, focusedClassNodes, focusedMethodNodes);
+            string result;
+            if(prettyPrint)
+            {
+                result = JsonConvert.SerializeObject(data, Formatting.Indented);
+            }
+            else
+            {
+                result = JsonConvert.SerializeObject(data, Formatting.None);
+            }
+            return result;
+        }
+
+        public SerializationData DeSerialize(string jsonString)
+        { 
+            if(jsonString == null)
+            {
+                throw new ArgumentNullException();
+            }
+            SerializationData data = JsonConvert.DeserializeObject<SerializationData>(jsonString);
+            HashSet<ClassNode> focusClasses = SerializationData.ToClassNodes(data.focusedClassNodes);
+            HashSet<MethodNode> focusMethods = SerializationData.ToMethodNodes(data.focusedMethodNodes);
+            
+            AddSelectedClasses(focusClasses);
+            AdjustGraphToSelectedClasses();
+
+            AddSelectedMethods(focusMethods);
+            AdjustGraphToSelectedMethods();
+
+            switch(data.state)
+            {
+                case State.ClassLayer:
+                    ChangeToClassLayer();
+                    break;
+
+                case State.MethodLayer:
+                    ChangeToMethodLayer();
+                    break;
+            }
+
+            return data;
+        }
+
         private void ChangeClassGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
         {
             UpdateSubGraphs(focusClasses, shownDepth);
@@ -196,7 +335,7 @@ namespace CodeExplorinator
 
             foreach (ClassGraph graph in classGraphs)
             {
-                nodes.UnionWith(graph.classNodes);
+                nodes.UnionWith(graph.classNodes); //Warum nochmal????
 
                 graph.GenerateConnectionsBetweenClasses();
                 graph.GenerateVisualElementGraph();
