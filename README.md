@@ -16,7 +16,9 @@
 
 ### Abstract
 
-`Code Explorinator is a Unity Plugin that helps you visually explore code. The of days spaghetti code are numbered! It uses the C# Roslyn compiler to analyze the code and display it as an interactive UML Diagram.`
+`Code Explorinator is a Unity Plugin that helps you visually explore code. The days of spaghetti code are over! It uses the C# Roslyn compiler to analyze your code within a unity project and displays it as an interactive class diagram.
+
+The project is displayed as an UML-like diagram through which you can navigate by scrolling and zooming. An adjustable graph size and a list with all types (classes, structs, interfaces, ...) declared in your code help you get an overview of the project's structure.`
 
 `--- 8< --- READ, THEN REPLACE WITH CUSTOM CONTENT BELOW HERE --- 8< ---`
 
