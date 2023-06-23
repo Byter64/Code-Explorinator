@@ -113,6 +113,7 @@ namespace CodeExplorinator
                     if(modifier == ClassModifiers.INTERFACE) { isInterface = true; }
                 }
 
+                //If it is just a class:
                 if(!isStruct && !isRecord && !isInterface && !isInterface)
                 {
                     result += "class ";
