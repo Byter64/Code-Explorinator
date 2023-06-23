@@ -273,7 +273,7 @@ namespace CodeExplorinator
         }
 
         public SerializationData DeSerialize(string jsonString)
-        { 
+        {
             if(jsonString == null)
             {
                 throw new ArgumentNullException();
@@ -328,7 +328,6 @@ namespace CodeExplorinator
             HashSet<MethodGUI> unfocusedMethods = new();
             unfocusedMethods.UnionWith(methodGUIs); 
             unfocusedMethods.ExceptWith(focusedMethods);
-            string x;
             graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs, focusedMethods, unfocusedMethods);
             graphVisualizer.ShowMethodLayer(true, methodGUIs);
         } 
@@ -377,14 +376,6 @@ namespace CodeExplorinator
             //Create classgraph that contains each class which contains a shown method
             methodGraph = new ClassGraph(this, FindClassNodes(shownMethodNodes), focusedClasses, shownDepth);
 
-            //Backup positions of currently shown classes
-            foreach (ClassGraph graph in classGraphs)
-            {
-                foreach (ClassNode node in graph.classNodes)
-                {
-                    node.classGUI.MakePositionBackup();
-                }
-            }
             //Calculate new positions
             SpringEmbedderAlgorithm.StartMethodAlgorithm(methodGraph.classNodes, shownMethodNodes);
             methodGraph.GenerateConnectionsBetweenMethods(shownMethodNodes);

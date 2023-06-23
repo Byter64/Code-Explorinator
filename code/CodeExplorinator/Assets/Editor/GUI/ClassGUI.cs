@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace CodeExplorinator
 {
     [System.Serializable]
-    public class ClassGUI : BaseGUI, IPositionBackup
+    public class ClassGUI : BaseGUI
     {
         public string ClassName { get; private set; }
         public string ClassModifiers { get; private set; }
@@ -192,23 +192,6 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        /// <summary>
-        /// Saves the current position internally. Call RestorePositionBackup to restore the position.
-        /// </summary>
-        public void MakePositionBackup()
-        {
-            positionBackup = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
-        }
-
-        /// <summary>
-        /// Restores the position which was last saved by MakePositionBackup
-        /// </summary>
-        public void RestorePositionBackup()
-        {
-            VisualElement.style.marginLeft = positionBackup.x;
-            VisualElement.style.marginTop = positionBackup.y;
-        }
-
         public override void SetVisible(bool isVisible) 
         {
             VisualElement.visible = isVisible;
@@ -232,21 +215,14 @@ namespace CodeExplorinator
             }
         }
 
-        private void TryAssignClickBehaviours()
+        public void SetIsExpanded(bool isExpanded)
         {
-            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
-            bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
-            headerClick ??= new ClickBehaviour(header, SwapExpandedCollapsed, SetFocusClass);
-        }
-
-        private void SwapExpandedCollapsed()
-        {
-            isExpanded = !isExpanded;
+            this.isExpanded = !isExpanded;
             if (isExpanded)
             {
                 VisualElement.visible = true;
                 header.visible = true;
-                foreach(MethodGUI methodGUI in methodGUIs)
+                foreach (MethodGUI methodGUI in methodGUIs)
                 {
                     methodGUI.SetVisible(true);
                 }
@@ -263,6 +239,17 @@ namespace CodeExplorinator
             }
         }
 
+        private void TryAssignClickBehaviours()
+        {
+            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
+            bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
+            headerClick ??= new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
+        }
+
+        private void SwapIsExpanded()
+        {
+            SetIsExpanded(!isExpanded);
+        }
         private void SetFocusClass()
         {
             graphManager.AddSelectedClass(data.ClassNode);

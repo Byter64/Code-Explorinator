@@ -8,7 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace CodeExplorinator
 {
-    public class ConnectionGUI : BaseGUI, IPositionBackup
+    public class ConnectionGUI : BaseGUI
     {
         private bool isInheritanceConnection;
         private bool isMethod;
@@ -52,23 +52,6 @@ namespace CodeExplorinator
         public override void SetVisible(bool isVisible)
         {
             VisualElement.visible = isVisible;
-        }
-
-        /// <summary>
-        /// Saves the current position internally. Call RestorePositionBackup to restore the position.
-        /// </summary>
-        public void MakePositionBackup()
-        {
-            positionBackup = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
-        }
-
-        /// <summary>
-        /// Restores the position which was last saved by MakePositionBackup
-        /// </summary>
-        public void RestorePositionBackup()
-        {
-            VisualElement.style.marginLeft = positionBackup.x;
-            VisualElement.style.marginTop = positionBackup.y;
         }
 
         private VisualElement CreateConnection(Vector2 footPos, Vector2 tipPos, bool isInheritanceArrow)
