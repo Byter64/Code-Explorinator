@@ -18,6 +18,9 @@ namespace CodeExplorinator
         private Texture2D inheritanceArrowTexture;
         private VisualElement footNode;
         private VisualElement tipNode;
+        
+        //length of the random connection
+        private const float randomConnectionLength = 200f;
 
         public ConnectionGUI(GraphManager graphManager, VisualElement footNode, VisualElement tipNode, bool isInheritanceConnection = false, bool isMethod = false) : base(graphManager)
         {
@@ -89,7 +92,7 @@ namespace CodeExplorinator
             //creates parent visual element
             VisualElement parent = new VisualElement();
             
-            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)).normalized * 200; //normalise it to the same length
+            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)).normalized * randomConnectionLength; //normalise it to the same length
 
             parent.Add(InstantiateLine(position,connection));
 

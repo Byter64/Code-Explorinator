@@ -105,14 +105,17 @@ namespace CodeExplorinator
 
                 float cooling = coolingFactor(t, iterationsOfClassAlgo);
 
-                /*
+                
                 //this is ignoring the first element, aka the focus class, to force it to stay in the same place
+                
+                
                 for (int i = 1; i < nodes.Count; i++)
                 {
                     nodes[i].position.x += cooling * nodes[i].F.x;
                     nodes[i].position.y += cooling * nodes[i].F.y;
                 }
-                */
+                
+                /*
                 foreach (var node in nodes)
                 {
                     
@@ -121,7 +124,8 @@ namespace CodeExplorinator
                     
                     //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
                 }
-
+                */
+                
                 t++;
             }
 
