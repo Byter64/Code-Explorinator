@@ -51,14 +51,6 @@ namespace CodeExplorinator
             {
                 connectionGUI.SetVisible(isVisible);
             }
-
-            //if(isVisible)
-            //{
-            //    foreach(MethodGUI methodGUI in toBeHighlightedMethods)
-            //    {
-            //        methodGUI.ShowHighlight(true);
-            //    }
-            //}
         }
 
         public void ShowClassLayer(bool isVisible)
