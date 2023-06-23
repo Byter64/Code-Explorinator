@@ -307,14 +307,14 @@ namespace CodeExplorinator
             UpdateSubGraphs(focusClasses, shownDepth);
             HashSet<ClassGUI> classGUIs = GetAllClassGUIs(classGraphs);
             HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(classGraphs);
-            HashSet<ClassGUI> focusedGuis = new();
+            HashSet<ClassGUI> focusedGUIs = new();
             HashSet<ClassGUI> unfocusedGUIs = new();
 
-            focusedGuis.UnionWith(GetAllClassGUIs(focusClasses));
+            focusedGUIs.UnionWith(GetAllClassGUIs(focusClasses));
             unfocusedGUIs.UnionWith(classGUIs);
-            unfocusedGUIs.ExceptWith(focusedGuis);
+            unfocusedGUIs.ExceptWith(focusedGUIs);
 
-            graphVisualizer.SetClassLayer(focusedGuis, unfocusedGUIs, connectionGUIs);
+            graphVisualizer.SetClassLayer(focusedGUIs, unfocusedGUIs, connectionGUIs);
             graphVisualizer.ShowClassLayer(true);
         }
 

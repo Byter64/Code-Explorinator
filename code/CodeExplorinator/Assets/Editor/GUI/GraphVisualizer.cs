@@ -35,6 +35,7 @@ namespace CodeExplorinator
             foreach(ClassGUI classGUI in methodLayer)
             {
                 classGUI.SetVisible(isVisible);
+                classGUI.SetIsExpanded(true);
             }
 
             foreach(ConnectionGUI connectionGUI in methodLayerConnections)
@@ -56,6 +57,12 @@ namespace CodeExplorinator
             foreach (ClassGUI classGUI in classLayerUnfocused)
             {
                 classGUI.SetVisible(isVisible);
+                classGUI.SetIsExpanded(false);
+            }
+            foreach(ClassGUI classGUI in classLayerFocused)
+            {
+                classGUI.SetVisible(isVisible);
+                classGUI.SetIsExpanded(true);
             }
 
             foreach (ConnectionGUI connectionGUI in classLayerConnections)

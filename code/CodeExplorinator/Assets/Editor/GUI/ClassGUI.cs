@@ -40,6 +40,7 @@ namespace CodeExplorinator
         private static TiledTextureBuilder headerBuilder;
 
         private bool isExpanded;
+        private bool isVisible;
         private int widthInPixels;
         private int heightInPixels;
         private Vector2 positionBackup;
@@ -192,12 +193,17 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        public override void SetVisible(bool isVisible) 
+        public override void SetVisible(bool isVisible)
         {
-            VisualElement.visible = isVisible;
-            foreach(MethodGUI methodGUI in methodGUIs)
+            this.isVisible = isVisible;
+
+            bool isBodyVisible = isExpanded && isVisible;
+
+            VisualElement.visible = isBodyVisible;
+            header.visible = isVisible;
+            foreach (MethodGUI methodGUI in methodGUIs)
             {
-                methodGUI.SetVisible(isVisible);
+                methodGUI.SetVisible(isBodyVisible);
             }
         }
 
@@ -217,31 +223,15 @@ namespace CodeExplorinator
 
         public void SetIsExpanded(bool isExpanded)
         {
-            this.isExpanded = !isExpanded;
-            if (isExpanded)
-            {
-                VisualElement.visible = true;
-                header.visible = true;
-                foreach (MethodGUI methodGUI in methodGUIs)
-                {
-                    methodGUI.SetVisible(true);
-                }
-                VisualElement.BringToFront();
-            }
-            else
-            {
-                VisualElement.visible = false;
-                header.visible = true;
-                foreach (MethodGUI methodGUI in methodGUIs)
-                {
-                    methodGUI.SetVisible(false);
-                }
-            }
+            this.isExpanded = isExpanded;
+            SetVisible(isVisible);
         }
 
         private void TryAssignClickBehaviours()
         {
-            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
+            void ChangeVisible() { SetVisible(!isVisible); Debug.Log("Ich bin sichtbar: " + isVisible); }
+
+            bodyClick ??= new ClickBehaviour(VisualElement, ChangeVisible, SetFocusClass);
             bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
             headerClick ??= new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
         }
