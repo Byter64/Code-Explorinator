@@ -17,12 +17,12 @@ public class Dog : Enemy
 
     public smallMom[] ProMomArray { get; set; }
     
-    
+    /*
     public override void mlem()
     {
         
     }
-    
+    */
     
     
 }

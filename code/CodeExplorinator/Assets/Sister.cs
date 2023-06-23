@@ -21,7 +21,7 @@ public class Sister
         return sis1;
     }
 
-    public void bla(Sister s1, Sister s2)
+    public void gossip(Sister s1, Sister s2)
     {
         s1 += s2;
     }

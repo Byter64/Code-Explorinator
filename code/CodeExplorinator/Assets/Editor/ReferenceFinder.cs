@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 using System;
+using System.Collections;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.FlowAnalysis;
@@ -80,7 +81,7 @@ namespace CodeExplorinator
                 }
             }
 
-            //RefillAllMethodExtensions(classDatas);
+            RefillAllMethodExtensions(classDatas);
         }
 
         private static void RefillAllMethodExtensions(IEnumerable<ClassData> classDatas)
@@ -91,10 +92,8 @@ namespace CodeExplorinator
                 {
                     if (methodData.MethodSymbol.IsOverride)
                     {
-                        Debug.Log(methodData.GetName() + " has override: " +
-                                  methodData.MethodSymbol
-                                      .OverriddenMethod); //TODO this works perfectly for inheritance, implement
-                        Debug.Log(methodData.MethodSymbol.OriginalDefinition);
+                        //Debug.Log(methodData.GetName() + " has override: " + methodData.MethodSymbol.OverriddenMethod); //TODO this works perfectly for inheritance, implement
+                        //Debug.Log(methodData.MethodSymbol.OriginalDefinition);
                     }
 
                     //if (methodData.MethodSymbol.ContainingType.TypeKind.GetType())
@@ -108,7 +107,7 @@ namespace CodeExplorinator
 
                     if (classData.GetName().Equals("small Mom"))
                     {
-                        Debug.Log("smalll mom: " + methodData.MethodSymbol.OriginalDefinition);
+                        //Debug.Log("smalll mom: " + methodData.MethodSymbol.OriginalDefinition);
                     }
                 }
 
@@ -121,6 +120,60 @@ namespace CodeExplorinator
                     }
                 }
                 */
+
+                //TODO: implement interface inheritance by methodData. var c = methodData.ContainingClass.ImplementingInterfaces.SelectMany(m => m.PrivateMethods.Concat(m.PublicMethods));
+                //TODO: in short, just compare the symbols by going through all the methods of the interface
+                foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
+                {
+                    //var methodSymbol = typeSymbol.GetMembers(methodName).OfType<IMethodSymbol>().FirstOrDefault();
+                    var methodSymbol = methodData.MethodSymbol;
+                    
+                    /*
+                    var disposeMethodSymbol = methodSymbol;
+                    var type = disposeMethodSymbol.ContainingType;
+                    try
+                    {
+                        var isInterfaceImplementaton = type.FindImplementationForInterfaceMember(type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single()) == disposeMethodSymbol;
+                        if (isInterfaceImplementaton)
+                        {
+                            Debug.Log("found: " + type.FindImplementationForInterfaceMember(
+                                type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single()).Name);
+                        }
+
+                        var gag = type.FindImplementationForInterfaceMember(
+                            type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single());
+
+                        if (gag != null)
+                        {
+                            Debug.Log("finally found: " + gag.Name + " for " + methodData.GetName()); //TODO this somehow finds itself (eg: finally found: IAdder.Add for IAdder.Add), maybe still useful
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        //throw;
+                    }
+                    */
+                    /*
+                    //this doesnt work, maybe beause of: methodSymbol.ContainingType, gives out weird stuff
+                    if (methodSymbol != null && (methodSymbol.ExplicitInterfaceImplementations.Any() || methodSymbol
+                            .ContainingType.AllInterfaces.SelectMany(i => i.GetMembers()).OfType<IMethodSymbol>()
+                            .Any(m => methodSymbol.Equals(methodSymbol.ContainingType
+                                .FindImplementationForInterfaceMember(m)))))
+                    {
+                        Debug.Log("YAY");
+
+                        // The method implements an interface method.
+                        foreach (var interfaceMethod in methodSymbol.ContainingType.AllInterfaces
+                                     .SelectMany(i => i.GetMembers()).OfType<IMethodSymbol>().Select(m =>
+                                         methodSymbol.ContainingType.FindImplementationForInterfaceMember(m)))
+                        {
+                            Debug.Log("found: " + interfaceMethod.Name + " of "+ interfaceMethod.OriginalDefinition + " that is implemented by " + methodData.GetName() + " of "+ methodData.MethodSymbol.OriginalDefinition);
+                        }
+                        
+                    }
+                     */
+                }
             }
         }
 
@@ -581,10 +634,42 @@ namespace CodeExplorinator
                     }
                     */
 
+                    /*
+                    if (fieldData.FieldSymbol.Type.AllInterfaces.Any(i => i.Name == nameof(IEnumerable))) {//this already doesnt trigger
+                        
+                        if (!(fieldData.FieldSymbol.Type as INamedTypeSymbol).IsGenericType) {
+                            if (fieldData.FieldSymbol is IArrayTypeSymbol arrayType) {
+                                var elementType = arrayType.ElementType;
+                                Debug.Log("YAAAAAAAAAAAAAY");
+                                
+                                if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, elementType))
+                                {
+                                    SetFieldReferenceInformation(referencedClass,fieldData);
+                                }
+                                
+                                // do whatever
+                            } else {
+                                // no element type found, oof
+                            }
+                        } else {
+                            foreach (var generic in fieldData.FieldSymbol.ContainingType.TypeArguments) {
+                                // do whatever you need to do
+                                
+                                Debug.Log("YAAAAAAAAAAAAAY");
+                                
+                                if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, generic))
+                                {
+                                    SetFieldReferenceInformation(referencedClass,fieldData);
+                                }
+                            }
+                        }
+                    }
+                    */
+
                     //if the class is referenced by this field, set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
                     {
-                        SetFieldReferenceInformation(referencedClass,fieldData);
+                        SetFieldReferenceInformation(referencedClass, fieldData);
                     }
                 }
             }

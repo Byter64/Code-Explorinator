@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 
 public class Player : MonoBehaviour
-{
+{/*
     public static Player instance;
     public virtual string nickname { get;  set; }
 
@@ -54,4 +54,5 @@ public class Player : MonoBehaviour
         archEnemy.noteFromPlayer = "You shall never forget me";
         Destroy(gameObject);
     }
+    */
 }

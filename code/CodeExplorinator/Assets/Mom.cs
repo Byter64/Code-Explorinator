@@ -8,7 +8,7 @@ public  class Mom
     public static Sister daughter;
     public smallMom SmallMom;
 
-    public void GETCHOASSOVERHERE()
+    public void sipTea()
     {
         SmallMom = new smallMom();
         SmallMom.ParameterTest(bacon: 3, butter:4, eggs:5);

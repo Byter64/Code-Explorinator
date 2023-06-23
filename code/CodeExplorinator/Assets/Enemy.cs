@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public abstract class Enemy : MonoBehaviour
 {
+    /*
     int health;
     int maxHealth;
 
@@ -82,4 +83,5 @@ public abstract class Enemy : MonoBehaviour
     private void WellExcuuuuuseMePrincess() {}
 
     private void ExcuseThePrincess(int gift, int giftButItIsGerman) { }
+    */
 }

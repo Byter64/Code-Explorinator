@@ -89,7 +89,7 @@ namespace CodeExplorinator
             //creates parent visual element
             VisualElement parent = new VisualElement();
             
-            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)).normalized * 500; //normalise it to the same length
+            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)).normalized * 200; //normalise it to the same length
 
             parent.Add(InstantiateLine(position,connection));
 

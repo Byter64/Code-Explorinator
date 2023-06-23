@@ -10,7 +10,7 @@ public interface Family
         mom = new Mom();
     }
 
-    public void fjkasndf()
+    public void playBoardgames()
     {
         
     }

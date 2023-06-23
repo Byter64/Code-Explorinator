@@ -20,19 +20,21 @@ public class smallMom : Player, Family
     {
     }
 
-    public async void fafner()
+    public async void walkTheDog()
     {
         
     }
 
     public extern void something();
+    /*
 
     public sealed override void Help()
     {
         
     }
+    */
 
-    public new void fjae()
+    public new void cook()
     {
         
     }
@@ -42,7 +44,7 @@ public class smallMom : Player, Family
         
     }
 
-    public void fsadsff() => new Mom().GETCHOASSOVERHERE();
+    public void talk() => new Mom().sipTea();
 
     
 
