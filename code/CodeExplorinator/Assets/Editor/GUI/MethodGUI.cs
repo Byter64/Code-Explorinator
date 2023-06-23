@@ -18,6 +18,8 @@ namespace CodeExplorinator
         private static TiledTextureData backgroundData;
         private static TiledTextureBuilder backgroundBuilder;
 
+        private bool isFocused = false;
+        private bool isHighlighted = false;
         private GUIStyle style;
         private Texture2D backgroundTexture;
         private Texture2D focusedBackgroundTexture;
@@ -63,12 +65,14 @@ namespace CodeExplorinator
         {
             Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
 
+            isHighlighted = isShowingHighlight;
             VisualElement.style.visibility = visiBackground;
             VisualElement.Children().First().style.visibility = Visibility.Visible;
         }
 
         public void SetFocused(bool isFocused)
         {
+            this.isFocused = isFocused;
             if (isFocused)
             {
                 VisualElement.style.backgroundImage = Background.FromTexture2D(focusedBackgroundTexture);
@@ -114,9 +118,19 @@ namespace CodeExplorinator
 
         public override void SetVisible(bool visible)
         {
+            //Hide text
             VisualElement.Children().First().visible = visible;
+            
+            //Hide highlight
             //If will be hidden, make background hidden, too
-            if(!visible)
+            if(visible)
+            {
+                if(isHighlighted)
+                {
+                    ShowHighlight(true);
+                }
+            }
+            else
             {
                 VisualElement.visible = visible;
             }
