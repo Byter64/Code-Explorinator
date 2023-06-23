@@ -38,18 +38,27 @@ namespace CodeExplorinator
                 classGUI.SetIsExpanded(true);
             }
 
-            foreach(ConnectionGUI connectionGUI in methodLayerConnections)
+            foreach (MethodGUI methodGUI in methodLayerFocused)
+            {
+                methodGUI.ShowHighlight(isVisible);
+            }
+            foreach (MethodGUI methodGUI in methodLayerUnfocused)
+            {
+                methodGUI.ShowHighlight(isVisible);
+            }
+
+            foreach (ConnectionGUI connectionGUI in methodLayerConnections)
             {
                 connectionGUI.SetVisible(isVisible);
             }
 
-            if(isVisible)
-            {
-                foreach(MethodGUI methodGUI in toBeHighlightedMethods)
-                {
-                    methodGUI.ShowHighlight(true);
-                }
-            }
+            //if(isVisible)
+            //{
+            //    foreach(MethodGUI methodGUI in toBeHighlightedMethods)
+            //    {
+            //        methodGUI.ShowHighlight(true);
+            //    }
+            //}
         }
 
         public void ShowClassLayer(bool isVisible)
@@ -73,8 +82,23 @@ namespace CodeExplorinator
 
         public void SetMethodLayer(HashSet<ClassGUI> methodLayer, HashSet<ConnectionGUI> connections, HashSet<MethodGUI> focusedMethods, HashSet<MethodGUI> unfocusedMethods)
         {
+            foreach (MethodGUI methodGUI in methodLayerFocused)
+            {
+                methodGUI.ShowHighlight(false);
+            }
+            foreach (MethodGUI methodGUI in methodLayerUnfocused)
+            {
+                methodGUI.ShowHighlight(false);
+            }
+
             TryRemoveGUIsFromRoot(this.methodLayer, methodLayerRoot);
             TryRemoveGUIsFromRoot(this.methodLayerConnections, methodLayerRoot);
+
+
+            this.methodLayer = methodLayer;
+            this.methodLayerConnections = connections;
+            this.methodLayerFocused = focusedMethods;
+            this.methodLayerUnfocused = unfocusedMethods;
 
             foreach(MethodGUI methodGUI in focusedMethods)
             {
@@ -84,12 +108,6 @@ namespace CodeExplorinator
             {
                 methodGUI.SetFocused(false);
             }
-
-            this.methodLayer = methodLayer;
-            this.methodLayerConnections = connections;
-            this.methodLayerFocused = focusedMethods;
-            this.methodLayerUnfocused = unfocusedMethods;
-
             TryAddGUIsToRoot(connections, methodLayerRoot);
             TryAddGUIsToRoot(methodLayer, methodLayerRoot);
         }

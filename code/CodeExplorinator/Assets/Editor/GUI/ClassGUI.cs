@@ -229,9 +229,7 @@ namespace CodeExplorinator
 
         private void TryAssignClickBehaviours()
         {
-            void ChangeVisible() { SetVisible(!isVisible); Debug.Log("Ich bin sichtbar: " + isVisible); }
-
-            bodyClick ??= new ClickBehaviour(VisualElement, ChangeVisible, SetFocusClass);
+            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
             bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
             headerClick ??= new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
         }

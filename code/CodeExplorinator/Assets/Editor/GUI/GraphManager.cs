@@ -355,10 +355,10 @@ namespace CodeExplorinator
 
         private void UpdateMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
         {
-            foreach (MethodNode node in shownMethodNodes)
-            {
-                node.MethodGUI.ShowHighlight(false);
-            }
+            //foreach (MethodNode node in shownMethodNodes)
+            //{
+            //    node.MethodGUI.ShowHighlight(false);
+            //}
             BreadthSearch.Reset();
             shownMethodNodes.Clear();
             //Generate graph
