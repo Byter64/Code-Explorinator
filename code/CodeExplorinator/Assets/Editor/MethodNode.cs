@@ -18,6 +18,11 @@ namespace CodeExplorinator
         public MethodGUI MethodGUI { get; set; }
 
         /// <summary>
+        /// represents the distance of the focus method found by the breatch search 
+        /// </summary>
+        public int distanceFromFocusMethod;
+
+        /// <summary>
         /// shows if this node is considered a leaf node by the breadth search
         /// </summary>
         public bool IsLeaf;

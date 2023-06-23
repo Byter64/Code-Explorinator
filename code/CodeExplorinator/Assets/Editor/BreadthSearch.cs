@@ -172,6 +172,7 @@ namespace CodeExplorinator
         {
             HashSet<MethodNode> subgraph = new HashSet<MethodNode>();
             GenerateMethodGraph(startingNode, depth, subgraph);
+            InvertDistanceNumbers(subgraph, depth);
             return subgraph;
         }
 
@@ -182,6 +183,10 @@ namespace CodeExplorinator
                 return;
             }
             
+            //if the class was already analysed but we can still search, the node is not generated but the tree explored further
+            //impacts the searchtime negatively tho
+            //if we wanted to perfectly run through all ClassNodes we would have to save the highest searchradius that was gone trough, and go through
+            //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
             foreach (var node in AnalysedMethods)
             {
                 if (node == startingMethod)
@@ -199,6 +204,10 @@ namespace CodeExplorinator
             startingMethod.IsLeaf = searchRadius == 0;
             AnalysedMethods.Add(startingMethod);
             result.Add(startingMethod);
+            
+            //set the distance to be able to show the distance visually (done in other classes)
+            startingMethod.distanceFromFocusMethod = searchRadius;
+            
 
             SkipOverGeneration:
             
@@ -234,6 +243,18 @@ namespace CodeExplorinator
                 GenerateMethodGraph(connectedMethod.MethodNode,searchRadius - 1, result);
             }
             
+        }
+
+        
+        /// <summary>
+        /// This method inverts the methodNodes.distanceFromFocusMethod so that 0 is the focusmethod, 1 are the methods direclty connected to it, the numbers increasing with distance
+        /// </summary>
+        private static void InvertDistanceNumbers(HashSet<MethodNode> allFoundMethodNodes, int searchRadius)
+        {
+            foreach (var node in allFoundMethodNodes)
+            {
+                node.distanceFromFocusMethod = searchRadius - node.distanceFromFocusMethod;
+            }
         }
     }
 }

@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 
@@ -48,6 +52,12 @@ namespace CodeExplorinator
         
         /// <summary>
         /// CANNOT BE ZERO!
+        /// This is the ideal length of a connection between methodNodes. The connections that go to nowhere are 500 long, the smallest class has a height of ca. 500.
+        /// </summary>
+        private const float idealSpringLengthMethods = 300000f;
+        
+        /// <summary>
+        /// CANNOT BE ZERO!
         /// The bigger the number, the faster the force gets smaller with increased iterations, for example:
         /// iterations = 100, coolingsSpeed = 2; 100/2*current_iteration
         /// => from iteration 50 and onwards the coolingSpeed is <= 1
@@ -56,26 +66,30 @@ namespace CodeExplorinator
 
 
         //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
-        public static void StartAlgorithm(List<ClassNode> nodes)
+        public static void StartAlgorithm(HashSet<ClassNode> nodes)
         {
+            List<ClassNode> nodesList = nodes.ToList();
+            
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            
             int t = 1;
 
             DetermineConnectionBetweenNodes(nodes);
-
-
+            
             while (t <= iterationsOfClassAlgo)
             {
                 foreach (var node in nodes)
                 {
                     Vector2 resultRepulsion = Vector2.zero;
                     Vector2 resultSpring = Vector2.zero;
-
+                    
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
                         //the force of attraction
-                        resultSpring += ForceSpring(connectedNode, node);
+                        resultSpring += ForceSpring(connectedNode, node, idealSpringLength);
                     }
-
+                    
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
                         //the force of repulsion
@@ -86,7 +100,6 @@ namespace CodeExplorinator
                 }
 
                 float maxForce = 0;
-
                 foreach (var node in
                          nodes) //checking if the forces are small, aka if the graph has stabilized, to end the calculations
                 {
@@ -101,18 +114,16 @@ namespace CodeExplorinator
                     Debug.Log("we stopped the spring algo at " + t + " iterations");
                     return;
                 }
-
-
+                
+                
                 float cooling = coolingFactor(t, iterationsOfClassAlgo);
 
                 
                 //this is ignoring the first element, aka the focus class, to force it to stay in the same place
-                
-                
-                for (int i = 1; i < nodes.Count; i++)
+                for (int i = 1; i < nodesList.Count; i++)
                 {
-                    nodes[i].position.x += cooling * nodes[i].F.x;
-                    nodes[i].position.y += cooling * nodes[i].F.y;
+                    nodesList[i].position.x += cooling * nodesList[i].F.x;
+                    nodesList[i].position.y += cooling * nodesList[i].F.y;
                 }
                 
                 /*
@@ -139,9 +150,12 @@ namespace CodeExplorinator
                 node.classGUI.VisualElement.style.marginLeft = node.position.x;
                 node.classGUI.VisualElement.style.marginTop = node.position.y;
             }
+            
+            stopwatch.Stop();
+            Debug.Log("Time elapsed spring algo: " + stopwatch.Elapsed + " or in milliseconds: " + stopwatch.ElapsedMilliseconds);
         }
 
-        private static void DetermineConnectionBetweenNodes(List<ClassNode> allNodes)
+        private static void DetermineConnectionBetweenNodes(HashSet<ClassNode> allNodes)
         {
             foreach (var analysedNode in allNodes)
             {
@@ -191,6 +205,8 @@ namespace CodeExplorinator
 
         public static void StartMethodAlgorithm(HashSet<ClassNode> nodes, HashSet<MethodNode> allMethods)
         {
+            List<ClassNode> nodesList = nodes.ToList();
+            
             int t = 1;
 
             DetermineConnectionsBetweenMethodNodes(allMethods);
@@ -206,7 +222,7 @@ namespace CodeExplorinator
                     {
                         foreach (var connectedNode in methodNode.ConnectedNodes)
                         {
-                            resultSpring += ForceSpring(connectedNode.MethodData.ContainingClass.ClassNode, node);
+                            resultSpring += ForceSpring(connectedNode.MethodData.ContainingClass.ClassNode, node, idealSpringLengthMethods);
                         }
                     }
 
@@ -234,21 +250,32 @@ namespace CodeExplorinator
 
                 if (maxForce < thresholdOfMethodAlgo)
                 {
-                    Debug.Log("we stopped the spring algo at " + t + " iterations");
+                    Debug.Log("we stopped the method spring algo at " + t + " iterations");
                     return;
                 }
 
-
+                
                 float cooling = coolingFactor(t, iterationsOfMethodAlgo);
 
+                
+                
+                //this is ignoring the first element, aka the class of the focused method, to force it to stay in the same place
+                for (int i = 1; i < nodesList.Count; i++)
+                {
+                    nodesList[i].position.x += cooling * nodesList[i].F.x;
+                    nodesList[i].position.y += cooling * nodesList[i].F.y;
+                }
+                
+                /*
                 foreach (var node in nodes)
                 {
+                    
                     node.position.x += cooling * node.F.x;
                     node.position.y += cooling * node.F.y;
-
-                    //Debug.Log("Node " + node.ClassData.GetName() + ": " + node.position.x + "/" +
-                    //          node.position.y);
+                    
+                    //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
                 }
+                */
 
                 t++;
             }
@@ -365,7 +392,7 @@ namespace CodeExplorinator
         /// <param name="attractionConstant"></param>
         /// <param name="idealSpringLength"></param>
         /// <returns></returns>
-        private static Vector2 ForceSpring(ClassNode u, ClassNode v) //500 is ca. the height of the standard class
+        private static Vector2 ForceSpring(ClassNode u, ClassNode v, float idealSpringLength) //500 is ca. the height of the standard class
         {
             //if (idealSpringLength == 0) idealSpringLength = float.Epsilon;
 

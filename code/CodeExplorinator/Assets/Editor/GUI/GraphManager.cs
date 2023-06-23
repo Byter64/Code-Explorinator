@@ -342,7 +342,7 @@ namespace CodeExplorinator
                 nodes.UnionWith(graph.classNodes);
             }
 
-            SpringEmbedderAlgorithm.StartAlgorithm(nodes.ToList());
+            SpringEmbedderAlgorithm.StartAlgorithm(nodes);
 
             foreach (ClassGraph graph in classGraphs)
             {
