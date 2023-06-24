@@ -94,11 +94,11 @@ namespace CodeExplorinator
 
             foreach(MethodGUI methodGUI in focusedMethods)
             {
-                methodGUI.SetFocused(true);
+                methodGUI.SetFocused(true, methodGUI.data.MethodNode.distanceFromFocusMethod);
             }
             foreach(MethodGUI methodGUI in unfocusedMethods)
             {
-                methodGUI.SetFocused(false);
+                methodGUI.SetFocused(false, methodGUI.data.MethodNode.distanceFromFocusMethod);
             }
             TryAddGUIsToRoot(connections, methodLayerRoot);
             TryAddGUIsToRoot(methodLayer, methodLayerRoot);

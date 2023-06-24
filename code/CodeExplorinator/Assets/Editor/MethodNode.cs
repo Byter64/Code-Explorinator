@@ -18,7 +18,7 @@ namespace CodeExplorinator
         public MethodGUI MethodGUI { get; set; }
 
         /// <summary>
-        /// represents the distance of the focus method found by the breatch search 
+        /// represents the distance of the focus method found by the breadth search 
         /// </summary>
         public int distanceFromFocusMethod;
 

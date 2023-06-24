@@ -13,16 +13,15 @@ namespace CodeExplorinator
     {
         public MethodData data { get; private set; }
 
-        private const string methodTexturePath = "Assets/Editor/TiledTextures/Method.asset";
-        private const string focusedMethodTexturePath = "Assets/Editor/TiledTextures/FocusedMethod.asset";
+        private const string methodHighlightPath = "Assets/Editor/TiledTextures/HighlightedMethod "; //This needs a number between [0, 10]  + ".asset" inserted
         private static TiledTextureData backgroundData;
         private static TiledTextureBuilder backgroundBuilder;
 
         private bool isFocused = false;
         private bool isHighlighted = false;
+        private int distanceToClosestFocusMethod = -1;
         private GUIStyle style;
         private Texture2D backgroundTexture;
-        private Texture2D focusedBackgroundTexture;
         private ClickBehaviour clickBehaviour;
 
         public MethodGUI(MethodData data, GUIStyle style, GraphManager graphManager) : base(graphManager)
@@ -30,8 +29,7 @@ namespace CodeExplorinator
             this.data = data;
             this.style = style;
 
-            backgroundTexture = Create9SlicedTexture(methodTexturePath, CalculateBackgroundSize());
-            focusedBackgroundTexture = Create9SlicedTexture(focusedMethodTexturePath, CalculateBackgroundSize());
+            backgroundTexture = Create9SlicedTexture(methodHighlightPath + 0 + ".asset", CalculateBackgroundSize());
             GenerateVisualElement();
         }
 
@@ -65,21 +63,19 @@ namespace CodeExplorinator
         public void ShowHighlight(bool isShowingHighlight)
         {
             Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
-
             isHighlighted = isShowingHighlight;
             VisualElement.style.visibility = visiBackground;
             VisualElement.Children().First().style.visibility = Visibility.Visible;
         }
 
-        public void SetFocused(bool isFocused)
+        public void SetFocused(bool isFocused, int distanceToClosestFocusMethod = -1)
         {
             this.isFocused = isFocused;
-            if (isFocused)
+            this.distanceToClosestFocusMethod = distanceToClosestFocusMethod;
+
+            if (distanceToClosestFocusMethod >= 0)
             {
-                VisualElement.style.backgroundImage = Background.FromTexture2D(focusedBackgroundTexture);
-            }
-            else
-            {
+                backgroundTexture = Create9SlicedTexture(methodHighlightPath + distanceToClosestFocusMethod + ".asset", CalculateBackgroundSize());
                 VisualElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
             }
         }
@@ -119,11 +115,8 @@ namespace CodeExplorinator
 
         public override void SetVisible(bool visible)
         {
-            //Hide text
             VisualElement.Children().First().visible = visible;
             
-            //Hide highlight
-            //If will be hidden, make background hidden, too
             if(visible)
             {
                 if(isHighlighted)
