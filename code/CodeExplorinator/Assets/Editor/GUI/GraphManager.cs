@@ -114,10 +114,6 @@ namespace CodeExplorinator
         private HashSet<MethodNode> focusedMethodNodes = new();
         private HashSet<MethodNode> selectedMethodNodes = new();
         private GraphVisualizer graphVisualizer;
-        /// <summary>
-        /// The currently focused methodNode in the oldFocusNode. This is null if the method layer is inactive
-        /// </summary>
-        public MethodNode focusedMethodNode; //TODO: Delete this 
 
         /// <summary>
         /// The root visualElement of the editor window
@@ -253,6 +249,8 @@ namespace CodeExplorinator
         {
             graphVisualizer.ShowMethodLayer(false);
             graphVisualizer.ShowClassLayer(true);
+
+            focusedMethodNodes.Clear();
 
             state = State.ClassLayer;
         }

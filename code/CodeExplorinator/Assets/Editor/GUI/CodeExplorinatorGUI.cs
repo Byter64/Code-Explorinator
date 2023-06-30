@@ -49,25 +49,11 @@ namespace CodeExplorinator
         private void OnDestroy()
         {
             string saveData = graphManager.Serialize(true);
-
             EditorPrefs.SetString(settingsKey, saveData);
         }
 
         private List<ClassData> GenerateClassDataFromProject()
         {
-            
-
-
-
-
-
-
-
-
-
-
-
-
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
             
@@ -130,7 +116,6 @@ namespace CodeExplorinator
             menu.GenerateVisualElement();
 
             string settings = EditorPrefs.GetString(settingsKey);
-            Debug.Log("Loaded settings: \n" + settings);
             if (settings != null && settings != string.Empty)
             {
                 GraphManager.SerializationData data = graphManager.DeSerialize(settings);
