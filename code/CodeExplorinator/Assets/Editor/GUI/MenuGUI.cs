@@ -10,13 +10,17 @@ namespace CodeExplorinator
 {
     public class MenuGUI : BaseGUI
     {
-        private Dictionary<string, ClassNode> classNodes;
-        private Dictionary<string, SearchListEntry> searchListEntries;
-        private ScrollView scrollView;
+        private string classDepthText = "Class Depth";
+        private string methodDepthText = "Method Depth";
+        private Vector2Int size;
+        private Label classDepth;
+        private Label methodDepth;
         private Slider classDepthSlider;
         private Slider methodDepthSlider;
         private TextField searchInput;
-        private Vector2Int size;
+        private ScrollView scrollView;
+        private Dictionary<string, ClassNode> classNodes;
+        private Dictionary<string, SearchListEntry> searchListEntries;
 
         public MenuGUI(GraphManager graphManager, Vector2Int size) : base(graphManager) 
         {
@@ -42,9 +46,11 @@ namespace CodeExplorinator
             methodDepthSlider = new Slider(0, 10, 0, SetMethodDepth);
             RegisterControlKeyChecks(classDepthSlider.target);
             RegisterControlKeyChecks(methodDepthSlider.target);
-            VisualElement.Add(new Label("Class Depth"));
+            classDepth = new Label(classDepthText);
+            VisualElement.Add(classDepth);
             VisualElement.Add(classDepthSlider.target);
-            VisualElement.Add(new Label("Method Depth"));
+            methodDepth = new Label(methodDepthText);
+            VisualElement.Add(methodDepth);
             VisualElement.Add(methodDepthSlider.target);
 
             #endregion
@@ -106,12 +112,14 @@ namespace CodeExplorinator
         {
             graphManager.ChangeClassDepth(depth);
             classDepthSlider.SetValue(depth);
+            classDepth.text = classDepthText + ": " + depth;
         }
 
         public void SetMethodDepth(int depth)
         {
             graphManager.ChangeMethodDepth(depth);
             methodDepthSlider.SetValue(depth);
+            methodDepth.text = methodDepthText + ": " + depth;
         }
 
         private void KeyDownHandler(KeyDownEvent context)
