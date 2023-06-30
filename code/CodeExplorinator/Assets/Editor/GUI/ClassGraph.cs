@@ -138,6 +138,7 @@ namespace CodeExplorinator
             }
         }
 
+        //this code could be obsolete
         public void GenerateConnectionsBetweenMethods(HashSet<MethodNode> shownMethodNodes)
         {
             foreach (MethodNode foot in shownMethodNodes)
@@ -188,6 +189,24 @@ namespace CodeExplorinator
                     }
                 }
             }
+        }
+
+        public void GenerateMethodConnectionsBetweenClasses()
+        {
+             foreach (ClassNode foot in classNodes)
+             {
+                 foreach (ClassNode tip in foot.ConnectedNodes)
+                 {
+                     if (foot == tip)
+                     {
+                         continue;
+                     }
+                     
+                     ConnectionGUI connection = new ConnectionGUI(graphManager, foot.classGUI.VisualElement, tip.classGUI.VisualElement, false, false, false);
+                     connection.GenerateVisualElement();
+                     connections.Add(connection);
+                 }
+             }
         }
     }
 }

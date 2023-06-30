@@ -25,4 +25,9 @@ public class Sister
     {
         s1 += s2;
     }
+
+    public void GoForAWalk()
+    {
+        
+    }
 }

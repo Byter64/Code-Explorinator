@@ -27,11 +27,11 @@ namespace CodeExplorinator
         /// <summary>
         /// The force threshold of the method spring algorithm that stops it if the forces fall under its value.
         /// </summary>
-        private const double thresholdOfMethodAlgo = 0.01;
+        private const double thresholdOfMethodAlgo = 0.00001;
         /// <summary>
         /// The iterations that the method spring algorithm is supposed to do.
         /// </summary>
-        private const int iterationsOfMethodAlgo = 1000;
+        private const int iterationsOfMethodAlgo = 10000;
         
         /// <summary>
         /// The bigger the number, the stronger the repulsion force between two not connected nodes.
@@ -54,7 +54,7 @@ namespace CodeExplorinator
         /// CANNOT BE ZERO!
         /// This is the ideal length of a connection between methodNodes. The connections that go to nowhere are 500 long, the smallest class has a height of ca. 500.
         /// </summary>
-        private const float idealSpringLengthMethods = 300000f;
+        private const float idealSpringLengthMethods = 1500f;
         
         /// <summary>
         /// CANNOT BE ZERO!
@@ -125,6 +125,8 @@ namespace CodeExplorinator
                     nodesList[i].position.x += cooling * nodesList[i].F.x;
                     nodesList[i].position.y += cooling * nodesList[i].F.y;
                 }
+                
+                Debug.Log("we stopped the spring algo at " + t + " iterations");
                 
                 /*
                 foreach (var node in nodes)
@@ -203,6 +205,7 @@ namespace CodeExplorinator
             }
         }
 
+        /*
         public static void StartMethodAlgorithm(HashSet<ClassNode> nodes, HashSet<MethodNode> allMethods)
         {
             List<ClassNode> nodesList = nodes.ToList();
@@ -266,16 +269,16 @@ namespace CodeExplorinator
                     nodesList[i].position.y += cooling * nodesList[i].F.y;
                 }
                 
-                /*
-                foreach (var node in nodes)
+                
+                //foreach (var node in nodes)
                 {
                     
-                    node.position.x += cooling * node.F.x;
-                    node.position.y += cooling * node.F.y;
+                  //  node.position.x += cooling * node.F.x;
+                    //node.position.y += cooling * node.F.y;
                     
                     //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
                 }
-                */
+                
 
                 t++;
             }
@@ -335,6 +338,161 @@ namespace CodeExplorinator
                 }
             }
         }
+        */
+        
+        /// <summary>
+        /// this is a less complicated algo that maps the connections between methods to their classes
+        /// </summary>
+        /// <param name="nodes">these are the classes containing the methods</param>
+        /// <param name="allMethods">these are the methods that the breadth search found</param>
+        public static void StartMethodAlgorithm(HashSet<ClassNode> nodes, HashSet<MethodNode> allMethods)
+        {
+            List<ClassNode> nodesList = nodes.ToList();
+            
+            int t = 1;
+
+            DetermineConnectionsBetweenMethodNodes(allMethods, nodes);
+
+            while (t <= iterationsOfMethodAlgo)
+            {
+                foreach (var node in nodes)
+                {
+                    Vector2 resultRepulsion = Vector2.zero;
+                    Vector2 resultSpring = Vector2.zero;
+
+                    foreach (var connectedNode in node.ConnectedNodes)
+                    {
+                        resultSpring += ForceSpring(connectedNode, node, idealSpringLengthMethods);
+                    }
+
+                    foreach (var notConnectedNode in node.NotConnectedNodes)
+                    {
+                        resultRepulsion += ForceRepulsion(notConnectedNode,node);
+                    }
+
+                    
+                    node.F = resultRepulsion + resultSpring;
+                }
+
+                
+                
+                float maxForce = 0;
+
+                foreach (var node in
+                         nodes) //checking if the forces are small, aka if the graph has stabilized, to end the calculations
+                {
+                    if (maxForce < node.F.magnitude)
+                    {
+                        maxForce = node.F.magnitude;
+                    }
+                }
+
+                if (maxForce < thresholdOfMethodAlgo)
+                {
+                    Debug.Log("we stopped the method spring algo at " + t + " iterations");
+                    return;
+                }
+
+                
+                float cooling = coolingFactor(t, iterationsOfMethodAlgo);
+
+                
+                
+                //this is ignoring the first element, aka the class of the focused method, to force it to stay in the same place
+                for (int i = 1; i < nodesList.Count; i++)
+                {
+                    nodesList[i].position.x += cooling * nodesList[i].F.x;
+                    nodesList[i].position.y += cooling * nodesList[i].F.y;
+                    
+                    Debug.Log("Node "+ nodesList[i].ClassData.GetName() + ": " + nodesList[i].position.x + "/" + nodesList[i].position.y);
+                    
+                }
+                
+                /*
+                foreach (var node in nodes)
+                {
+                    
+                    node.position.x += cooling * node.F.x;
+                    node.position.y += cooling * node.F.y;
+                    
+                    //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
+                }
+                */
+
+                t++;
+            }
+
+            Debug.Log("we stopped the method spring algo at " + t + " iterations");
+            
+            //as we incorporated the height and width into the Node.position Vector2, we now have to undo this
+            foreach (var node in nodes)
+            {
+                node.classGUI.VisualElement.style.marginLeft = node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginTop = node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
+            }
+        }
+
+        /// <summary>
+        /// this method determines and saves the connections between methodnodes, saves these connections in the corresponding classes
+        /// this method looses the information which method nodes are connected and only saves connected classes
+        /// </summary>
+        /// <param name="methodNodes"></param>
+        private static void DetermineConnectionsBetweenMethodNodes(HashSet<MethodNode> methodNodes, HashSet<ClassNode> classNodes)
+        {
+            foreach (var classNode in classNodes)
+            {
+                classNode.ConnectedNodes.Clear();
+                classNode.NotConnectedNodes.Clear();
+            }
+            
+            foreach (var method in methodNodes)
+            {
+
+                foreach (var connectedMethod in method.MethodData.AllConnectedMethods)
+                {
+                    if (connectedMethod.MethodNode != method)
+                    {
+                        foreach (var randomMethod in methodNodes)
+                        {
+                            //if the method is a leaf, we have to check whether the connection leads to a drawn class or not
+                            if (method.IsLeaf)
+                            {
+                                
+                                if (method != randomMethod && methodNodes.Contains(connectedMethod.MethodNode))
+                                {
+                                    //if the random method is a connected method, add it to the connected nodes, or else to the not connected ones
+                                    if (randomMethod == connectedMethod.MethodNode)
+                                    {
+                                        method.MethodData.ContainingClass.ClassNode.ConnectedNodes.Add(randomMethod.MethodData.ContainingClass.ClassNode);
+                                    }
+                                    else
+                                    {
+                                        method.MethodData.ContainingClass.ClassNode.NotConnectedNodes.Add(randomMethod.MethodData.ContainingClass.ClassNode);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (method != randomMethod)
+                                {
+                                    //if the random method is a connected method, add it to the connected nodes, or else to the not connected ones
+                                    if (randomMethod == connectedMethod.MethodNode)
+                                    {
+                                        method.MethodData.ContainingClass.ClassNode.ConnectedNodes.Add(randomMethod.MethodData.ContainingClass.ClassNode);
+                                    }
+                                    else
+                                    {
+                                        method.MethodData.ContainingClass.ClassNode.NotConnectedNodes.Add(randomMethod.MethodData.ContainingClass.ClassNode);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// Returns the repulsion of v that is generated by u
@@ -351,9 +509,9 @@ namespace CodeExplorinator
             float factor = direction.magnitude * direction.magnitude;
             factor = (factor == 0) ? float.Epsilon : factor;
 
-            //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //unnecessary
+            if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //unnecessary
             factor = repulsionConstant / factor;
-            //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //probably unnecessary
+            if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //probably unnecessary
 
             direction.Normalize();
             Vector2 result = factor * direction;

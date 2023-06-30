@@ -5,9 +5,11 @@ using UnityEngine;
 public class Dog : Enemy
 {
 
-    public HashSet<Bunker> Enemies;
+    public Sister owner;
+    //public HashSet<Bunker> Enemies;
 
     public List<Mom> Moms;
+    
 
     public smallMom[] MomArray;
     
@@ -17,12 +19,17 @@ public class Dog : Enemy
 
     public smallMom[] ProMomArray { get; set; }
     
-    /*
-    public override void mlem()
+    
+    public override void Attack()
     {
         
     }
-    */
+
+    public void Bark()
+    {
+        owner.GoForAWalk();
+    }
+    
     
     
 }

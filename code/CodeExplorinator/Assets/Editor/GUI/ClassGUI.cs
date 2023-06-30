@@ -134,12 +134,16 @@ namespace CodeExplorinator
             classElement.Add(header);
             #endregion
 
-            #region DrawFields
-            VisualElement fields = new VisualElement();
-            fields.style.paddingLeft = intendation;
-            classElement.Add(fields);
+            #region DrawFieldsAndProperties
+            VisualElement publicVariables = new VisualElement();
+            publicVariables.style.paddingLeft = intendation;
+            classElement.Add(publicVariables);
+            
+            VisualElement privateVariables = new VisualElement();
+            privateVariables.style.paddingLeft = intendation;
+            classElement.Add(privateVariables);
 
-            foreach (FieldData fieldData in data.PublicVariables.Concat(data.PrivateVariables))
+            foreach (FieldData fieldData in data.PublicVariables)
             {
                 Label field = new Label(fieldData.ToRichString());
                 field.style.unityFont = new StyleFont(fieldStyle.font);
@@ -148,16 +152,10 @@ namespace CodeExplorinator
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
 
-                fields.Add(field);
+                publicVariables.Add(field);
             }
-            #endregion
-
-            #region DrawProperties
-            VisualElement properties = new VisualElement();
-            properties.style.paddingLeft = intendation;
-            classElement.Add(properties);
-
-            foreach (PropertyData propertyData in data.PublicProperties.Concat(data.PrivateProperties))
+            
+            foreach (PropertyData propertyData in data.PublicProperties)
             {
                 Label property = new Label(propertyData.ToRichString());
                 property.style.unityFont = new StyleFont(fieldStyle.font);
@@ -166,8 +164,33 @@ namespace CodeExplorinator
                 property.style.fontSize = fieldStyle.fontSize;
                 property.style.color = UnityEngine.Color.black;
 
-                properties.Add(property);
+                publicVariables.Add(property);
             }
+            
+            foreach (FieldData fieldData in data.PrivateVariables)
+            {
+                Label field = new Label(fieldData.ToRichString());
+                field.style.unityFont = new StyleFont(fieldStyle.font);
+                header.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                field.style.fontSize = fieldStyle.fontSize;
+                field.style.color = UnityEngine.Color.black;
+
+                privateVariables.Add(field);
+            }
+
+            foreach (PropertyData propertyData in data.PrivateProperties)
+            {
+                Label property = new Label(propertyData.ToRichString());
+                property.style.unityFont = new StyleFont(fieldStyle.font);
+                property.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                property.style.fontSize = fieldStyle.fontSize;
+                property.style.color = UnityEngine.Color.black;
+
+                privateVariables.Add(property);
+            }
+            
             #endregion
 
             if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && data.PublicVariables.Concat(data.PrivateVariables).Count() != 0)

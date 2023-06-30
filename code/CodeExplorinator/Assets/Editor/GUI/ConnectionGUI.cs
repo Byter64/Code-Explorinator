@@ -11,7 +11,8 @@ namespace CodeExplorinator
     public class ConnectionGUI : BaseGUI
     {
         private bool isInheritanceConnection;
-        private bool isMethod;
+        private bool setCenterLeft;
+        private bool drawArrow;
         private Vector2 positionBackup;
         private Texture2D lineTexture;
         private Texture2D arrowTexture;
@@ -22,11 +23,12 @@ namespace CodeExplorinator
         //length of the random connection
         private const float randomConnectionLength = 200f;
 
-        public ConnectionGUI(GraphManager graphManager, VisualElement footNode, VisualElement tipNode, bool isInheritanceConnection = false, bool isMethod = false) : base(graphManager)
+        public ConnectionGUI(GraphManager graphManager, VisualElement footNode, VisualElement tipNode, bool isInheritanceConnection = false, bool setCenterLeft = false, bool drawArrow = true) : base(graphManager)
         {
             this.footNode = footNode;
             this.tipNode = tipNode;
-            this.isMethod = isMethod;
+            this.setCenterLeft = setCenterLeft;
+            this.drawArrow = drawArrow;
             this.isInheritanceConnection = isInheritanceConnection;
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
             arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centered_new.png");
@@ -37,15 +39,15 @@ namespace CodeExplorinator
         {
             if (footNode == null)
             {
-                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), true, isInheritanceConnection);
+                VisualElement = CreateRandomConnection(setCenterLeft? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), true, isInheritanceConnection);
             }
             else if (tipNode == null)
             {
-                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), false, isInheritanceConnection);
+                VisualElement = CreateRandomConnection(setCenterLeft? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), false, isInheritanceConnection);
             }
             else
             {
-                VisualElement = CreateConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceConnection);
+                VisualElement = CreateConnection(setCenterLeft? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), setCenterLeft? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceConnection);
             }
         }
 
@@ -63,14 +65,17 @@ namespace CodeExplorinator
             Vector2 connection = new Vector2(tipPos.x - footPos.x, tipPos.y - footPos.y);
             
             parent.Add(InstantiateLine(footPos,connection));
-            
-            parent.Add(InstantiateArrow(tipPos,connection, isInheritanceArrow ? inheritanceArrowTexture : arrowTexture));
+
+            if (drawArrow)
+            {
+                parent.Add(InstantiateArrow(tipPos,connection, isInheritanceArrow ? inheritanceArrowTexture : arrowTexture));
+            }
 
             return parent;
             
         }
         
-        private VisualElement CreateRandomConnection(Vector2 position, bool isIncomingArrow ,bool isInheritanceArrow)
+        private VisualElement CreateRandomConnection(Vector2 position, bool isIncomingArrow, bool isInheritanceArrow)
         {
             //creates parent visual element
             VisualElement parent = new VisualElement();
@@ -79,7 +84,7 @@ namespace CodeExplorinator
 
             parent.Add(InstantiateLine(position,connection));
 
-            if (isIncomingArrow)
+            if (isIncomingArrow && drawArrow)
             {
                 VisualElement arrow = InstantiateIncomingArrow(position, connection, isInheritanceArrow ? inheritanceArrowTexture : arrowTexture);
                 parent.Add(arrow);

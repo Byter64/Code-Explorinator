@@ -376,7 +376,9 @@ namespace CodeExplorinator
 
             //Calculate new positions
             SpringEmbedderAlgorithm.StartMethodAlgorithm(methodGraph.classNodes, shownMethodNodes);
-            methodGraph.GenerateConnectionsBetweenMethods(shownMethodNodes);
+            //methodGraph.GenerateConnectionsBetweenMethods(shownMethodNodes);
+            //methodGraph.GenerateConnectionsBetweenClasses();
+            methodGraph.GenerateMethodConnectionsBetweenClasses();
             methodGraph.GenerateVisualElementGraph();
         }
 
@@ -519,7 +521,7 @@ namespace CodeExplorinator
             {
                 classNodes.Add(methodNode.MethodData.ContainingClass.ClassNode);
             }
-
+            
             return classNodes;
         }
 
