@@ -13,6 +13,7 @@ namespace CodeExplorinator
     public class CodeExplorinatorGUI : EditorWindow
     {
         public static bool isControlDown = false;
+        public static Vector2 Scale { get { return zoomBehaviour.Scale; } }
 
         private const string settingsKey = "CodeExplorinatorSettings";
 

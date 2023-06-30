@@ -43,7 +43,8 @@ namespace CodeExplorinator
         private bool isVisible;
         private int widthInPixels;
         private int heightInPixels;
-        private Vector2 positionBackup;
+        private Vector2 posOnStartMoving;
+        private Vector2 mousePosOnStartMoving;
         private GUIStyle classStyle;
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
@@ -54,6 +55,7 @@ namespace CodeExplorinator
         private Texture2D focusedHeaderTexture;
         private Texture2D lineTexture;
         private VisualElement header;
+        private VisualElement moveCollider;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
         /// <summary>
@@ -229,9 +231,17 @@ namespace CodeExplorinator
 
         private void TryAssignClickBehaviours()
         {
-            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
-            bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
-            headerClick ??= new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
+            if (bodyClick == null)
+            {
+                bodyClick = new ClickBehaviour(VisualElement, null, SetFocusClass);
+                bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
+                bodyClick.RegisterOnHoldingClick(Move);
+            }
+
+            if (headerClick == null)
+            {
+                headerClick = new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
+            }
         }
 
         private void SwapIsExpanded()
@@ -248,6 +258,31 @@ namespace CodeExplorinator
         private void AddClassToSelected()
         {
             graphManager.AddSelectedClass(data.ClassNode);
+        }
+
+        private void Move(bool isFirstCall, bool isLastCall, float x, float y)
+        {
+            if(isFirstCall)
+            {
+                moveCollider = new VisualElement();
+                moveCollider.style.height = new StyleLength(float.MaxValue);
+                moveCollider.style.width = new StyleLength(float.MaxValue);
+                moveCollider.style.marginLeft = new StyleLength(-float.MaxValue/2);
+                moveCollider.style.marginTop = new StyleLength(-float.MaxValue/2);
+                VisualElement.Add(moveCollider);
+                posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
+                mousePosOnStartMoving = new Vector2(x, y);
+            }
+            else if(isLastCall)
+            {
+                VisualElement.Remove(moveCollider);
+            }
+            else
+            {
+                Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
+                VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
+                VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
+            }
         }
 
         private Vector2Int CalculateBackgroundSize()
