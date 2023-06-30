@@ -8,39 +8,52 @@ using Random = UnityEngine.Random;
 
 namespace CodeExplorinator
 {
-    public class ConnectionGUI
+    public class ConnectionGUI : BaseGUI
     {
-        public VisualElement VisualElement { get; private set; }
-
+        private bool isInheritanceConnection;
+        private bool setCenterLeft;
+        private bool drawArrow;
+        private Vector2 positionBackup;
         private Texture2D lineTexture;
         private Texture2D arrowTexture;
         private Texture2D inheritanceArrowTexture;
         private VisualElement footNode;
         private VisualElement tipNode;
+        
+        //length of the random connection
+        private const float randomConnectionLength = 200f;
 
-        public ConnectionGUI(VisualElement footNode, VisualElement tipNode)
+        public ConnectionGUI(GraphManager graphManager, VisualElement footNode, VisualElement tipNode, bool isInheritanceConnection = false, bool setCenterLeft = false, bool drawArrow = true) : base(graphManager)
         {
             this.footNode = footNode;
             this.tipNode = tipNode;
+            this.setCenterLeft = setCenterLeft;
+            this.drawArrow = drawArrow;
+            this.isInheritanceConnection = isInheritanceConnection;
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
             arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centered_new.png");
             inheritanceArrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Arrow_inheritance.png");
         }
-        
-        public void GenerateVisualElement(bool isInheritanceArrow = false, bool isMethod = false)
+
+        public override void GenerateVisualElement()
         {
             if (footNode == null)
             {
-                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), true, isInheritanceArrow);
+                VisualElement = CreateRandomConnection(setCenterLeft? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), true, isInheritanceConnection);
             }
             else if (tipNode == null)
             {
-                VisualElement = CreateRandomConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), false, isInheritanceArrow);
+                VisualElement = CreateRandomConnection(setCenterLeft? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), false, isInheritanceConnection);
             }
             else
             {
-                VisualElement = CreateConnection(isMethod? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), isMethod? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceArrow);
+                VisualElement = CreateConnection(setCenterLeft? CenteredLeftVectorForMethod(footNode) :CenteredTopVector(footNode), setCenterLeft? CenteredLeftVectorForMethod(tipNode) :CenteredTopVector(tipNode), isInheritanceConnection);
             }
+        }
+
+        public override void SetVisible(bool isVisible)
+        {
+            VisualElement.visible = isVisible;
         }
 
         private VisualElement CreateConnection(Vector2 footPos, Vector2 tipPos, bool isInheritanceArrow)
@@ -52,23 +65,26 @@ namespace CodeExplorinator
             Vector2 connection = new Vector2(tipPos.x - footPos.x, tipPos.y - footPos.y);
             
             parent.Add(InstantiateLine(footPos,connection));
-            
-            parent.Add(InstantiateArrow(tipPos,connection, isInheritanceArrow ? inheritanceArrowTexture : arrowTexture));
+
+            if (drawArrow)
+            {
+                parent.Add(InstantiateArrow(tipPos,connection, isInheritanceArrow ? inheritanceArrowTexture : arrowTexture));
+            }
 
             return parent;
             
         }
         
-        private VisualElement CreateRandomConnection(Vector2 position, bool isIncomingArrow ,bool isInheritanceArrow)
+        private VisualElement CreateRandomConnection(Vector2 position, bool isIncomingArrow, bool isInheritanceArrow)
         {
             //creates parent visual element
             VisualElement parent = new VisualElement();
             
-            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)).normalized * 500; //normalise it to the same length
+            Vector2 connection = new Vector2(Random.Range(-1000, 1000), Random.Range(-1000, 1000)).normalized * randomConnectionLength; //normalise it to the same length
 
             parent.Add(InstantiateLine(position,connection));
 
-            if (isIncomingArrow)
+            if (isIncomingArrow && drawArrow)
             {
                 VisualElement arrow = InstantiateIncomingArrow(position, connection, isInheritanceArrow ? inheritanceArrowTexture : arrowTexture);
                 parent.Add(arrow);
@@ -156,5 +172,6 @@ namespace CodeExplorinator
                 node.parent.style.marginTop.value.value + (
                     node.style.marginTop.value.value + node.style.height.value.value * 0.5f));
         }
+
     }
 }

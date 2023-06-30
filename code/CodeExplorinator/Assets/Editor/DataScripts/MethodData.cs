@@ -254,17 +254,6 @@ namespace CodeExplorinator
             {
                 MethodModifiersList.Add(MethodModifiers.VIRTUAL);
             }
-
-
-            if ( MethodSymbol.IsReadOnly)
-            {
-                MethodModifiersList.Add(MethodModifiers.READONLY);
-            }
-
-            //dunno what this does but it sounds like we could use it:
-            //MethodSymbol.IsConditional;
-            //MethodSymbol.IsVararg;
-            //MethodSymbol.IsExtensionMethod;
         }
 
         public enum MethodModifiers
@@ -274,12 +263,13 @@ namespace CodeExplorinator
             ASYNC,
             EXTERN,
             OVERRIDE,
-            SEALED,
+            SEALED, //works with override
             VIRTUAL,
-            READONLY,
-            
-            NEW, //not implemented
-            UNSAFE, //not implemented
+
+            NEW, //not implemented, but exists
+            UNSAFE, //not implemented and doesnt work because we havent got unsafe blocks enabled:
+                    //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/language#allowunsafeblocks
+                    //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/unsafe
             
             //not sure if this counts:
             DELEGATE //not implemented

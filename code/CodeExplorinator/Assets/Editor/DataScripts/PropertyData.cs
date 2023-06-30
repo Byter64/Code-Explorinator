@@ -176,36 +176,23 @@ namespace CodeExplorinator
             {
                 PropertyModifiersList.Add(PropertyModifiers.VIRTUAL);
             }
-            
-            if ( PropertySymbol.IsReadOnly)
-            {
-                PropertyModifiersList.Add(PropertyModifiers.READONLY);
-            }
-
-
-            //dunno what this does but it sounds like we could use it:
-            //MethodSymbol.IsConditional;
-            //MethodSymbol.IsVararg;
-            //MethodSymbol.IsExtensionMethod;
         }
 
         public enum PropertyModifiers
         {
             STATIC,
-            ABSTRACT,
-            CONST, //doesnt work
+            ABSTRACT, 
             OVERRIDE,
-            READONLY,
-            SEALED,
-            VOLATILE, //doesnt work
-            VIRTUAL,
-            EXTERN,
+            SEALED, //works with override
+            VIRTUAL, 
+            EXTERN, 
             
-            NEW, //not implemented
-            FIXED, //not implemented
-            UNSAFE, //not implemented
+            NEW, //not implemented, but exists
+            FIXED, //not implemented, but exists
+            UNSAFE, //not implemented, doesnt work cuz not enabled in compiler
             
-            //not sure if these count:
+            //not sure if these count: 
+            //(event must be of delegate type)
             EVENT
             
         }

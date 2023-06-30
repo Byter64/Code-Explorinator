@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd7c0bd4b2c6c86439c2f622d61742df, type: 3}
   m_Name: Class
   m_EditorClassIdentifier: 
-  graphicsPath: box blau.png
+  graphicsPath: box dunkelblau.png
   middleRectangle:
     x: 200
     y: 200

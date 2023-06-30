@@ -11,62 +11,15 @@ namespace CodeExplorinator
     [System.Serializable]
     public class ClassGUI : BaseGUI
     {
+        public string ClassName { get; private set; }
+        public string ClassModifiers { get; private set; }
         public Vector2 Position { get; set; }
         public List<MethodGUI> methodGUIs { get; private set; }
 
-        private static TiledTextureData BackgroundTextureData
-        {
-            get
-            {
-                if (backgroundData == null)
-                {
-                    backgroundData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Class.asset", typeof(TiledTextureData));
-                }
-                return backgroundData;
-            }
-        }
-
-        private static TiledTextureData HeaderTextureData
-        {
-            get
-            {
-                if (headerData == null)
-                {
-                    headerData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Header.asset", typeof(TiledTextureData));
-                }
-                return headerData;
-            }
-        }
-
-        private static TiledTextureBuilder BackgroundBuilder
-        {
-            get
-            {
-                if(backgroundBuilder == null)
-                {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + BackgroundTextureData.graphicsPath);
-                    Texture2D texture = new Texture2D(1, 1);
-                    ImageConversion.LoadImage(texture, fileData);
-                    backgroundBuilder = new TiledTextureBuilder(texture, BackgroundTextureData.middleRectangle);
-                }
-                return backgroundBuilder;
-            }
-        }
-
-        private static TiledTextureBuilder HeaderBuilder
-        {
-            get
-            {
-                if (headerBuilder == null)
-                {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + HeaderTextureData.graphicsPath);
-                    Texture2D texture = new Texture2D(1, 1);
-                    ImageConversion.LoadImage(texture, fileData);
-                    headerBuilder = new TiledTextureBuilder(texture, HeaderTextureData.middleRectangle);
-                }
-                return headerBuilder;
-            }
-        }
+        private const string classTexturePath = "Assets/Editor/TiledTextures/Class.asset";
+        private const string headerTexturePath = "Assets/Editor/TiledTextures/Header.asset";
+        private const string focusedClassTexturePath = "Assets/Editor/TiledTextures/FocusedClass.asset";
+        private const string focusedHeaderTexturePath = "Assets/Editor/TiledTextures/FocusedHeader.asset";
 
         #region Defines for the graphics
         /// <summary>
@@ -84,22 +37,25 @@ namespace CodeExplorinator
         #endregion
 
         private static TiledTextureBuilder backgroundBuilder;
-        private static TiledTextureData backgroundData;
         private static TiledTextureBuilder headerBuilder;
-        private static TiledTextureData headerData;
 
         private bool isExpanded;
+        private bool isVisible;
         private int widthInPixels;
         private int heightInPixels;
-
+        private Vector2 posOnStartMoving;
+        private Vector2 mousePosOnStartMoving;
         private GUIStyle classStyle;
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
         private ClassData data;
         private Texture2D backgroundTexture;
         private Texture2D headerTexture;
+        private Texture2D focusedBackgroundTexture;
+        private Texture2D focusedHeaderTexture;
         private Texture2D lineTexture;
         private VisualElement header;
+        private VisualElement moveCollider;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
         /// <summary>
@@ -131,8 +87,10 @@ namespace CodeExplorinator
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
+            
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
-
+            ClassModifiers = "<<" + data.ClassModifiersAsString + ">>";
+            ClassName = data.GetName();
             methodGUIs = new List<MethodGUI>();
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
@@ -140,12 +98,12 @@ namespace CodeExplorinator
                 methodGUIs.Add(methodGUI);
             }
 
-            BackgroundBuilder.Size = CalculateBackgroundSize();
-            backgroundTexture = BackgroundBuilder.BuildTexture();
+            backgroundTexture = Create9SlicedTexture(classTexturePath, CalculateBackgroundSize());
+            focusedBackgroundTexture = Create9SlicedTexture(focusedClassTexturePath, CalculateBackgroundSize());
             widthInPixels = backgroundTexture.width;
             heightInPixels = backgroundTexture.height;
-            HeaderBuilder.Size = new Vector2Int(widthInPixels, 0);
-            headerTexture = HeaderBuilder.BuildTexture();
+            headerTexture = Create9SlicedTexture(headerTexturePath, new Vector2Int(widthInPixels, 0));
+            focusedHeaderTexture = Create9SlicedTexture(focusedHeaderTexturePath, new Vector2Int(widthInPixels, 0));
         }
 
         public override void GenerateVisualElement()
@@ -161,8 +119,7 @@ namespace CodeExplorinator
             classElement.style.marginTop = Position.y;
 
             #region DrawHeader
-            string headerText = data.ClassModifiersList.Count == 0 ? "" : ColorText("<<" + data.ClassModifiersAsString + ">>", className);
-            headerText += "\n" + ColorText(data.GetName(), className);
+            string headerText = ColorText(ClassModifiers + "\n" + ClassName, className);
             Label header = new Label(headerText);
             header.style.backgroundImage = Background.FromTexture2D(headerTexture);
             header.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(headerTexture.width, headerTexture.height));
@@ -177,12 +134,16 @@ namespace CodeExplorinator
             classElement.Add(header);
             #endregion
 
-            #region DrawFields
-            VisualElement fields = new VisualElement();
-            fields.style.paddingLeft = intendation;
-            classElement.Add(fields);
+            #region DrawFieldsAndProperties
+            VisualElement publicVariables = new VisualElement();
+            publicVariables.style.paddingLeft = intendation;
+            classElement.Add(publicVariables);
+            
+            VisualElement privateVariables = new VisualElement();
+            privateVariables.style.paddingLeft = intendation;
+            classElement.Add(privateVariables);
 
-            foreach (FieldData fieldData in data.PublicVariables.Concat(data.PrivateVariables))
+            foreach (FieldData fieldData in data.PublicVariables)
             {
                 Label field = new Label(fieldData.ToRichString());
                 field.style.unityFont = new StyleFont(fieldStyle.font);
@@ -191,16 +152,10 @@ namespace CodeExplorinator
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
 
-                fields.Add(field);
+                publicVariables.Add(field);
             }
-            #endregion
-
-            #region DrawProperties
-            VisualElement properties = new VisualElement();
-            properties.style.paddingLeft = intendation;
-            classElement.Add(properties);
-
-            foreach (PropertyData propertyData in data.PublicProperties.Concat(data.PrivateProperties))
+            
+            foreach (PropertyData propertyData in data.PublicProperties)
             {
                 Label property = new Label(propertyData.ToRichString());
                 property.style.unityFont = new StyleFont(fieldStyle.font);
@@ -209,8 +164,33 @@ namespace CodeExplorinator
                 property.style.fontSize = fieldStyle.fontSize;
                 property.style.color = UnityEngine.Color.black;
 
-                properties.Add(property);
+                publicVariables.Add(property);
             }
+            
+            foreach (FieldData fieldData in data.PrivateVariables)
+            {
+                Label field = new Label(fieldData.ToRichString());
+                field.style.unityFont = new StyleFont(fieldStyle.font);
+                header.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                field.style.fontSize = fieldStyle.fontSize;
+                field.style.color = UnityEngine.Color.black;
+
+                privateVariables.Add(field);
+            }
+
+            foreach (PropertyData propertyData in data.PrivateProperties)
+            {
+                Label property = new Label(propertyData.ToRichString());
+                property.style.unityFont = new StyleFont(fieldStyle.font);
+                property.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
+                property.style.fontSize = fieldStyle.fontSize;
+                property.style.color = UnityEngine.Color.black;
+
+                privateVariables.Add(property);
+            }
+            
             #endregion
 
             if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && data.PublicVariables.Concat(data.PrivateVariables).Count() != 0)
@@ -238,46 +218,94 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        private void TryAssignClickBehaviours()
+        public override void SetVisible(bool isVisible)
         {
-            bodyClick ??= new ClickBehaviour(VisualElement, null, SetFocusClass);
-            bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
-            headerClick ??= new ClickBehaviour(header, SwapExpandedCollapsed, SetFocusClass);
+            this.isVisible = isVisible;
+
+            bool isBodyVisible = isExpanded && isVisible;
+
+            VisualElement.visible = isBodyVisible;
+            header.visible = isVisible;
+            foreach (MethodGUI methodGUI in methodGUIs)
+            {
+                methodGUI.SetVisible(isBodyVisible);
+            }
         }
 
-        private void SwapExpandedCollapsed()
+        public void SetFocused(bool isFocused)
         {
-            isExpanded = !isExpanded;
-            if (isExpanded)
+            if(isFocused)
             {
-                VisualElement.visible = true;
-                header.visible = true;
-                foreach(MethodGUI methodGUI in methodGUIs)
-                {
-                    methodGUI.SetVisible(true);
-                }
-                VisualElement.BringToFront();
+                VisualElement.style.backgroundImage = Background.FromTexture2D(focusedBackgroundTexture);
+                header.style.backgroundImage = Background.FromTexture2D(focusedHeaderTexture);
             }
             else
             {
-                VisualElement.visible = false;
-                header.visible = true;
-                foreach (MethodGUI methodGUI in methodGUIs)
-                {
-                    methodGUI.SetVisible(false);
-                }
+                VisualElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
+                header.style.backgroundImage = Background.FromTexture2D(headerTexture);
             }
         }
 
+        public void SetIsExpanded(bool isExpanded)
+        {
+            this.isExpanded = isExpanded;
+            SetVisible(isVisible);
+        }
+
+        private void TryAssignClickBehaviours()
+        {
+            if (bodyClick == null)
+            {
+                bodyClick = new ClickBehaviour(VisualElement, null, SetFocusClass);
+                bodyClick.RegisterOnControlMonoClick(AddClassToSelected);
+                bodyClick.RegisterOnHoldingClick(Move);
+            }
+
+            if (headerClick == null)
+            {
+                headerClick = new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
+            }
+        }
+
+        private void SwapIsExpanded()
+        {
+            SetIsExpanded(!isExpanded);
+        }
         private void SetFocusClass()
         {
             graphManager.AddSelectedClass(data.ClassNode);
-            graphManager.FocusOnSelectedClasses();
+            graphManager.AdjustGraphToSelectedClasses();
+            graphManager.ChangeToClassLayer();
         }
 
         private void AddClassToSelected()
         {
             graphManager.AddSelectedClass(data.ClassNode);
+        }
+
+        private void Move(bool isFirstCall, bool isLastCall, float x, float y)
+        {
+            if(isFirstCall)
+            {
+                moveCollider = new VisualElement();
+                moveCollider.style.height = new StyleLength(float.MaxValue);
+                moveCollider.style.width = new StyleLength(float.MaxValue);
+                moveCollider.style.marginLeft = new StyleLength(-float.MaxValue/2);
+                moveCollider.style.marginTop = new StyleLength(-float.MaxValue/2);
+                VisualElement.Add(moveCollider);
+                posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
+                mousePosOnStartMoving = new Vector2(x, y);
+            }
+            else if(isLastCall)
+            {
+                VisualElement.Remove(moveCollider);
+            }
+            else
+            {
+                Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
+                VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
+                VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
+            }
         }
 
         private Vector2Int CalculateBackgroundSize()

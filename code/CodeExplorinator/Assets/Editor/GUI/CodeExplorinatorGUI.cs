@@ -13,13 +13,17 @@ namespace CodeExplorinator
     public class CodeExplorinatorGUI : EditorWindow
     {
         public static bool isControlDown = false;
+        public static Vector2 Scale { get { return zoomBehaviour.Scale; } }
+
+        private const string settingsKey = "CodeExplorinatorSettings";
 
         //Only exists to prevent garbage collection from deleting the dragBehaviour object. Might not even be necessary
-        private DragBehaviour dragBehaviour;
+        private static DragBehaviour dragBehaviour;
         //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
-        private ZoomBehaviour zoomBehaviour;
-        private GraphManager graphManager;
-        private MenuGUI menu;
+        private static ZoomBehaviour zoomBehaviour;
+        private static GraphManager graphManager;
+        private static VisualElement graph;
+        private static MenuGUI menu;
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
         {
@@ -27,30 +31,13 @@ namespace CodeExplorinator
             editorWindow.titleContent = new GUIContent("Code Explorinator");
         }
 
-
         private void CreateGUI()
         {
-            VisualElement graph = new VisualElement();
-            graph.style.scale = Vector2.one;
-            dragBehaviour = new DragBehaviour(graph);
-            zoomBehaviour = new ZoomBehaviour(graph, 1.05f);
-            #region Create Background
+            if (graphManager == null)
+            {
+                Initialize();
+            }
             rootVisualElement.Add(graph);
-            graph.style.position = new StyleEnum<Position>(Position.Absolute);
-            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0b11111111111111111111, 0b11111111111111111111));
-            graph.style.width = 0b11111111111111111111;
-            graph.style.height = 0b11111111111111111111;
-            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
-            graph.style.marginLeft = -0b1111111111111111111; //Bigger numbers resulted in the background being not on the start view anymore :(
-            graph.style.marginTop = -0b1111111111111111111;
-            #endregion
-
-            
-            List<ClassData> classData = GenerateClassDataFromProject();
-            graphManager = new GraphManager(classData, graph, 0);
-
-            menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
-            menu.GenerateVisualElement();
             rootVisualElement.Add(menu.VisualElement);
         }
 
@@ -59,10 +46,15 @@ namespace CodeExplorinator
             CheckControlKeys();
         }
 
+        //This is called everytime the window is closed (therefore destroyed)
+        private void OnDestroy()
+        {
+            string saveData = graphManager.Serialize(true);
+            EditorPrefs.SetString(settingsKey, saveData);
+        }
+
         private List<ClassData> GenerateClassDataFromProject()
         {
-            //string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
-
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
             
@@ -86,15 +78,51 @@ namespace CodeExplorinator
                 classDatas.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
             
-            /*
-            ReferenceFinder.ReFillAllPublicMethodReferences(classDatas, compilation);
-            ReferenceFinder.ReFillAllPublicAccesses(classDatas, compilation);
-            ReferenceFinder.ReFillAllPublicPropertyAccesses(classDatas, compilation);
-            ReferenceFinder.ReFillAllClassReferences(classDatas, compilation);
-            */
             ReferenceFinder.RefillAllReferences(classDatas,compilation);
+            
+            /*
+            TODO: we need for that: Microsoft.CodeAnalysis.Workspaces.MSBuild
+             
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            Solution solution = await workspace.OpenSolutionAsync(nancyApp);
+            
+            var solution = Solution.Create(SolutionId.CreateNewId()).AddCSharpProject("Foo", "Foo").Solution;
 
+            Roslyn.Services.Workspace.LoadSolution
+            */
+            
             return classDatas;
+        }
+
+        private void Initialize()
+        {
+            graph = new VisualElement();
+            graph.style.scale = Vector2.one;
+            dragBehaviour = new DragBehaviour(graph);
+            zoomBehaviour = new ZoomBehaviour(graph, 1.05f);
+
+            #region Create Background
+            graph.style.position = new StyleEnum<Position>(Position.Absolute);
+            graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0xFFFFF, 0xFFFFF));
+            graph.style.width = 0xFFFFF;
+            graph.style.height = 0xFFFFF;
+            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            graph.style.marginLeft = -0x7FFFF; //Bigger numbers resulted in the background being not on the start view anymore :(
+            graph.style.marginTop = -0x7FFFF;
+            #endregion
+
+            List<ClassData> classData = GenerateClassDataFromProject();
+            graphManager = new GraphManager(classData, graph, 0);
+            menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
+            menu.GenerateVisualElement();
+
+            string settings = EditorPrefs.GetString(settingsKey);
+            if (settings != null && settings != string.Empty)
+            {
+                GraphManager.SerializationData data = graphManager.DeSerialize(settings);
+                menu.SetClassDepth(data.shownClassDepth);
+                menu.SetMethodDepth(data.shownMethodDepth);
+            }
         }
         
         private List<MethodData> CollectAllMethodData(List<ClassData> classData)
@@ -119,6 +147,11 @@ namespace CodeExplorinator
             {
                 isControlDown = false;
             }
+        }
+
+        public static void SetControlKey(bool isPressed)
+        {
+            isControlDown = isPressed;
         }
     }
 }

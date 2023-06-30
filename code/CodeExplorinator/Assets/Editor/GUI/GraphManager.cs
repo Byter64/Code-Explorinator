@@ -1,5 +1,8 @@
-﻿using Codice.Client.Common.TreeGrouper;
+﻿using Codice.Client.BaseCommands.CheckIn;
+using Codice.Client.Common.TreeGrouper;
+using Codice.CM.SEIDInfo;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,34 +10,110 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Random = System.Random;
 
 namespace CodeExplorinator
 {
     public class GraphManager
     {
+        public struct SerializationData
+        {
+            public int shownClassDepth;
+            public int shownMethodDepth;
+            public State state;
+            public string[] focusedClassNodes;
+            public string[] focusedMethodNodes;
+
+            public SerializationData(int shownClassDepth, int shownMethodDepth, State state, HashSet<ClassNode> focusedClassNodes, HashSet<MethodNode> focusedMethodNodes)
+            {
+                this.shownClassDepth = shownClassDepth;
+                this.shownMethodDepth = shownMethodDepth;
+                this.state = state;
+                this.focusedClassNodes = ToStringArray(focusedClassNodes);
+                this.focusedMethodNodes = ToStringArray(focusedMethodNodes);
+            }
+
+            private static string[] ToStringArray(HashSet<ClassNode> classNodes)
+            {
+                ClassNode[] classNodesArray = classNodes.ToArray();
+                string[] result = new string[classNodes.Count];
+
+                for(int i = 0; i < result.Length; i++)
+                {
+                    result[i] = classNodesArray[i].ClassData.ClassInformation.ToDisplayString();
+                }
+                return result;
+            }
+
+            private static string[] ToStringArray(HashSet<MethodNode> methodNode)
+            {
+                MethodNode[] methodNodesArray = methodNode.ToArray();
+                string[] result = new string[methodNode.Count];
+
+                for (int i = 0; i < result.Length; i++)
+                {
+                    result[i] = methodNodesArray[i].MethodData.MethodSymbol.ToDisplayString();
+                }
+                return result;
+            }
+
+            public static HashSet<ClassNode> ToClassNodes(string[] displayStrings)
+            {
+                HashSet<ClassNode> result = new();
+                
+                foreach(string instance in displayStrings)
+                {
+                    IEnumerable<ClassNode> nodes = Instance.ClassNodes.Where(x => x.ClassData.ClassInformation.ToDisplayString().Equals(instance));
+                    if(nodes.Count() == 1)
+                    {
+                        result.Add(nodes.First());
+                    }
+                }
+
+                return result;
+            }
+
+            public static HashSet<MethodNode> ToMethodNodes(string[] displayStrings)
+            {
+                HashSet<MethodNode> result = new();
+
+                foreach (string instance in displayStrings)
+                {
+                    IEnumerable<MethodNode> nodes = Instance.methodNodes.Where(x => x.MethodData.MethodSymbol.ToDisplayString().Equals(instance));
+                    if (nodes.Count() == 1)
+                    {
+                        result.Add(nodes.First());
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        public enum State
+        {
+            ClassLayer,
+            MethodLayer
+        }
+
+        public static GraphManager Instance { get; private set; }
+
         /// <summary>
         /// all ClassNodes in the currently analyzed project
         /// </summary>
-        public HashSet<ClassNode> ClassNodes { get; private set; }
-
-        /// <summary>
-        /// the currently focused on focusNode in the oldFocusNode
-        /// </summary>
-        public ClassNode focusedClassNode;
-
-        private HashSet<ClassNode> focusedClassNodes;
-
-        private HashSet<ClassNode> selectedClassNodes;
-
-        /// <summary>
-        /// The currently focused methodNode in the oldFocusNode. This is null if the method layer is inactive
-        /// </summary>
-        public MethodNode focusedMethodNode;
+        public HashSet<ClassNode> ClassNodes { get; private set; } = new();
 
         /// <summary>
         /// The maximum nodePair as edges from the focused nodes until which other nodes are still shown
         /// </summary>
-        private int shownDepth;
+        private int shownClassDepth;
+        private int shownMethodDepth;
+        private State state;
+        private HashSet<ClassNode> focusedClassNodes = new();
+        private HashSet<ClassNode> selectedClassNodes = new();
+        private HashSet<MethodNode> focusedMethodNodes = new();
+        private HashSet<MethodNode> selectedMethodNodes = new();
+        private GraphVisualizer graphVisualizer;
 
         /// <summary>
         /// The root visualElement of the editor window
@@ -42,38 +121,34 @@ namespace CodeExplorinator
         private VisualElement graphRoot;
 
         /// <summary>
+        /// all classes that have a method from shownMethodNodes
+        /// </summary>
+        private ClassGraph methodGraph;
+
+        /// <summary>
         /// all methodNodes in the currently analyzed project
         /// </summary>
-        private HashSet<MethodNode> methodNodes;
+        private HashSet<MethodNode> methodNodes = new();
 
         /// <summary>
         /// all methodNodes within the maxDistance from focusedMethodNode
         /// </summary>
-        private HashSet<MethodNode> shownMethodNodes;
+        private HashSet<MethodNode> shownMethodNodes = new();
 
+        private List<ClassGraph> classGraphs = new();
+        
         /// <summary>
-        /// all ClassNodes within the maxDistance from focusedMethodNode
+        /// randomize via a seed to spawn the classes. TODO: make actually random
         /// </summary>
-        private HashSet<ClassNode> shownClassNodes;
-
-        /// <summary>
-        /// A list will all currently displayed connections between nodes
-        /// </summary>
-        private List<ConnectionGUI> shownConnections;
-
-        private List<ClassGraph> classGraphs;
+        private Random random = new Random(0987653); 
 
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
-            this.shownDepth = shownDepth;
+            Instance = this;
+            shownClassDepth = shownDepth;
+            shownMethodDepth = shownDepth;
             this.graphRoot = graphRoot;
-
-            ClassNodes = new HashSet<ClassNode>();
-            methodNodes = new HashSet<MethodNode>();
-            shownMethodNodes = new HashSet<MethodNode>();
-            classGraphs = new List<ClassGraph>();
-            focusedClassNodes = new HashSet<ClassNode>();
-            selectedClassNodes = new HashSet<ClassNode>();
+            graphVisualizer = new(graphRoot);
             //populate the lists with data
             foreach (ClassData @class in data)
             {
@@ -93,66 +168,218 @@ namespace CodeExplorinator
 
 
             MethodNode.CopyRerefencesFromMethodData(methodNodes);
-            shownConnections = new List<ConnectionGUI>();
-
-            //Assign first focused class
-            UpdateFocusClass(ClassNodes.Where(x => x.ClassData.GetName().ToLower().Contains("classdata")).First().ClassData);
+            state = State.ClassLayer;
         }
 
-        #region NEWSHIT
         public void AddSelectedClass(ClassNode selectedClass)
         {
             selectedClassNodes.Add(selectedClass);
         }
 
-        public void FocusOnSelectedClasses()
+        public void AddSelectedClasses(IEnumerable<ClassNode> selectedClasses)
+        {
+            foreach(ClassNode node in selectedClasses)
+            {
+                AddSelectedClass(node);
+            }
+        }
+
+        public void AdjustGraphToSelectedClasses()
         {
             focusedClassNodes.Clear();
             focusedClassNodes.UnionWith(selectedClassNodes);
-            ChangeGraph(selectedClassNodes, shownDepth);
+            ChangeClassGraphs(selectedClassNodes, shownClassDepth);
             selectedClassNodes.Clear();
         }
 
-        /// <summary>
-        /// Changes the maxDistance and adapts the UI to it
-        /// </summary>
-        /// <param name="depth"></param>
-        public void ChangeDepth(int depth)
+        public void AddSelectedMethod(MethodNode selectedMethod)
         {
-            shownDepth = depth;
-            ChangeGraph(focusedClassNodes, depth);
+            selectedMethodNodes.Add(selectedMethod);
         }
 
-        private void ChangeGraph(HashSet<ClassNode> focusClasses, int shownDepth)
+        public void AddSelectedMethods(IEnumerable<MethodNode> selectedMethods)
         {
-            RemoveGraphGUI();
-            UpdateSubGraphs(focusClasses, shownDepth);
-            AddGraphGUI();
-        }
-
-        private void RemoveGraphGUI()
-        {
-            foreach (ClassGraph graph in classGraphs)
+            foreach (MethodNode node in selectedMethods)
             {
-                if (graphRoot == graph.root.parent)
-                {
-                    graphRoot.Remove(graph.root);
-                }
+                AddSelectedMethod(node);
             }
         }
+
+        public void AdjustGraphToSelectedMethods()
+        {
+            focusedMethodNodes.Clear();
+            focusedMethodNodes.UnionWith(selectedMethodNodes);
+            ChangeMethodGraph(selectedMethodNodes, shownMethodDepth);
+            selectedMethodNodes.Clear();
+        }
+
+        /// <summary>
+        /// Changes the maxDistance for claesses and adapts the UI to it
+        /// </summary>
+        /// <param name="depth"></param>
+        public void ChangeClassDepth(int depth)
+        {
+            shownClassDepth = depth;
+            if(state != State.ClassLayer) { return; }
+
+            ChangeClassGraphs(focusedClassNodes, depth);
+        }
+
+        /// <summary>
+        /// Changes the maxDistance for methods and adapts the UI to it
+        /// </summary>
+        /// <param name="depth"></param>
+        public void ChangeMethodDepth(int depth)
+        {
+            shownMethodDepth = depth;
+            if (state != State.MethodLayer) { return; }
+
+            ChangeMethodGraph(focusedMethodNodes, depth);
+        }
+
+        public void ChangeToMethodLayer()
+        {
+            graphVisualizer.ShowClassLayer(false);
+            graphVisualizer.ShowMethodLayer(true, GetAllMethodGUIs(shownMethodNodes));
+
+            state = State.MethodLayer;
+        }
+
+        public void ChangeToClassLayer()
+        {
+            graphVisualizer.ShowMethodLayer(false);
+            graphVisualizer.ShowClassLayer(true);
+
+            focusedMethodNodes.Clear();
+
+            state = State.ClassLayer;
+        }
+
+        public string Serialize(bool prettyPrint)
+        {
+            SerializationData data = new SerializationData(shownClassDepth, shownMethodDepth, state, focusedClassNodes, focusedMethodNodes);
+            string result;
+            if(prettyPrint)
+            {
+                result = JsonConvert.SerializeObject(data, Formatting.Indented);
+            }
+            else
+            {
+                result = JsonConvert.SerializeObject(data, Formatting.None);
+            }
+            return result;
+        }
+
+        public SerializationData DeSerialize(string jsonString)
+        {
+            if(jsonString == null)
+            {
+                throw new ArgumentNullException();
+            }
+            SerializationData data = JsonConvert.DeserializeObject<SerializationData>(jsonString);
+            HashSet<ClassNode> focusClasses = SerializationData.ToClassNodes(data.focusedClassNodes);
+            HashSet<MethodNode> focusMethods = SerializationData.ToMethodNodes(data.focusedMethodNodes);
+            
+            AddSelectedClasses(focusClasses);
+            AdjustGraphToSelectedClasses();
+
+            AddSelectedMethods(focusMethods);
+            AdjustGraphToSelectedMethods();
+
+            switch(data.state)
+            {
+                case State.ClassLayer:
+                    ChangeToClassLayer();
+                    break;
+
+                case State.MethodLayer:
+                    ChangeToMethodLayer();
+                    break;
+            }
+
+            return data;
+        }
+
+        private void ChangeClassGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
+        {
+            UpdateSubGraphs(focusClasses, shownDepth);
+            HashSet<ClassGUI> classGUIs = GetAllClassGUIs(classGraphs);
+            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(classGraphs);
+            HashSet<ClassGUI> focusedGUIs = new();
+            HashSet<ClassGUI> unfocusedGUIs = new();
+
+            focusedGUIs.UnionWith(GetAllClassGUIs(focusClasses));
+            unfocusedGUIs.UnionWith(classGUIs);
+            unfocusedGUIs.ExceptWith(focusedGUIs);
+
+            graphVisualizer.SetClassLayer(focusedGUIs, unfocusedGUIs, connectionGUIs);
+            graphVisualizer.ShowClassLayer(true);
+        }
+
+        private void ChangeMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
+        {
+            UpdateMethodGraph(focusMethods, shownDepth);
+            HashSet<ClassGUI> classGUIs = GetAllClassGUIs(new HashSet<ClassGraph>() { methodGraph });
+            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(new HashSet<ClassGraph>() { methodGraph });
+            HashSet<MethodGUI> methodGUIs = GetAllMethodGUIs(shownMethodNodes);
+            HashSet<MethodGUI> focusedMethods = GetAllMethodGUIs(focusMethods);
+            HashSet<MethodGUI> unfocusedMethods = new();
+            unfocusedMethods.UnionWith(methodGUIs); 
+            unfocusedMethods.ExceptWith(focusedMethods);
+            graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs, focusedMethods, unfocusedMethods);
+            graphVisualizer.ShowMethodLayer(true, methodGUIs);
+        } 
 
         private void UpdateSubGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
         {
             classGraphs.Clear();
             classGraphs = GenerateOptimalSubgraphs(ClassNodes, focusClasses, shownDepth);
-        }
+            HashSet<ClassNode> nodes = new();
+            foreach(ClassGraph graph in classGraphs)
+            {
+                nodes.UnionWith(graph.classNodes);
+            }
 
-        private void AddGraphGUI()
-        {
+            SpringEmbedderAlgorithm.StartAlgorithm(nodes);
+
             foreach (ClassGraph graph in classGraphs)
             {
-                graphRoot.Add(graph.root);
+                nodes.UnionWith(graph.classNodes); //Warum nochmal????
+
+                graph.GenerateConnectionsBetweenClasses();
+                graph.GenerateVisualElementGraph();
             }
+        }
+
+        private void UpdateMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
+        {
+            BreadthSearch.Reset();
+            shownMethodNodes.Clear();
+            foreach(MethodNode methodNode in methodNodes)
+            {
+                methodNode.distanceFromFocusMethod = int.MinValue;
+            }
+            //Generate graph
+            foreach (MethodNode node in focusMethods)
+            {
+                shownMethodNodes.UnionWith(BreadthSearch.GenerateMethodSubgraph(node, shownDepth));
+            }
+            //Find the containing class for each focused class
+            HashSet<ClassNode> focusedClasses = new();
+            foreach (MethodNode node in focusMethods)
+            {
+                focusedClasses.Add(node.MethodData.ContainingClass.ClassNode);
+            }
+
+            //Create classgraph that contains each class which contains a shown method
+            methodGraph = new ClassGraph(this, FindClassNodes(shownMethodNodes), focusedClasses, shownDepth);
+
+            //Calculate new positions
+            SpringEmbedderAlgorithm.StartMethodAlgorithm(methodGraph.classNodes, shownMethodNodes);
+            //methodGraph.GenerateConnectionsBetweenMethods(shownMethodNodes);
+            //methodGraph.GenerateConnectionsBetweenClasses();
+            methodGraph.GenerateMethodConnectionsBetweenClasses();
+            methodGraph.GenerateVisualElementGraph();
         }
 
         /// <summary>
@@ -188,7 +415,7 @@ namespace CodeExplorinator
                     continue;
                 }
 
-                //Look for a subgraph with which the overlappingSubgraph could be overlapping
+                //Look for a subgraph with which the overlappingSubgraph is overlapping
                 (HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) overlappedSubGraph = (null, null);
                 foreach ((HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) subgraph in subgraphs)
                 {
@@ -197,7 +424,7 @@ namespace CodeExplorinator
                         int distance = BreadthSearch.CalculateDistance(superGraph, focusNode, overlappingSubgraph.Item1);
                         //If two focus nodes are closer equal 2 * maxDistance, their graphs need to overlap
                         //If two focus nodes distance is equal to 2 * maxDistance + 1, their graphs are adjacent. In this case we also want to merge them
-                        if (distance >= 2 * maxDistance + 1) 
+                        if (distance <= 2 * maxDistance + 1) 
                         {
                             overlappedSubGraph = subgraph;
                             goto foundOverlap;
@@ -222,281 +449,10 @@ namespace CodeExplorinator
             List<ClassGraph> graphs = new();
             foreach((HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) subgraph in subgraphs)
             {
-                graphs.Add(new ClassGraph(subgraph.graph, subgraph.focusNodes, maxDistance));
+                graphs.Add(new ClassGraph(this, subgraph.graph, subgraph.focusNodes, maxDistance));
             }
 
             return graphs;
-        }
-        #endregion
-
-        /// <summary>
-        /// Changes the focus class and adapts the UI to it
-        /// </summary>
-        /// <param name="classData"></param>
-        public void UpdateFocusClass(ClassData classData)
-        {
-            focusedClassNodes = new HashSet<ClassNode>() { classData.ClassNode };
-            ChangeGraph(focusedClassNodes, shownDepth);
-        }
-
-        /// <summary>
-        /// Changes the focus method and adapths the UI to it
-        /// </summary>
-        /// <param name="methodData"></param>
-        public void UpdateFocusMethod(MethodData methodData)
-        {
-            focusedMethodNode = methodData.MethodNode;
-            RedrawMethodGraph();
-            focusedMethodNode.MethodData.ContainingClass.ClassNode.classGUI.VisualElement.BringToFront();
-        }
-
-        /// <summary>
-        /// Redraws all VisualElements within the oldFocusNode
-        /// </summary>
-        private void RedrawGraph()
-        {
-            BreadthSearch.Reset();
-            RedrawNodes();
-            RedrawConnections();
-        }
-
-        /// <summary>
-        /// Redraws all VisualElements that are nodes
-        /// </summary>
-        private void RedrawNodes()
-        {
-            shownClassNodes = BreadthSearch.GenerateClassSubgraph(ClassNodes, focusedClassNode, shownDepth);
-            SpringEmbedderAlgorithm.StartAlgorithm(shownClassNodes.ToList(), 100000, 1000);
-            AppendShownNodesToGraphRoot();
-        }
-
-        /// <summary>
-        /// Redraws all VisualElements that are connections
-        /// </summary>
-        private void RedrawConnections()
-        {
-            RemoveConnectionsFromGraphRoot();
-            shownConnections.Clear();
-
-            foreach (ClassNode foot in shownClassNodes)
-            {
-                if (foot.IsLeaf)
-                {
-                    foreach (ClassNode tip in foot.outgoingConnections)
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        VisualElement shownTip = shownClassNodes.Contains(tip) ? tip.classGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            shownTip);
-                        connection.GenerateVisualElement();
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (ClassNode tip in foot.ingoingConnections) //tip and foot here have opposite meanings
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        VisualElement shownTip = shownClassNodes.Contains(tip) ? tip.classGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(shownTip,
-                            foot.classGUI.VisualElement);
-                        connection.GenerateVisualElement();
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
-                    {
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            shownClassNodes.Contains(parent.ClassNode)
-                                ? parent.ClassNode.classGUI.VisualElement
-                                : null);
-                        connection.GenerateVisualElement(true);
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (var child in
-                             foot.ClassData.ChildClasses) //tip(aka child) and foot here have opposite meanings
-                    {
-                        ConnectionGUI connection = new ConnectionGUI(
-                            shownClassNodes.Contains(child.ClassNode) ? child.ClassNode.classGUI.VisualElement : null,
-                            foot.classGUI.VisualElement);
-                        connection.GenerateVisualElement(true);
-                        shownConnections.Add(connection);
-                    }
-                }
-                else
-                {
-                    foreach (ClassNode tip in foot.outgoingConnections)
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        ConnectionGUI connection =
-                            new ConnectionGUI(foot.classGUI.VisualElement, tip.classGUI.VisualElement);
-                        connection.GenerateVisualElement();
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (var parent in foot.ClassData.ExtendingOrImplementingClasses)
-                    {
-                        ConnectionGUI connection = new ConnectionGUI(foot.classGUI.VisualElement,
-                            parent.ClassNode.classGUI.VisualElement);
-                        connection.GenerateVisualElement(true);
-                        shownConnections.Add(connection);
-                    }
-                }
-            }
-
-            AppendShownConnectionsToGraphRoot();
-        }
-
-
-        /// <summary>
-        /// Draws the method layer
-        /// </summary>
-        private void RedrawMethodGraph()
-        {
-            RedrawMethodNodes();
-            RedrawConnectionsForMethods();
-        }
-
-
-        private void RedrawMethodNodes()
-        {
-            foreach (MethodNode node in shownMethodNodes)
-            {
-                node.MethodGUI.ShowBackground(false);
-            }
-
-            BreadthSearch.Reset();
-
-            shownMethodNodes = BreadthSearch.GenerateMethodSubgraph(focusedMethodNode, shownDepth);
-            foreach (MethodNode node in shownMethodNodes)
-            {
-                node.MethodGUI.ShowBackground(true);
-            }
-
-            shownClassNodes = FindClassNodes(shownMethodNodes);
-
-            SpringEmbedderAlgorithm.StartMethodAlgorithm(shownClassNodes, shownMethodNodes, 100000, 1000);
-            AppendShownNodesToGraphRoot();
-        }
-
-
-        /// <summary>
-        /// redraws the connections between methods and removes all other lines
-        /// </summary>
-        private void RedrawConnectionsForMethods()
-        {
-            RemoveConnectionsFromGraphRoot();
-            shownConnections.Clear();
-
-            foreach (MethodNode foot in shownMethodNodes)
-            {
-                if (foot.IsLeaf)
-                {
-                    foreach (MethodNode tip in foot.outgoingConnections)
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        VisualElement shownTip = shownMethodNodes.Contains(tip) ? tip.MethodGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(foot.MethodGUI.VisualElement,
-                            shownTip);
-                        connection.GenerateVisualElement(false, true);
-                        shownConnections.Add(connection);
-                    }
-
-                    foreach (MethodNode tip in foot.ingoingConnections) //tip and foot here have opposite meanings
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        VisualElement shownTip = shownMethodNodes.Contains(tip) ? tip.MethodGUI.VisualElement : null;
-                        ConnectionGUI connection = new ConnectionGUI(shownTip,
-                            foot.MethodGUI.VisualElement);
-                        connection.GenerateVisualElement(false, true);
-                        shownConnections.Add(connection);
-                    }
-                }
-                else
-                {
-                    foreach (MethodNode tip in foot.outgoingConnections)
-                    {
-                        if (foot == tip)
-                        {
-                            continue;
-                        }
-
-                        ConnectionGUI connection =
-                            new ConnectionGUI(foot.MethodGUI.VisualElement, tip.MethodGUI.VisualElement);
-                        connection.GenerateVisualElement(false, true);
-                        shownConnections.Add(connection);
-                    }
-                }
-            }
-
-            AppendShownConnectionsToGraphRoot();
-        }
-
-
-        /// <summary>
-        /// Removes all VisualElements that are connections
-        /// </summary>
-        private void RemoveConnectionsFromGraphRoot()
-        {
-            foreach (ConnectionGUI connection in shownConnections)
-            {
-                try
-                {
-                    graphRoot.Remove(connection.VisualElement);
-                }
-                catch (ArgumentException)
-                {
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds all VisualElements that are connections to the editor Window
-        /// </summary>
-        private void AppendShownConnectionsToGraphRoot()
-        {
-            foreach (ConnectionGUI connection in shownConnections)
-            {
-                graphRoot.Add(connection.VisualElement);
-            }
-        }
-
-        /// <summary>
-        /// Adds all VisualElements that are ClassNodes to the editor Window
-        /// </summary>
-        private void AppendShownNodesToGraphRoot()
-        {
-            foreach (ClassNode node in ClassNodes)
-            {
-                if (graphRoot == node.classGUI.VisualElement.parent)
-                {
-                    graphRoot.Remove(node.classGUI.VisualElement);
-                }
-            }
-
-            foreach (ClassNode node in shownClassNodes)
-            {
-                graphRoot.Add(node.classGUI.VisualElement);
-            }
         }
 
         /// <summary>
@@ -517,10 +473,12 @@ namespace CodeExplorinator
             GUIStyle methodStyle = new GUIStyle(classStyle);
             methodStyle.alignment = TextAnchor.UpperLeft;
 
+            
+            
             //The ClassGUI should not be generated in here but should rather be given to this method as a parameter!!!!
             ClassGUI classGUI = new ClassGUI(
-                new Vector2(UnityEngine.Random.Range(-50, 50) - graphRoot.style.marginLeft.value.value,
-                    UnityEngine.Random.Range(-50, 50) - graphRoot.style.marginTop.value.value), classData, classStyle,
+                new Vector2(random.Next(-500, 500) - graphRoot.style.marginLeft.value.value,
+                    random.Next(-500, 500) - graphRoot.style.marginTop.value.value), classData, classStyle,
                 methodStyle, methodStyle, this);
             ClassNode node = new ClassNode(classData, classGUI);
             classData.ClassNode = node;
@@ -563,8 +521,50 @@ namespace CodeExplorinator
             {
                 classNodes.Add(methodNode.MethodData.ContainingClass.ClassNode);
             }
-
+            
             return classNodes;
+        }
+
+        private HashSet<ClassGUI> GetAllClassGUIs(IEnumerable<ClassGraph> classGraphs)
+        {
+            HashSet<ClassGUI> classGUI = new HashSet<ClassGUI>();
+            foreach (ClassGraph classGraph in classGraphs)
+            {
+                classGUI.UnionWith(GetAllClassGUIs(classGraph.classNodes));
+            }
+            return classGUI;
+        }
+
+        private HashSet<ClassGUI> GetAllClassGUIs(HashSet<ClassNode> classNodes)
+        {
+            HashSet<ClassGUI> classGUI = new HashSet<ClassGUI>();
+            foreach (ClassNode classNode in classNodes)
+            {
+                classGUI.Add(classNode.classGUI);
+            }
+            return classGUI;
+        }
+
+        private HashSet<ConnectionGUI> GetAllConnectionGUIs(IEnumerable<ClassGraph> classGraphs)
+        {
+            HashSet<ConnectionGUI> connectionGUIs = new HashSet<ConnectionGUI>();
+            foreach (ClassGraph classGraph in classGraphs)
+            {
+                foreach (ConnectionGUI connection in classGraph.connections)
+                {
+                    connectionGUIs.Add(connection);
+                }
+            }
+            return connectionGUIs;
+        }
+        private HashSet<MethodGUI> GetAllMethodGUIs(IEnumerable<MethodNode> methodNodes)
+        {
+            HashSet<MethodGUI> methodGUIs = new HashSet<MethodGUI>();
+            foreach (MethodNode node in methodNodes)
+            {
+                methodGUIs.Add(node.MethodGUI);
+            }
+            return methodGUIs;
         }
     }
 }

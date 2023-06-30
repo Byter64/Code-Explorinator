@@ -1,3 +1,45 @@
+Erledigt:
+- implemented interfaces etc.
+- improved spring embedder
+- explicit interface implementation supported
+- tested if explicit parameters work
+-  => syntax für methoden unterstützt
+
+Dringend:
+- Methodenebene hinzufügen
+- Fokusklassen sollen am selben Ort bleiben
+- anordnung verbessern
+
+Wichtig:
+- Einstellungen des Nutzers abspeichern
+- Vererbung von Methoden unterstützen
+- Alle Modifier unterstützen (fixed, new, unsafe and event dont work)
+
+Extras:
+- Fokussierte Klassen/Methoden hervorheben
+- Warnung einabuen, dass Dateien mit Sonderzeichen mit der richtigen Codierung abgespeichert gemeint
+- compiler fragen, ob kompilierbar, falls nicht, evtl nur ein teilprojekt anzeigen (oder halt einfach sagen ne machen wir nicht)
+
+Für nach der Expo:
+- BUG: Zoom fokoussiert nicht perfekt auf Mauszeiger
+- Alle Klassen außer Fokusklassen am Anfang einklappen
+- Typkonvertierung unterstützen
+- Operatorenüberladung unterstützen
+- Delegate unterstützen
+- dictionaries einbauen, code umstrukturieren, symbolfinder benutzen (SymbolFinder.FindReferencesAsync/.FindOverridesAsync/.FindImplementedInterfaceMembersAsync/.FindImplementationsAsync)
+
+**Arbeitszeiten:**
+19.05.23:
+
+10:00-15:00 Uhr: Springalgorithmus drüber geschaut, Mehrfachauswahl für Methodenebene angefangen (Y)
+
+10:00-15:00 Uhr: interfaces/records/structs implementiert, spring algo verbessert, getestet ob explizite parameter und explizite interfaces funktionieren, modifier testen angefangen (V)
+
+26.05.23:
+
+10:00-14:00: Bug bei Merfachauswahl gefixt, weiter an Methodenebene gearbeitet (Y)
+10:00-15:00: Testing, angefangen override und implement von Methoden zu implementieren, einen Modifier implementiert (V)
+
 `Please edit this README to fit your project and keep it up-to-date with your concept.`
 
 `All final deliverables (code, executable game, report, trailer and poster) have to be committed, tagged as final and pushed to your GitLab repository.`

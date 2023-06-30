@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 
 public class ZoomBehaviour : PointerManipulator
 {
+    public Vector2 Scale { get; private set; }
     private long lastTimeStamp = 0;
     private readonly float scaleFactor;
     private readonly float minScale = 0.001f;
@@ -17,6 +18,7 @@ public class ZoomBehaviour : PointerManipulator
         }
 
         this.scaleFactor = scaleFactor;
+        Scale = target.style.scale.value.value;
     }
 
     protected override void RegisterCallbacksOnTarget()
@@ -70,6 +72,7 @@ public class ZoomBehaviour : PointerManipulator
         target.style.marginTop = target.style.marginTop.value.value + mousPosDelta.y;
         #endregion
 
+        Scale = newScale;
         target.style.scale = new StyleScale(new Scale(newScale));
         lastTimeStamp = context.timestamp;
     }

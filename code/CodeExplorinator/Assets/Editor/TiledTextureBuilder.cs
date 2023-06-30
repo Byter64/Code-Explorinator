@@ -91,6 +91,13 @@ namespace CodeExplorinator
             size = new Vector2Int(texture2D.width, texture2D.height);
         }
 
+        public static Texture2D NineSliceScaleTexture(Texture2D texture2D, RectInt middleRectangle, Vector2Int size)
+        {
+            TiledTextureBuilder builder = new TiledTextureBuilder(texture2D, middleRectangle);
+            builder.Size = size;
+            return builder.BuildTexture();
+        }
+
         public Texture2D BuildTexture()
         {
             if (mustUpdateTiledTexture)
@@ -179,7 +186,7 @@ namespace CodeExplorinator
             return result;
         }
 
-        private Dictionary<Tile, Texture2D> CreateTileDictionary(Texture2D texture, Vector2Int splitPointBottomLeft, Vector2Int splitPointTopRight)
+        private static Dictionary<Tile, Texture2D> CreateTileDictionary(Texture2D texture, Vector2Int splitPointBottomLeft, Vector2Int splitPointTopRight)
         {
             Texture2D tile;
             int width, height;

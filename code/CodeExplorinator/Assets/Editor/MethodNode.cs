@@ -9,13 +9,18 @@ namespace CodeExplorinator
         public MethodData MethodData;
         
         //these are for determining the connections between methods for the spring algo
-        public List<MethodNode> ConnectedNodes;
-        public List<MethodNode> NotConnectedNodes;
+        public HashSet<MethodNode> ConnectedNodes;
+        public HashSet<MethodNode> NotConnectedNodes;
 
         public List<MethodNode> ingoingConnections;
         public List<MethodNode> outgoingConnections;
 
         public MethodGUI MethodGUI { get; set; }
+
+        /// <summary>
+        /// represents the distance of the focus method found by the breadth search 
+        /// </summary>
+        public int distanceFromFocusMethod;
 
         /// <summary>
         /// shows if this node is considered a leaf node by the breadth search
@@ -27,8 +32,8 @@ namespace CodeExplorinator
             MethodData = methodData;
             MethodGUI = methodGUI;
             IsLeaf = isLeaf;
-            ConnectedNodes = new List<MethodNode>();
-            NotConnectedNodes = new List<MethodNode>();
+            ConnectedNodes = new HashSet<MethodNode>();
+            NotConnectedNodes = new HashSet<MethodNode>();
             ingoingConnections = new List<MethodNode>();
             outgoingConnections= new List<MethodNode>();
         }

@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
 using System;
+using System.Collections;
+using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.FindSymbols;
 using Microsoft.CodeAnalysis.FlowAnalysis;
 using UnityEngine;
 using UnityEngine.Assertions.Must;
@@ -13,7 +16,6 @@ namespace CodeExplorinator
 {
     public static class ReferenceFinder
     {
-
         public static void RefillAllReferences(List<ClassData> classDatas, Compilation compilation)
         {
             ReFillAllPublicMethodReferences(classDatas, compilation);
@@ -21,8 +23,8 @@ namespace CodeExplorinator
             ReFillAllPublicPropertyAccesses(classDatas, compilation);
             ReFillAllClassReferences(classDatas, compilation);
         }
-        
-        
+
+
         #region MethodReferences
 
         /// <summary>
@@ -33,7 +35,7 @@ namespace CodeExplorinator
         {
             foreach (ClassData classData in classDatas)
             {
-                classData.ClearAllPublicMethodInvocations(); //what does this do?
+                classData.ClearAllPublicMethodInvocations();
             }
 
             IEnumerable<MethodInvocationData> allinvocations =
@@ -59,7 +61,7 @@ namespace CodeExplorinator
                                 methodData.InvokedByExternal.Add(invocation);
                                 invocation.ContainingMethod.IsInvokingExternalMethods.Add(invocation);
                             }
-                            
+
                             methodData.AllConnectedMethods.Add(invocation.ContainingMethod);
                             invocation.ContainingMethod.AllConnectedMethods.Add(methodData);
                         }
@@ -71,17 +73,129 @@ namespace CodeExplorinator
                         {
                             methodData.InvokedByInternal.Add(invocation);
                             invocation.ContainingMethod.IsInvokingInternalMethods.Add(invocation);
-                            
+
                             methodData.AllConnectedMethods.Add(invocation.ContainingMethod);
                             invocation.ContainingMethod.AllConnectedMethods.Add(methodData);
                         }
                     }
                 }
             }
+
+            RefillAllMethodExtensions(classDatas);
         }
 
-        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation(IEnumerable<ClassData> classDatas, 
-                                                                                                 Compilation compilation)
+        private static void RefillAllMethodExtensions(IEnumerable<ClassData> classDatas)
+        {
+            foreach (var classData in classDatas)
+            {
+                foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
+                {
+                    if (methodData.MethodSymbol.IsOverride)
+                    {
+                        //Debug.Log(methodData.GetName() + " has override: " + methodData.MethodSymbol.OverriddenMethod); //TODO this works perfectly for inheritance, implement
+                        //Debug.Log(methodData.MethodSymbol.OriginalDefinition);
+                    }
+
+                    //if (methodData.MethodSymbol.ContainingType.TypeKind.GetType())
+                    /*
+                    Debug.Log(methodData.GetName() + " has extension method: " +
+                              methodData.MethodSymbol.ConstructedFrom + " " +
+                              methodData.MethodSymbol.OriginalDefinition + " " +
+                              methodData.MethodSymbol.ExplicitInterfaceImplementations + " " +
+                              methodData.MethodSymbol.PartialImplementationPart);
+                    */
+
+                    if (classData.GetName().Equals("small Mom"))
+                    {
+                        //Debug.Log("smalll mom: " + methodData.MethodSymbol.OriginalDefinition);
+                    }
+                }
+
+                /*
+                if (classData.ClassInformation.TypeKind == TypeKind.Interface)
+                {
+                    foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
+                    {
+                        
+                    }
+                }
+                */
+
+                //TODO: implement interface inheritance by methodData. var c = methodData.ContainingClass.ImplementingInterfaces.SelectMany(m => m.PrivateMethods.Concat(m.PublicMethods));
+                //TODO: in short, just compare the symbols by going through all the methods of the interface
+                foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
+                {
+                    //var methodSymbol = typeSymbol.GetMembers(methodName).OfType<IMethodSymbol>().FirstOrDefault();
+                    var methodSymbol = methodData.MethodSymbol;
+                    
+                    /*
+                    var disposeMethodSymbol = methodSymbol;
+                    var type = disposeMethodSymbol.ContainingType;
+                    try
+                    {
+                        var isInterfaceImplementaton = type.FindImplementationForInterfaceMember(type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single()) == disposeMethodSymbol;
+                        if (isInterfaceImplementaton)
+                        {
+                            Debug.Log("found: " + type.FindImplementationForInterfaceMember(
+                                type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single()).Name);
+                        }
+
+                        var gag = type.FindImplementationForInterfaceMember(
+                            type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single());
+
+                        if (gag != null)
+                        {
+                            Debug.Log("finally found: " + gag.Name + " for " + methodData.GetName()); //TODO this somehow finds itself (eg: finally found: IAdder.Add for IAdder.Add), maybe still useful
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        //throw;
+                    }
+                    */
+                    /*
+                    //this doesnt work, maybe beause of: methodSymbol.ContainingType, gives out weird stuff
+                    if (methodSymbol != null && (methodSymbol.ExplicitInterfaceImplementations.Any() || methodSymbol
+                            .ContainingType.AllInterfaces.SelectMany(i => i.GetMembers()).OfType<IMethodSymbol>()
+                            .Any(m => methodSymbol.Equals(methodSymbol.ContainingType
+                                .FindImplementationForInterfaceMember(m)))))
+                    {
+                        Debug.Log("YAY");
+
+                        // The method implements an interface method.
+                        foreach (var interfaceMethod in methodSymbol.ContainingType.AllInterfaces
+                                     .SelectMany(i => i.GetMembers()).OfType<IMethodSymbol>().Select(m =>
+                                         methodSymbol.ContainingType.FindImplementationForInterfaceMember(m)))
+                        {
+                            Debug.Log("found: " + interfaceMethod.Name + " of "+ interfaceMethod.OriginalDefinition + " that is implemented by " + methodData.GetName() + " of "+ methodData.MethodSymbol.OriginalDefinition);
+                        }
+                        
+                    }
+                     */
+                }
+            }
+        }
+
+        public static ImmutableArray<ISymbol> ExplicitOrImplicitInterfaceImplementations(this ISymbol symbol)
+        {
+            if (symbol.Kind != SymbolKind.Method && symbol.Kind != SymbolKind.Property &&
+                symbol.Kind != SymbolKind.Event)
+                return ImmutableArray<ISymbol>.Empty;
+
+            var containingType = symbol.ContainingType;
+            var query = from iface in containingType.AllInterfaces
+                from interfaceMember in iface.GetMembers()
+                let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
+                where symbol.Equals(impl)
+                select interfaceMember;
+            return query.ToImmutableArray();
+        }
+
+
+        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation(
+            IEnumerable<ClassData> classDatas,
+            Compilation compilation)
         {
             List<MethodInvocationData> allInvocations = new List<MethodInvocationData>();
 
@@ -89,11 +203,13 @@ namespace CodeExplorinator
             {
                 allInvocations.AddRange(GenerateAllInvocationDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
+
             return allInvocations;
         }
 
-        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForSyntaxTree(IEnumerable<ClassData> classDatas, 
-                                                                                                Compilation compilation, SyntaxTree syntaxTree)
+        private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForSyntaxTree(
+            IEnumerable<ClassData> classDatas,
+            Compilation compilation, SyntaxTree syntaxTree)
         {
             SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
             if (semanticModel == null)
@@ -131,11 +247,23 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
-            if (syntaxNode == null) { return null; }
+            if (syntaxNode == null)
+            {
+                return null;
+            }
+
             IMethodSymbol invocator = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
-            if(invocator == null) { return null; }
+            if (invocator == null)
+            {
+                return null;
+            }
+
             containingMethod = FindMethodData(classDatas, invocator);
-            if(containingMethod == null) { return null; }
+            if (containingMethod == null)
+            {
+                return null;
+            }
+
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the invoked method
             //███████████████████████████████████████████████████████████████████████████████
@@ -221,7 +349,7 @@ namespace CodeExplorinator
             {
                 allAccesses.AddRange(GenerateAllFieldAccessDataForSyntaxTree(classDatas, compilation, syntaxTree));
             }
-            
+
             return allAccesses;
         }
 
@@ -243,6 +371,7 @@ namespace CodeExplorinator
                 FieldAccessData accessData = TryGenerateFieldAccessData(classDatas, compilation, semanticModel, access);
                 allAccesses.Add(accessData);
             }
+
             allAccesses.RemoveAll(invocations => invocations == null);
             return allAccesses;
         }
@@ -269,11 +398,23 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
-            if( syntaxNode == null) { return null; }
+            if (syntaxNode == null)
+            {
+                return null;
+            }
+
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
-            if(accessor == null) { return null; }
+            if (accessor == null)
+            {
+                return null;
+            }
+
             containingMethod = FindMethodData(classDatas, accessor);
-            if(containingMethod == null ) { return null; }
+            if (containingMethod == null)
+            {
+                return null;
+            }
+
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the accessed field
             //███████████████████████████████████████████████████████████████████████████████
@@ -377,9 +518,11 @@ namespace CodeExplorinator
                 syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>();
             foreach (IdentifierNameSyntax access in accesses)
             {
-                PropertyAccessData accessData = TryGeneratePropertyAccessData(classDatas, compilation, semanticModel, access);
+                PropertyAccessData accessData =
+                    TryGeneratePropertyAccessData(classDatas, compilation, semanticModel, access);
                 allAccesses.Add(accessData);
             }
+
             allAccesses.RemoveAll(invocations => invocations == null);
             return allAccesses;
         }
@@ -406,11 +549,22 @@ namespace CodeExplorinator
                 syntaxNode = syntaxNode.Parent;
             }
 
-            if(syntaxNode == null) { return null; }
+            if (syntaxNode == null)
+            {
+                return null;
+            }
+
             IMethodSymbol accessor = semanticModel.GetDeclaredSymbol(syntaxNode) as IMethodSymbol;
-            if (accessor != null) { return null; }
+            if (accessor != null)
+            {
+                return null;
+            }
+
             containingMethod = FindMethodData(classDatas, accessor);
-            if(containingMethod == null ) { return null; }
+            if (containingMethod == null)
+            {
+                return null;
+            }
 
             //███████████████████████████████████████████████████████████████████████████████
             //Searching for declaration of the accessed property
@@ -440,14 +594,14 @@ namespace CodeExplorinator
         #region ClassReferences
 
         public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas,
-                                                    Compilation compilation) //not sure if this is overwriting information or just adding it
+            Compilation compilation) //not sure if this is overwriting information or just adding it
         {
             //creates all ClassFieldReferenceData and ClassPropertyReferenceData and inserts these references into the ClassData, FieldData and PropertyData
             foreach (ClassData classData in classDatas)
             {
                 FindAllClassFields(classData, classDatas);
                 FindAllClassProperties(classData, classDatas);
-                FindAllInheritance(classData,classDatas);
+                FindAllInheritance(classData, classDatas);
             }
         }
 
@@ -457,32 +611,90 @@ namespace CodeExplorinator
 
             foreach (FieldData fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
             {
+                /* TODO WORK IN PROGRESS, check if the type is a simple type, if so, ignore it for performance reasons
+                if (fieldData.FieldSymbol.Type.)
+                {
+                    Debug.Log(fieldData.GetName() + " is a simple type");
+                    continue;
+                }
+                */
+
                 foreach (ClassData referencedClass in classDatas)
                 {
-                    //if the class is referenced by this field set information
-                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
+                    /*
+                    var isArray = fieldData.FieldSymbol.Type.TypeKind == TypeKind.Array;
+                    if (fieldData.FieldSymbol.Type is IArrayTypeSymbol arrayTypeSymbol)
                     {
-                        //Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
-                        //fieldData.ContainingClass);
-                        ClassFieldReferenceData reference = new ClassFieldReferenceData(referencedClass, fieldData);
-
-                        //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
-                        if (referencedClass == fieldData.ContainingClass)
+                        ITypeSymbol elementType = arrayTypeSymbol.ElementType;
+                        
+                        if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, elementType.ContainingType))
                         {
-                            referencedClass.InternalClassFieldReference.Add(reference);
-                            fieldData.ReferencingContainingClass.Add(reference);
-                        }
-                        else
-                        {
-                            referencedClass.ReferencedByExternalClassField.Add(reference);
-                            fieldData.ReferencingExternalClass.Add(reference);
-                            fieldData.ContainingClass.IsReferencingExternalClassAsField.Add(reference);
-
-                            referencedClass.AllConnectedClasses.Add(fieldData.ContainingClass);
-                            fieldData.ContainingClass.AllConnectedClasses.Add(referencedClass);
+                            SetFieldReferenceInformation(referencedClass,fieldData);
                         }
                     }
+                    */
+
+                    /*
+                    if (fieldData.FieldSymbol.Type.AllInterfaces.Any(i => i.Name == nameof(IEnumerable))) {//this already doesnt trigger
+                        
+                        if (!(fieldData.FieldSymbol.Type as INamedTypeSymbol).IsGenericType) {
+                            if (fieldData.FieldSymbol is IArrayTypeSymbol arrayType) {
+                                var elementType = arrayType.ElementType;
+                                Debug.Log("YAAAAAAAAAAAAAY");
+                                
+                                if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, elementType))
+                                {
+                                    SetFieldReferenceInformation(referencedClass,fieldData);
+                                }
+                                
+                                // do whatever
+                            } else {
+                                // no element type found, oof
+                            }
+                        } else {
+                            foreach (var generic in fieldData.FieldSymbol.ContainingType.TypeArguments) {
+                                // do whatever you need to do
+                                
+                                Debug.Log("YAAAAAAAAAAAAAY");
+                                
+                                if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, generic))
+                                {
+                                    SetFieldReferenceInformation(referencedClass,fieldData);
+                                }
+                            }
+                        }
+                    }
+                    */
+
+                    //if the class is referenced by this field, set information
+                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
+                    {
+                        SetFieldReferenceInformation(referencedClass, fieldData);
+                    }
                 }
+            }
+        }
+
+        private static void SetFieldReferenceInformation(ClassData referencedClass, FieldData fieldData)
+        {
+            //Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
+            //fieldData.ContainingClass);
+            ClassFieldReferenceData reference = new ClassFieldReferenceData(referencedClass, fieldData);
+
+            //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
+            if (referencedClass == fieldData.ContainingClass)
+            {
+                referencedClass.InternalClassFieldReference.Add(reference);
+                fieldData.ReferencingContainingClass.Add(reference);
+            }
+            else
+            {
+                referencedClass.ReferencedByExternalClassField.Add(reference);
+                fieldData.ReferencingExternalClass.Add(reference);
+                fieldData.ContainingClass.IsReferencingExternalClassAsField.Add(reference);
+
+                referencedClass.AllConnectedClasses.Add(fieldData.ContainingClass);
+                fieldData.ContainingClass.AllConnectedClasses.Add(referencedClass);
             }
         }
 
@@ -490,7 +702,8 @@ namespace CodeExplorinator
         {
             //could be improved to ignore basic types
 
-            foreach (PropertyData propertyData in classData.PublicProperties.Concat(classData.PrivateProperties).ToList())
+            foreach (PropertyData propertyData in classData.PublicProperties.Concat(classData.PrivateProperties)
+                         .ToList())
             {
                 foreach (ClassData referencedClass in classDatas)
                 {
@@ -539,7 +752,7 @@ namespace CodeExplorinator
                 {
                     if (SymbolEqualityComparer.Default.Equals(randomClass.ClassInformation, type.Type))
                     {
-                        if (randomClass.ClassInformation.IsAbstract) //TO DO: we have to ask here if its an interface or not, not if its an abstract class
+                        if (randomClass.ClassInformation.TypeKind == TypeKind.Interface)
                         {
                             analyzedClass.ImplementingInterfaces.Add(randomClass);
                             analyzedClass.AllConnectedClasses.Add(randomClass);
@@ -555,7 +768,6 @@ namespace CodeExplorinator
                             randomClass.AllConnectedClasses.Add(analyzedClass);
                             randomClass.ChildClasses.Add(analyzedClass);
                         }
-                        
                     }
                 }
             }

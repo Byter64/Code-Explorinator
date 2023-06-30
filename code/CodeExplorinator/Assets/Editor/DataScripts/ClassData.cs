@@ -102,10 +102,21 @@ namespace CodeExplorinator
         {
             get
             {
+                bool isStruct = false, isRecord = false, isInterface = false;
+
                 string result = "";
                 foreach (ClassModifiers modifier in ClassModifiersList)
                 {
-                    result += modifier.ToString() + " ";
+                    result += modifier.ToString().ToLower() + " ";
+                    if(modifier == ClassModifiers.STRUCT) { isStruct = true; }
+                    if(modifier == ClassModifiers.RECORD) { isRecord = true; }
+                    if(modifier == ClassModifiers.INTERFACE) { isInterface = true; }
+                }
+
+                //If it is just a class:
+                if(!isStruct && !isRecord && !isInterface && !isInterface)
+                {
+                    result += "class ";
                 }
 
                 //If not empty, remove the last space
@@ -267,8 +278,9 @@ namespace CodeExplorinator
             SEALED,
             RECORD,
             STRUCT,
+            INTERFACE,
 
-            PARTIAL //not implemented
+            PARTIAL //only implementable with var isPartial = classDeclaration.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword));
         }
 
         public void ClearAllPublicMethodInvocations()
@@ -319,12 +331,13 @@ namespace CodeExplorinator
 
             if (ClassInformation.IsAbstract)
             {
-                ClassModifiersList.Add(ClassModifiers.ABSTRACT);
+                ClassModifiersList.Add((ClassInformation.TypeKind == TypeKind.Interface) ? ClassModifiers.INTERFACE : ClassModifiers.ABSTRACT);
             }
 
             if (ClassInformation.IsSealed)
             {
-                ClassModifiersList.Add(ClassModifiers.SEALED);
+                ClassModifiersList.Add((ClassInformation.IsReferenceType)? ClassModifiers.SEALED : ClassModifiers.STRUCT);
+                
             }
 
             if (ClassInformation.IsRecord)
@@ -332,9 +345,10 @@ namespace CodeExplorinator
                 ClassModifiersList.Add(ClassModifiers.RECORD);
             }
 
-            if (!ClassInformation.IsReferenceType)
+            if (ClassInformation.DeclaringSyntaxReferences.Length > 1) //https://github.com/dotnet/roslyn/issues/19386 
             {
-                ClassModifiersList.Add(ClassModifiers.STRUCT);
+                //if the class is declared as partial but not declared twice, it doesnt get recognised as partial
+                ClassModifiersList.Add(ClassModifiers.PARTIAL); 
             }
         }
     }

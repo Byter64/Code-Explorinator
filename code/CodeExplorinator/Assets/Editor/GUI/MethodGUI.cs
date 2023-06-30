@@ -12,35 +12,14 @@ namespace CodeExplorinator
     public class MethodGUI : BaseGUI
     {
         public MethodData data { get; private set; }
-        private static TiledTextureData BackgroundTextureData
-        {
-            get
-            {
-                if (backgroundData == null)
-                {
-                    backgroundData = (TiledTextureData)AssetDatabase.LoadAssetAtPath("Assets/Editor/TiledTextures/Method.asset", typeof(TiledTextureData));
-                }
-                return backgroundData;
-            }
-        }
 
-        private static TiledTextureBuilder BackgroundBuilder
-        {
-            get
-            {
-                if (backgroundBuilder == null)
-                {
-                    byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + BackgroundTextureData.graphicsPath);
-                    Texture2D texture = new Texture2D(1, 1);
-                    ImageConversion.LoadImage(texture, fileData);
-                    backgroundBuilder = new TiledTextureBuilder(texture, BackgroundTextureData.middleRectangle);
-                }
-                return backgroundBuilder;
-            }
-        }
+        private const string methodHighlightPath = "Assets/Editor/TiledTextures/HighlightedMethod "; //This needs a number between [0, 10]  + ".asset" inserted
         private static TiledTextureData backgroundData;
         private static TiledTextureBuilder backgroundBuilder;
 
+        private bool isFocused = false;
+        private bool isHighlighted = false;
+        private int distanceToClosestFocusMethod = -1;
         private GUIStyle style;
         private Texture2D backgroundTexture;
         private ClickBehaviour clickBehaviour;
@@ -50,8 +29,7 @@ namespace CodeExplorinator
             this.data = data;
             this.style = style;
 
-            BackgroundBuilder.Size = CalculateBackgroundSize();
-            backgroundTexture = BackgroundBuilder.BuildTexture();
+            backgroundTexture = Create9SlicedTexture(methodHighlightPath + 0 + ".asset", CalculateBackgroundSize());
             GenerateVisualElement();
         }
 
@@ -68,6 +46,7 @@ namespace CodeExplorinator
             background.style.flexShrink = 1;
             background.style.visibility = Visibility.Hidden;
 
+            //TODO: add bold text here to improve visibility for example: new Label("<b>" + data.ToRichString() + "</b>");
             Label method = new Label(data.ToRichString());
             method.style.unityFont = new StyleFont(style.font);
             method.style.unityFontDefinition = new StyleFontDefinition(style.font);
@@ -81,28 +60,48 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        public void ShowBackground(bool isShowingBackground)
+        public void ShowHighlight(bool isShowingHighlight)
         {
-            Visibility visiBackground = isShowingBackground ? Visibility.Visible : Visibility.Hidden;
-
+            Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
+            isHighlighted = isShowingHighlight;
             VisualElement.style.visibility = visiBackground;
             VisualElement.Children().First().style.visibility = Visibility.Visible;
         }
 
-        private void TryAssignClickBehaviours()
+        public void SetFocused(bool isFocused, int distanceToClosestFocusMethod = -1)
         {
-            clickBehaviour ??= new ClickBehaviour(VisualElement, ActivateMethodLayer, null);
+            this.isFocused = isFocused;
+            this.distanceToClosestFocusMethod = distanceToClosestFocusMethod;
+
+            if (distanceToClosestFocusMethod >= 0)
+            {
+                backgroundTexture = Create9SlicedTexture(methodHighlightPath + distanceToClosestFocusMethod + ".asset", CalculateBackgroundSize());
+                VisualElement.style.backgroundImage = Background.FromTexture2D(backgroundTexture);
+            }
         }
 
-        private void ActivateMethodLayer()
+        private void TryAssignClickBehaviours()
         {
-            graphManager.UpdateFocusMethod(data);
+            clickBehaviour ??= new ClickBehaviour(VisualElement, SetFocusMethod, null);
+            clickBehaviour.RegisterOnControlMonoClick(AddSelectedMethod);
+        }
+
+        private void AddSelectedMethod()
+        {
+            graphManager.AddSelectedMethod(data.MethodNode);
+        }
+
+        private void SetFocusMethod()
+        {
+            graphManager.AddSelectedMethod(data.MethodNode);
+            graphManager.AdjustGraphToSelectedMethods();
+            graphManager.ChangeToMethodLayer();
         }
 
         private Vector2Int CalculateBackgroundSize()
         {
             Vector2 result = Vector2.zero;
-            result.y = BackgroundBuilder.OriginalSize.y;
+            result.y = 0; //because y depends on the texture, we don't know it yet.
 
             Label tempLabel = new Label();
             tempLabel.style.unityFont = style.font;
@@ -114,11 +113,18 @@ namespace CodeExplorinator
             return new Vector2Int((int)result.x, (int)result.y);
         }
 
-        public void SetVisible(bool visible)
+        public override void SetVisible(bool visible)
         {
             VisualElement.Children().First().visible = visible;
-            //If will be hidden, make background hidden, too
-            if(!visible)
+            
+            if(visible)
+            {
+                if(isHighlighted)
+                {
+                    ShowHighlight(true);
+                }
+            }
+            else
             {
                 VisualElement.visible = visible;
             }
