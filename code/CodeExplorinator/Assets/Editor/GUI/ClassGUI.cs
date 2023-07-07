@@ -305,9 +305,6 @@ namespace CodeExplorinator
                 moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
                 moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
                 moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
-
-                Debug.LogWarning("Start");
-
             }
         }
 

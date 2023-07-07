@@ -25,7 +25,6 @@ public class ClassDragger : VisualElement
     void Move(PointerMoveEvent context)
     {
         Vector2 delta = (Vector2)context.position - mousePosOnStartMoving;
-        Debug.Log(delta);
         target.style.marginLeft = posOnStartMoving.x + delta.x * 1 / CodeExplorinatorGUI.Scale.x;
         target.style.marginTop = posOnStartMoving.y + delta.y * 1 / CodeExplorinatorGUI.Scale.y;
 
@@ -47,7 +46,6 @@ public class ClassDragger : VisualElement
 
     void EndMoveChild()
     {
-        Debug.LogWarning("End");
         if (target.Contains(this))
         {
             target.Remove(this);
