@@ -208,5 +208,19 @@ namespace CodeExplorinator
                  }
              }
         }
+
+        public bool Contains(ClassGUI classGUI)
+        {
+            bool isPartOfGraph = false;
+            foreach(ClassNode node in classNodes)
+            {
+                if(node.classGUI == classGUI)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -58,6 +58,7 @@ namespace CodeExplorinator
         private VisualElement moveCollider;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
+        private HashSet<ConnectionGUI> connections;
         /// <summary>
         /// 
         /// </summary>
@@ -92,6 +93,7 @@ namespace CodeExplorinator
             ClassModifiers = "<<" + data.ClassModifiersAsString + ">>";
             ClassName = data.GetName();
             methodGUIs = new List<MethodGUI>();
+            connections = new HashSet<ConnectionGUI>();
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
                 MethodGUI methodGUI = new MethodGUI(methodData, methodStyle, graphManager);
@@ -287,14 +289,18 @@ namespace CodeExplorinator
         {
             if(isFirstCall)
             {
+                VisualElement.BringToFront();
+                connections = graphManager.FindAllConnections(this);
                 moveCollider = new VisualElement();
                 moveCollider.style.height = new StyleLength(float.MaxValue);
                 moveCollider.style.width = new StyleLength(float.MaxValue);
-                moveCollider.style.marginLeft = new StyleLength(-float.MaxValue/2);
-                moveCollider.style.marginTop = new StyleLength(-float.MaxValue/2);
+                moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
+                moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
+                moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
                 VisualElement.Add(moveCollider);
                 posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
-                mousePosOnStartMoving = new Vector2(x, y);
+                mousePosOnStartMoving = new Vector2(x, y); 
+
             }
             else if(isLastCall)
             {

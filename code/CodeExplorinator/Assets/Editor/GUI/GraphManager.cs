@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Graphs;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = System.Random;
@@ -253,6 +254,34 @@ namespace CodeExplorinator
             focusedMethodNodes.Clear();
 
             state = State.ClassLayer;
+        }
+
+        public HashSet<ConnectionGUI> FindAllConnections(ClassGUI classGUI)
+        {
+            HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
+
+            ClassGraph containingGraph = null;
+
+            foreach(ClassGraph graph in classGraphs)
+            {
+                if(graph.Contains(classGUI))
+                {
+                    containingGraph = graph;
+                    break;
+                }
+            }
+
+            if(containingGraph == null) { return null; }
+
+            foreach (ConnectionGUI connection in containingGraph.connections)
+            {
+                if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
+                {
+                    result.Add(connection);
+                }
+            }
+
+            return result;
         }
 
         public string Serialize(bool prettyPrint)

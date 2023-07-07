@@ -127,9 +127,12 @@ namespace CodeExplorinator
 
         private void PointerLeaveHandler(PointerLeaveEvent context)
         {
-            EditorApplication.update -= Update;
+            if (state != State.MonoClick)
+            {
+                EditorApplication.update -= Update;
 
-            state = State.Nothing;
+                state = State.Nothing;
+            }
             ExecuteClick();
         }
 
