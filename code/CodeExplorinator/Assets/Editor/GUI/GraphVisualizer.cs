@@ -72,6 +72,14 @@ namespace CodeExplorinator
             }
         }
 
+        public void ExpandAllClasses(bool isExpanded)
+        {
+            foreach(ClassGUI classGUI in methodLayer.Concat(classLayerUnfocused.Concat(classLayerFocused)))
+            {
+                classGUI.SetIsExpanded(isExpanded);
+            }
+        }
+
         public void SetMethodLayer(HashSet<ClassGUI> methodLayer, HashSet<ConnectionGUI> connections, HashSet<MethodGUI> focusedMethods, HashSet<MethodGUI> unfocusedMethods)
         {
             foreach (MethodGUI methodGUI in methodLayerFocused)

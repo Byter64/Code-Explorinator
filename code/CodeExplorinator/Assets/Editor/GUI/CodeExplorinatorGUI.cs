@@ -22,7 +22,7 @@ namespace CodeExplorinator
         //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
         private static ZoomBehaviour zoomBehaviour;
         private static GraphManager graphManager;
-        private static VisualElement graph;
+        public VisualElement graph;
         private static MenuGUI menu;
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
@@ -53,7 +53,7 @@ namespace CodeExplorinator
             EditorPrefs.SetString(settingsKey, saveData);
         }
 
-        private List<ClassData> GenerateClassDataFromProject()
+        public List<ClassData> GenerateClassDataFromProject()
         {
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
@@ -94,7 +94,7 @@ namespace CodeExplorinator
             return classDatas;
         }
 
-        private void Initialize()
+        public void Initialize()
         {
             graph = new VisualElement();
             graph.style.scale = Vector2.one;
@@ -106,14 +106,19 @@ namespace CodeExplorinator
             graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0xFFFFF, 0xFFFFF));
             graph.style.width = 0xFFFFF;
             graph.style.height = 0xFFFFF;
-            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            //graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.classLayerBackground));
+            //graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.methodLayerBackground));
+            //graph.style.backgroundColor = new StyleColor(UnityEngine.Color.blue);
+            //graph.style.backgroundColor = new StyleColor(new UnityEngine.Color(20,59,76, 255));
             graph.style.marginLeft = -0x7FFFF; //Bigger numbers resulted in the background being not on the start view anymore :(
             graph.style.marginTop = -0x7FFFF;
             #endregion
 
+            
             List<ClassData> classData = GenerateClassDataFromProject();
             graphManager = new GraphManager(classData, graph, 0);
-            menu = new MenuGUI(graphManager, new Vector2Int(250, 600));
+            menu = new MenuGUI(graphManager, new Vector2Int(250, 600),this);
             menu.GenerateVisualElement();
 
             string settings = EditorPrefs.GetString(settingsKey);

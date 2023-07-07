@@ -138,6 +138,7 @@ namespace CodeExplorinator
             }
         }
 
+        /*
         //this code could be obsolete
         public void GenerateConnectionsBetweenMethods(HashSet<MethodNode> shownMethodNodes)
         {
@@ -190,6 +191,7 @@ namespace CodeExplorinator
                 }
             }
         }
+        */
 
         public void GenerateMethodConnectionsBetweenClasses()
         {

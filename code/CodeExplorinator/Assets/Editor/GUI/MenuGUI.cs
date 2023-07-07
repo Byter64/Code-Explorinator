@@ -1,9 +1,8 @@
 
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
@@ -19,15 +18,28 @@ namespace CodeExplorinator
         private Slider methodDepthSlider;
         private TextField searchInput;
         private ScrollView scrollView;
+        private Button recompileButton;
+        private bool isClassExpanded = false;
+        private Button collapseOrExpandAllClassesButton;
+        private bool isCaseSensitive = false;
+        private Toggle caseSensitiveToggle;
         private Dictionary<string, ClassNode> classNodes;
         private Dictionary<string, SearchListEntry> searchListEntries;
+        private CodeExplorinatorGUI codeExplorinatorGUI;
 
-        public MenuGUI(GraphManager graphManager, Vector2Int size) : base(graphManager) 
+        public MenuGUI(GraphManager graphManager, Vector2Int size, CodeExplorinatorGUI codeExplorinatorGUI) : base(graphManager)
         {
             this.size = size;
-
+            this.codeExplorinatorGUI = codeExplorinatorGUI;
             classNodes = new Dictionary<string, ClassNode>();
             searchListEntries = new Dictionary<string, SearchListEntry>();
+            UpdateDataBase();
+        }
+
+        private void UpdateMenuGUI()
+        {
+            classNodes.Clear();
+            searchListEntries.Clear();
             UpdateDataBase();
         }
 
@@ -40,6 +52,22 @@ namespace CodeExplorinator
             VisualElement.style.height = size.y;
             VisualElement.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
 
+            
+            #region Buttons
+            
+            recompileButton = new Button();
+            recompileButton.text = "Refresh Project";
+            recompileButton.clickable.clicked += OnClickRecompileProject;
+            VisualElement.Add(recompileButton);
+            
+            collapseOrExpandAllClassesButton = new Button();
+            collapseOrExpandAllClassesButton.text = isClassExpanded ? "Collapse All" : "Expand All";
+            collapseOrExpandAllClassesButton.clickable.clicked += OnCollapseOrExpandAll;
+            VisualElement.Add(collapseOrExpandAllClassesButton);
+            
+            #endregion
+            
+            
             #region Sliders
 
             classDepthSlider = new Slider(0, 10, 0, SetClassDepth);
@@ -55,7 +83,16 @@ namespace CodeExplorinator
 
             #endregion
 
+            
+            #region Toggle
+            caseSensitiveToggle = new Toggle();
+            caseSensitiveToggle.label = "Case Sensitive Search";
+            caseSensitiveToggle.value = false;
+            caseSensitiveToggle.RegisterValueChangedCallback(ToggleCaseSensitivity);
+            VisualElement.Add(caseSensitiveToggle);
 
+            #endregion
+            
             
             Label searchtext = new Label("Search");
             searchtext.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
@@ -79,6 +116,42 @@ namespace CodeExplorinator
             }
 
             OrderEntriesByAlphabet();
+        }
+
+        private void OnClickRecompileProject()
+        {
+            codeExplorinatorGUI.Initialize();
+            /*
+            List<ClassData> classData = codeExplorinatorGUI.GenerateClassDataFromProject();
+            graphManager.UpdateGraphManager(classData);
+            
+            UpdateMenuGUI();
+
+            GenerateVisualElement();
+            */
+        }
+        
+        private void ToggleCaseSensitivity(ChangeEvent<bool> evt)
+        {
+            isCaseSensitive = evt.newValue;
+            //Debug.Log("Toggle switched: " + isCaseSensitive);
+        }
+        
+        private void OnCollapseOrExpandAll()
+        {
+            if (isClassExpanded)
+            {
+                graphManager.graphVisualizer.ExpandAllClasses(false);
+                //Debug.Log("Collapsed All Classes");
+            }
+            else
+            {
+                graphManager.graphVisualizer.ExpandAllClasses(true);
+                //Debug.Log("Expanded All Classes");
+            }
+            
+            isClassExpanded = !isClassExpanded;
+            collapseOrExpandAllClassesButton.text = isClassExpanded ? "Collapse All" : "Expand All";
         }
 
         public override void SetVisible(bool isVisible)
@@ -143,9 +216,8 @@ namespace CodeExplorinator
                     query = query.Remove(searchInput.cursorIndex - 1, 1);
                 }
             }
-
-            query = query.ToLower();
-            UpdateResultEntries(query);
+            
+            UpdateResultEntries(isCaseSensitive? query:query.ToLower());
             OrderEntriesByAlphabet();
         }
 
@@ -171,7 +243,7 @@ namespace CodeExplorinator
 
             foreach(string name in searchListEntries.Keys)
             {
-                bool isVisible = DieserEineAlgoDessenNamenIchNichtWeiß(name.ToLower(), query);
+                bool isVisible = SearchAlgorithm( isCaseSensitive? name : name.ToLower(), query);
                 if (!isVisible && scrollView.Contains(searchListEntries[name]))
                 {
                     searchListEntries[name].parent.Remove(searchListEntries[name]);
@@ -183,7 +255,7 @@ namespace CodeExplorinator
             }
         }
 
-        private bool DieserEineAlgoDessenNamenIchNichtWeiß(string text, string matcher)
+        private bool SearchAlgorithm(string text, string matcher)
         {
             if(matcher.Length == 0) { return true; }
 

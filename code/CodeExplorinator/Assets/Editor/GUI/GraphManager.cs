@@ -114,7 +114,7 @@ namespace CodeExplorinator
         private HashSet<ClassNode> selectedClassNodes = new();
         private HashSet<MethodNode> focusedMethodNodes = new();
         private HashSet<MethodNode> selectedMethodNodes = new();
-        private GraphVisualizer graphVisualizer;
+        public GraphVisualizer graphVisualizer;
 
         /// <summary>
         /// The root visualElement of the editor window
@@ -149,6 +149,14 @@ namespace CodeExplorinator
             shownMethodDepth = shownDepth;
             this.graphRoot = graphRoot;
             graphVisualizer = new(graphRoot);
+            
+            UpdateGraphManager(data);
+            
+            state = State.ClassLayer;
+        }
+
+        public void UpdateGraphManager(List<ClassData> data)
+        {
             //populate the lists with data
             foreach (ClassData @class in data)
             {
@@ -165,9 +173,8 @@ namespace CodeExplorinator
                     methodNodes.Add(node);
                 }
             }
+            
             MethodNode.CopyRerefencesFromMethodData(methodNodes);
-
-            state = State.ClassLayer;
         }
 
         public void AddSelectedClass(ClassNode selectedClass)

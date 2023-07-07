@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -23,6 +24,8 @@ namespace CodeExplorinator
         public const string structType = "#722fc2";
         public const string interfaceType = "#722fc2";
         public const string enumType = "#722fc2";
+        public const string classLayerBackground = "#143b4c";
+        public const string methodLayerBackground = "#023a2c";
 
         /// <summary>
         /// 
@@ -33,6 +36,32 @@ namespace CodeExplorinator
         public static string ColorText(string text, string color)
         {
             return "<color=" + color + ">" + text + "</color>";
+        }
+
+        public static UnityEngine.Color HexadecimalToRGBConverter( string hexadecimal)
+        {
+            if (ColorUtility.TryParseHtmlString(hexadecimal,out var color))
+            {
+                return color;
+            }
+            else
+            {
+                throw new ArgumentException("Invalid hexadecimal color code.");
+            }
+            /*
+            ColorUtility.TryParseHtmlString(hexadecimal,out var color)
+            
+            if (!hexadecimal.StartsWith("#") || hexadecimal.Length != 7)
+            {
+                throw new ArgumentException("Invalid hexadecimal color code.");
+            }
+            float red = int.Parse(hexadecimal.Substring(1, 2), System.Globalization.NumberStyles.HexNumber);
+            float green = int.Parse(hexadecimal.Substring(3, 2), System.Globalization.NumberStyles.HexNumber);
+            float blue = int.Parse(hexadecimal.Substring(5, 2), System.Globalization.NumberStyles.HexNumber);
+
+            Debug.Log($"Red: {red}, Green: {green}, Blue: {blue}");
+            return new UnityEngine.Color(red, green, blue, 0);
+            */
         }
     }
 }
