@@ -319,10 +319,11 @@ namespace CodeExplorinator
             Vector2 result = Vector2.zero;
 
             result.y += headerHeight;
+            const float lineSpace = 1.5f; //Measuered by hand. May need to be adjusted when changing font, or font size.
 
             foreach(FieldData field in data.PublicVariables.Concat(data.PrivateVariables))
             {
-                result.y += fieldStyle.lineHeight;
+                result.y += Mathf.Ceil(fieldStyle.lineHeight) + lineSpace;
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(field.ToString()), out min, out max);
 
@@ -334,7 +335,7 @@ namespace CodeExplorinator
 
             foreach (PropertyData property in data.PublicProperties.Concat(data.PrivateProperties))
             {
-                result.y += fieldStyle.lineHeight;
+                result.y += Mathf.Ceil(fieldStyle.lineHeight) + lineSpace;
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(property.ToString()), out min, out max);
 
@@ -361,7 +362,7 @@ namespace CodeExplorinator
                 {
                     result.x = textSize.x;
                 }
-                result.y += methodStyle.lineHeight;
+                result.y += Mathf.Ceil(methodStyle.lineHeight) + lineSpace;
             }
 
             result.y += emptySpaceBottom;
