@@ -142,7 +142,6 @@ namespace CodeExplorinator
         /// randomize via a seed to spawn the classes. TODO: make actually random
         /// </summary>
         private Random random = new Random(0987653); 
-
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
             Instance = this;
@@ -155,20 +154,19 @@ namespace CodeExplorinator
             {
                 ClassNodes.Add(GenerateNode(@class));
             }
-
             ClassNode.CopyRerefencesFromClassData(ClassNodes);
+
             foreach (ClassNode classNode in ClassNodes)
             {
                 foreach (MethodGUI methodGUI in classNode.classGUI.methodGUIs)
-                {
+                { 
                     MethodNode node = GenerateNode(methodGUI.data, methodGUI);
                     node.MethodData.ContainingClass.ClassNode.MethodNodes.Add(node);
                     methodNodes.Add(node);
                 }
             }
-
-
             MethodNode.CopyRerefencesFromMethodData(methodNodes);
+
             state = State.ClassLayer;
         }
 
@@ -260,26 +258,26 @@ namespace CodeExplorinator
         {
             HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
 
-            //ClassGraph containingGraph = null;
+            ClassGraph containingGraph = null;
 
-            //foreach(ClassGraph graph in classGraphs)
-            //{
-            //    if(graph.Contains(classGUI))
-            //    {
-            //        containingGraph = graph;
-            //        break;
-            //    }
-            //}
+            foreach (ClassGraph graph in classGraphs)
+            {
+                if (graph.Contains(classGUI))
+                {
+                    containingGraph = graph;
+                    break;
+                }
+            }
 
-            //if(containingGraph == null) { return null; }
+            if (containingGraph == null) { return null; }
 
-            //foreach (ConnectionGUI connection in containingGraph.connections)
-            //{
-            //    if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
-            //    {
-            //        result.Add(connection);
-            //    }
-            //}
+            foreach (ConnectionGUI connection in containingGraph.connections)
+            {
+                if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
+                {
+                    result.Add(connection);
+                }
+            }
 
             return result;
         }

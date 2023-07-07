@@ -28,7 +28,19 @@ namespace CodeExplorinator
         private Action onDoubleclick;
         private Action onControlMonoClick;
         private Action<bool, bool, float, float> onHoldingClick;
-        private State state = State.Nothing;
+        private State State1
+        {
+            get { return doNotTouchThisState; }
+            set
+            {
+                if (doNotTouchThisState == State.HoldingClick)
+                {
+                    EndHoldingEvent();
+                }
+                doNotTouchThisState = value;
+            }
+        }
+        private State doNotTouchThisState = State.Nothing;
         public ClickBehaviour(VisualElement target, Action onMonoclick, Action onDoubleclick = null)
         {
             this.target = target;
@@ -65,7 +77,7 @@ namespace CodeExplorinator
             target.UnregisterCallback<PointerMoveEvent>(PointerMoveHandler);
             target.UnregisterCallback<PointerLeaveEvent>(PointerLeaveHandler);
         }
-
+         
 
         private void PointerDownHandler(PointerDownEvent context)
         {
@@ -76,13 +88,15 @@ namespace CodeExplorinator
             //Then the doubleclick handler will be executed first
             //And then the monoclick handler.
 
-            switch (state)
+            switch (State1)
             {
                 case State.Nothing:
-                    state = State.HoldingClick;
+                    State1 = State.HoldingClick;
+                    isLastCallToHoldingHandler = false;
+                    isFirstCallToHoldingHandler = true;
                     break;
                 case State.MonoClick:
-                    state = State.CheckingDoubleClick;
+                    State1 = State.CheckingDoubleClick;
                     break;
             }
 
@@ -91,12 +105,12 @@ namespace CodeExplorinator
 
         private void PointerUpHandler(PointerUpEvent context)
         {
-            switch (state)
+            switch (State1)
             {
                 case State.HoldingClick:
                     if(EditorApplication.timeSinceStartup - timeOfLastDownEvent < clickThreshold)
                     {
-                        state = State.MonoClick;
+                        State1 = State.MonoClick;
                         EditorApplication.update += Update;
                     }
                     else
@@ -107,7 +121,7 @@ namespace CodeExplorinator
                 case State.CheckingDoubleClick:
                     if(EditorApplication.timeSinceStartup - timeOfLastUpEvent < doubleClickThreshold)
                     {
-                        state = State.DoubleClick;
+                        State1 = State.DoubleClick;
                         EditorApplication.update -= Update;
                         ExecuteClick();
                     }
@@ -118,7 +132,7 @@ namespace CodeExplorinator
 
         private void PointerMoveHandler(PointerMoveEvent context)
         {
-            if (state == State.HoldingClick)
+            if (State1 == State.HoldingClick)
             {
                 HoldingClickHandler(isFirstCallToHoldingHandler, isLastCallToHoldingHandler, context.position.x, context.position.y);
                 isFirstCallToHoldingHandler = false;
@@ -127,23 +141,31 @@ namespace CodeExplorinator
 
         private void PointerLeaveHandler(PointerLeaveEvent context)
         {
-            if (state != State.MonoClick)
+            if (State1 != State.MonoClick)
             {
                 EditorApplication.update -= Update;
 
-                state = State.Nothing;
             }
             ExecuteClick();
         }
 
+        private void EndHoldingEvent()
+        {
+            if (!isFirstCallToHoldingHandler && !isLastCallToHoldingHandler)
+            {
+                isLastCallToHoldingHandler = true;
+                HoldingClickHandler(isFirstCallToHoldingHandler, isLastCallToHoldingHandler, float.NaN, float.NaN);
+            }
+        }
+
         private void ExecuteClick()
         {
-            if(state == State.MonoClick && CodeExplorinatorGUI.isControlDown)
+            if(State1 == State.MonoClick && CodeExplorinatorGUI.isControlDown)
             {
-                state = State.MonoClickAndControl;
+                State1 = State.MonoClickAndControl;
             }
 
-            switch(state)
+            switch(State1)
             {
                 case State.HoldingClick:
                     isLastCallToHoldingHandler = true;
@@ -165,14 +187,14 @@ namespace CodeExplorinator
                 default: break;
             }
 
-            state = State.Nothing;
+            State1 = State.Nothing;
             isFirstCallToHoldingHandler = true;
             isLastCallToHoldingHandler = false;
         }
 
         private void Update()
         {
-            switch(state)
+            switch(State1)
             {
                 case State.MonoClick:
                     if(EditorApplication.timeSinceStartup - timeOfLastDownEvent >= doubleClickThreshold)

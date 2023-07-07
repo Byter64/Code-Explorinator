@@ -15,6 +15,7 @@ namespace CodeExplorinator
         public string ClassModifiers { get; private set; }
         public Vector2 Position { get; set; }
         public List<MethodGUI> methodGUIs { get; private set; }
+        public HashSet<ConnectionGUI> Connections { get; set; }
 
         private const string classTexturePath = "Assets/Editor/TiledTextures/Class.asset";
         private const string headerTexturePath = "Assets/Editor/TiledTextures/Header.asset";
@@ -43,8 +44,6 @@ namespace CodeExplorinator
         private bool isVisible;
         private int widthInPixels;
         private int heightInPixels;
-        private Vector2 posOnStartMoving;
-        private Vector2 mousePosOnStartMoving;
         private GUIStyle classStyle;
         private GUIStyle fieldStyle;
         private GUIStyle methodStyle;
@@ -58,7 +57,6 @@ namespace CodeExplorinator
         private VisualElement moveCollider;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
-        private HashSet<ConnectionGUI> connections;
         /// <summary>
         /// 
         /// </summary>
@@ -88,12 +86,11 @@ namespace CodeExplorinator
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
-            
+
             lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
             ClassModifiers = "<<" + data.ClassModifiersAsString + ">>";
             ClassName = data.GetName();
             methodGUIs = new List<MethodGUI>();
-            connections = new HashSet<ConnectionGUI>();
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
                 MethodGUI methodGUI = new MethodGUI(methodData, methodStyle, graphManager);
@@ -232,6 +229,11 @@ namespace CodeExplorinator
             {
                 methodGUI.SetVisible(isBodyVisible);
             }
+
+            if(isVisible == false)
+            {
+                Move(false, true, float.NaN, float.NaN);
+            }
         }
 
         public void SetFocused(bool isFocused)
@@ -266,6 +268,7 @@ namespace CodeExplorinator
             if (headerClick == null)
             {
                 headerClick = new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
+                headerClick.RegisterOnHoldingClick(Move);
             }
         }
 
@@ -287,31 +290,25 @@ namespace CodeExplorinator
 
         private void Move(bool isFirstCall, bool isLastCall, float x, float y)
         {
-            //if(isFirstCall)
-            //{
-            //    VisualElement.BringToFront();
-            //    connections = graphManager.FindAllConnections(this);
-            //    moveCollider = new VisualElement();
-            //    moveCollider.style.height = new StyleLength(float.MaxValue);
-            //    moveCollider.style.width = new StyleLength(float.MaxValue);
-            //    moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
-            //    moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
-            //    moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
-            //    VisualElement.Add(moveCollider);
-            //    posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
-            //    mousePosOnStartMoving = new Vector2(x, y); 
+            if (isFirstCall)
+            {
+                VisualElement.BringToFront();
+                if(Connections == null)
+                {
+                    Connections = graphManager.FindAllConnections(this);
+                }
+                moveCollider = new ClassDragger(VisualElement, new Vector2(x,y), Connections);
+                VisualElement.Add(moveCollider);
+                moveCollider.visible = true;
+                moveCollider.style.height = new StyleLength(float.MaxValue);
+                moveCollider.style.width = new StyleLength(float.MaxValue);
+                moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
+                moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
+                moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
 
-            //}
-            //else if(isLastCall)
-            //{
-            //    VisualElement.Remove(moveCollider);
-            //}
-            //else
-            //{
-            //    Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
-            //    VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
-            //    VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
-            //}
+                Debug.LogWarning("Start");
+
+            }
         }
 
         private Vector2Int CalculateBackgroundSize()

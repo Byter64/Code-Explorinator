@@ -11,23 +11,23 @@ namespace CodeExplorinator
 {
     public class ConnectionGUI : BaseGUI
     {
+        public VisualElement FootNode { get; private set; }
+        public VisualElement TipNode { get; private set; }
+
         private bool isInheritanceConnection;
         private bool setCenterLeft;
         private bool drawArrow;
-        
         private Texture2D lineTexture;
         private Texture2D arrowTexture;
         private Texture2D inheritanceArrowTexture;
-        private VisualElement footNode;
-        private VisualElement tipNode;
         
         //length of the random connection
         private const float randomConnectionLength = 200f;
 
         public ConnectionGUI(GraphManager graphManager, VisualElement footNode, VisualElement tipNode, bool isInheritanceConnection = false, bool setCenterLeft = false, bool drawArrow = true) : base(graphManager)
         {
-            this.footNode = footNode;
-            this.tipNode = tipNode;
+            this.FootNode = footNode;
+            this.TipNode = tipNode;
             this.setCenterLeft = setCenterLeft;
             this.drawArrow = drawArrow;
             this.isInheritanceConnection = isInheritanceConnection;
@@ -39,17 +39,17 @@ namespace CodeExplorinator
         public override void GenerateVisualElement()
         {
             
-            if (footNode == null)
+            if (FootNode == null)
             {
-                VisualElement = CreateRandomConnection(CenteredTopVector(tipNode), true, isInheritanceConnection);
+                VisualElement = CreateRandomConnection(CenteredTopVector(TipNode), true, isInheritanceConnection);
             }
-            else if (tipNode == null)
+            else if (TipNode == null)
             {
-                VisualElement = CreateRandomConnection(CenteredTopVector(footNode), false, isInheritanceConnection);
+                VisualElement = CreateRandomConnection(CenteredTopVector(FootNode), false, isInheritanceConnection);
             }
             else
             {
-                VisualElement = CreateConnection(CenteredTopVector(footNode), CenteredTopVector(tipNode), isInheritanceConnection);
+                VisualElement = CreateConnection(CenteredTopVector(FootNode), CenteredTopVector(TipNode), isInheritanceConnection);
             }
         }
 
@@ -57,17 +57,17 @@ namespace CodeExplorinator
         {
             if (VisualElement != null)
             {
-                if (footNode == null)
+                if (FootNode == null)
                 {
-                    UpdateRandomConnection(VisualElement,CenteredTopVector(tipNode), true, isInheritanceConnection);
+                    UpdateRandomConnection(VisualElement,CenteredTopVector(TipNode), true, isInheritanceConnection);
                 }
-                else if (tipNode == null)
+                else if (TipNode == null)
                 {
-                    UpdateRandomConnection(VisualElement,CenteredTopVector(footNode), false, isInheritanceConnection);
+                    UpdateRandomConnection(VisualElement,CenteredTopVector(FootNode), false, isInheritanceConnection);
                 }
                 else
                 { 
-                    UpdateConnection(VisualElement,CenteredTopVector(footNode), CenteredTopVector(tipNode), isInheritanceConnection);
+                    UpdateConnection(VisualElement,CenteredTopVector(FootNode), CenteredTopVector(TipNode), isInheritanceConnection);
                 }
             }
         }
