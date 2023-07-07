@@ -260,26 +260,26 @@ namespace CodeExplorinator
         {
             HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
 
-            ClassGraph containingGraph = null;
+            //ClassGraph containingGraph = null;
 
-            foreach(ClassGraph graph in classGraphs)
-            {
-                if(graph.Contains(classGUI))
-                {
-                    containingGraph = graph;
-                    break;
-                }
-            }
+            //foreach(ClassGraph graph in classGraphs)
+            //{
+            //    if(graph.Contains(classGUI))
+            //    {
+            //        containingGraph = graph;
+            //        break;
+            //    }
+            //}
 
-            if(containingGraph == null) { return null; }
+            //if(containingGraph == null) { return null; }
 
-            foreach (ConnectionGUI connection in containingGraph.connections)
-            {
-                if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
-                {
-                    result.Add(connection);
-                }
-            }
+            //foreach (ConnectionGUI connection in containingGraph.connections)
+            //{
+            //    if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
+            //    {
+            //        result.Add(connection);
+            //    }
+            //}
 
             return result;
         }

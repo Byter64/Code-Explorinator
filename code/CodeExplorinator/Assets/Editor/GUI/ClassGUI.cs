@@ -287,31 +287,31 @@ namespace CodeExplorinator
 
         private void Move(bool isFirstCall, bool isLastCall, float x, float y)
         {
-            if(isFirstCall)
-            {
-                VisualElement.BringToFront();
-                connections = graphManager.FindAllConnections(this);
-                moveCollider = new VisualElement();
-                moveCollider.style.height = new StyleLength(float.MaxValue);
-                moveCollider.style.width = new StyleLength(float.MaxValue);
-                moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
-                moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
-                moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
-                VisualElement.Add(moveCollider);
-                posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
-                mousePosOnStartMoving = new Vector2(x, y); 
+            //if(isFirstCall)
+            //{
+            //    VisualElement.BringToFront();
+            //    connections = graphManager.FindAllConnections(this);
+            //    moveCollider = new VisualElement();
+            //    moveCollider.style.height = new StyleLength(float.MaxValue);
+            //    moveCollider.style.width = new StyleLength(float.MaxValue);
+            //    moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
+            //    moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
+            //    moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            //    VisualElement.Add(moveCollider);
+            //    posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
+            //    mousePosOnStartMoving = new Vector2(x, y); 
 
-            }
-            else if(isLastCall)
-            {
-                VisualElement.Remove(moveCollider);
-            }
-            else
-            {
-                Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
-                VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
-                VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
-            }
+            //}
+            //else if(isLastCall)
+            //{
+            //    VisualElement.Remove(moveCollider);
+            //}
+            //else
+            //{
+            //    Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
+            //    VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
+            //    VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
+            //}
         }
 
         private Vector2Int CalculateBackgroundSize()
