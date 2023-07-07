@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
@@ -63,6 +64,9 @@ namespace CodeExplorinator
         /// => from iteration 50 and onwards the coolingSpeed is <= 1
         /// </summary>
         private const float coolingSpeed = 2f;
+
+
+        private const float newEpsilon = 1e-8f;
 
 
         //this method calculates the position of the node, it still doesnt check if the node is placed out of bounds
@@ -126,7 +130,7 @@ namespace CodeExplorinator
                     nodesList[i].position.y += cooling * nodesList[i].F.y;
                 }
                 
-                Debug.Log("we stopped the spring algo at " + t + " iterations");
+               
                 
                 /*
                 foreach (var node in nodes)
@@ -141,6 +145,8 @@ namespace CodeExplorinator
                 
                 t++;
             }
+            
+            Debug.Log("we stopped the spring algo at " + t + " iterations");
 
             //set the position for the visual elements
             //as we incorporated the height and width into the Node.position Vector2, we now have to undo this:
@@ -159,6 +165,9 @@ namespace CodeExplorinator
 
         private static void DetermineConnectionBetweenNodes(HashSet<ClassNode> allNodes)
         {
+            Profiler.BeginSample("determine connections classes");
+
+            
             foreach (var analysedNode in allNodes)
             {
                 analysedNode.ConnectedNodes.Clear();
@@ -203,6 +212,7 @@ namespace CodeExplorinator
                     }
                 }
             }
+            Profiler.EndSample();
         }
 
         /*
@@ -404,7 +414,7 @@ namespace CodeExplorinator
                     nodesList[i].position.x += cooling * nodesList[i].F.x;
                     nodesList[i].position.y += cooling * nodesList[i].F.y;
                     
-                    Debug.Log("Node "+ nodesList[i].ClassData.GetName() + ": " + nodesList[i].position.x + "/" + nodesList[i].position.y);
+                    //Debug.Log("Node "+ nodesList[i].ClassData.GetName() + ": " + nodesList[i].position.x + "/" + nodesList[i].position.y);
                     
                 }
                 
@@ -439,6 +449,7 @@ namespace CodeExplorinator
         /// <param name="methodNodes"></param>
         private static void DetermineConnectionsBetweenMethodNodes(HashSet<MethodNode> methodNodes, HashSet<ClassNode> classNodes)
         {
+            Profiler.BeginSample("determine connections methods");
             foreach (var classNode in classNodes)
             {
                 classNode.ConnectedNodes.Clear();
@@ -490,6 +501,7 @@ namespace CodeExplorinator
                     }
                 }
             }
+            Profiler.EndSample();
         }
 
 
@@ -503,21 +515,22 @@ namespace CodeExplorinator
         /// <returns></returns>
         private static Vector2 ForceRepulsion(ClassNode u, ClassNode v)
         {
+            Profiler.BeginSample("forceRepulsion");
             Vector2 direction = (v.position - u.position);
 
             //factor = repulsionContant / (direction.magnitude�)
             float factor = direction.magnitude * direction.magnitude;
-            factor = (factor == 0) ? float.Epsilon : factor;
+            //factor = (factor == 0) ? float.Epsilon : factor;
+            factor += newEpsilon; 
 
-            if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //unnecessary
+            //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //unnecessary
             factor = repulsionConstant / factor;
-            if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //probably unnecessary
 
-            direction.Normalize();
-            Vector2 result = factor * direction;
-            //if (float.IsInfinity(result.x)) result.x = float.IsPositiveInfinity(result.x) ? float.MaxValue : float.MinValue; //probably unnecessary
-            //if (float.IsInfinity(result.y)) result.y = float.IsPositiveInfinity(result.y) ? float.MaxValue : float.MinValue; //probably unnecessary
+            //direction.Normalize();
+            Vector2 result = factor * (direction / (direction.magnitude + newEpsilon));
 
+            Profiler.EndSample();
+            
             return result;
         }
 
@@ -552,27 +565,25 @@ namespace CodeExplorinator
         /// <returns></returns>
         private static Vector2 ForceSpring(ClassNode u, ClassNode v, float idealSpringLength) //500 is ca. the height of the standard class
         {
-            //if (idealSpringLength == 0) idealSpringLength = float.Epsilon;
 
             Vector2 direction = u.position - v.position;
 
             //factor = attractionConstant * log10(direction.magnitude / idealSpringLength)
             float factor = direction.magnitude / idealSpringLength;
-            factor = (factor == 0) ? float.Epsilon : factor;
-            //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //probably uneccesary
+            //factor = (factor == 0) ? float.Epsilon : factor;
+            factor += newEpsilon;
 
             factor = Mathf.Log10(factor);
 
-            if (factor == 0) factor = float.Epsilon; //probably uneccesary 
-            //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //probably uneccesary
+            //if (factor == 0) factor = float.Epsilon; //is very unlikely that factor is exactly 1 
+            
 
             factor = attractionConstant * factor;
-            //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //probably uneccesary
+            
 
-            direction.Normalize();
-            Vector2 result = factor * direction;
-            //if (float.IsInfinity(result.x)) result.x = float.IsPositiveInfinity(result.x) ? float.MaxValue : float.MinValue; //probably uneccesary
-            //if (float.IsInfinity(result.y)) result.y = float.IsPositiveInfinity(result.y) ? float.MaxValue : float.MinValue; //probably uneccesary
+            //direction.Normalize();
+            Vector2 result = factor * (direction/ (direction.magnitude + newEpsilon));
+            
 
             return result;
         }

@@ -56,6 +56,7 @@ namespace CodeExplorinator
             #endregion
 
 
+            
             Label searchtext = new Label("Search");
             searchtext.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             VisualElement.Add(searchtext);
@@ -170,7 +171,7 @@ namespace CodeExplorinator
 
             foreach(string name in searchListEntries.Keys)
             {
-                bool isVisible = DieserEineAlgoDessenNamenIchNichtWeiﬂ(name.ToLower(), query);
+                bool isVisible = DieserEineAlgoDessenNamenIchNichtWei√ü(name.ToLower(), query);
                 if (!isVisible && scrollView.Contains(searchListEntries[name]))
                 {
                     searchListEntries[name].parent.Remove(searchListEntries[name]);
@@ -182,7 +183,7 @@ namespace CodeExplorinator
             }
         }
 
-        private bool DieserEineAlgoDessenNamenIchNichtWeiﬂ(string text, string matcher)
+        private bool DieserEineAlgoDessenNamenIchNichtWei√ü(string text, string matcher)
         {
             if(matcher.Length == 0) { return true; }
 
