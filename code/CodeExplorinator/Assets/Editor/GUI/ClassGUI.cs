@@ -58,6 +58,7 @@ namespace CodeExplorinator
         private VisualElement moveCollider;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
+        private HashSet<ConnectionGUI> connections;
         /// <summary>
         /// 
         /// </summary>
@@ -92,6 +93,7 @@ namespace CodeExplorinator
             ClassModifiers = "<<" + data.ClassModifiersAsString + ">>";
             ClassName = data.GetName();
             methodGUIs = new List<MethodGUI>();
+            connections = new HashSet<ConnectionGUI>();
             foreach (MethodData methodData in data.PublicMethods.Concat(data.PrivateMethods))
             {
                 MethodGUI methodGUI = new MethodGUI(methodData, methodStyle, graphManager);
@@ -285,27 +287,31 @@ namespace CodeExplorinator
 
         private void Move(bool isFirstCall, bool isLastCall, float x, float y)
         {
-            if(isFirstCall)
-            {
-                moveCollider = new VisualElement();
-                moveCollider.style.height = new StyleLength(float.MaxValue);
-                moveCollider.style.width = new StyleLength(float.MaxValue);
-                moveCollider.style.marginLeft = new StyleLength(-float.MaxValue/2);
-                moveCollider.style.marginTop = new StyleLength(-float.MaxValue/2);
-                VisualElement.Add(moveCollider);
-                posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
-                mousePosOnStartMoving = new Vector2(x, y);
-            }
-            else if(isLastCall)
-            {
-                VisualElement.Remove(moveCollider);
-            }
-            else
-            {
-                Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
-                VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
-                VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
-            }
+            //if(isFirstCall)
+            //{
+            //    VisualElement.BringToFront();
+            //    connections = graphManager.FindAllConnections(this);
+            //    moveCollider = new VisualElement();
+            //    moveCollider.style.height = new StyleLength(float.MaxValue);
+            //    moveCollider.style.width = new StyleLength(float.MaxValue);
+            //    moveCollider.style.marginLeft = new StyleLength(-0x7FFFF);
+            //    moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
+            //    moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
+            //    VisualElement.Add(moveCollider);
+            //    posOnStartMoving = new Vector2(VisualElement.style.marginLeft.value.value, VisualElement.style.marginTop.value.value);
+            //    mousePosOnStartMoving = new Vector2(x, y); 
+
+            //}
+            //else if(isLastCall)
+            //{
+            //    VisualElement.Remove(moveCollider);
+            //}
+            //else
+            //{
+            //    Vector2 delta = new Vector2(x, y) - mousePosOnStartMoving;
+            //    VisualElement.style.marginLeft = posOnStartMoving.x + delta.x * 1/CodeExplorinatorGUI.Scale.x;
+            //    VisualElement.style.marginTop = posOnStartMoving.y + delta.y * 1/CodeExplorinatorGUI.Scale.y;
+            //}
         }
 
         private Vector2Int CalculateBackgroundSize()
@@ -313,10 +319,11 @@ namespace CodeExplorinator
             Vector2 result = Vector2.zero;
 
             result.y += headerHeight;
+            const float lineSpace = 1.5f; //Measuered by hand. May need to be adjusted when changing font, or font size.
 
             foreach(FieldData field in data.PublicVariables.Concat(data.PrivateVariables))
             {
-                result.y += fieldStyle.lineHeight;
+                result.y += Mathf.Ceil(fieldStyle.lineHeight) + lineSpace;
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(field.ToString()), out min, out max);
 
@@ -328,7 +335,7 @@ namespace CodeExplorinator
 
             foreach (PropertyData property in data.PublicProperties.Concat(data.PrivateProperties))
             {
-                result.y += fieldStyle.lineHeight;
+                result.y += Mathf.Ceil(fieldStyle.lineHeight) + lineSpace;
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(property.ToString()), out min, out max);
 
@@ -355,7 +362,7 @@ namespace CodeExplorinator
                 {
                     result.x = textSize.x;
                 }
-                result.y += methodStyle.lineHeight;
+                result.y += Mathf.Ceil(methodStyle.lineHeight) + lineSpace;
             }
 
             result.y += emptySpaceBottom;

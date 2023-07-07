@@ -115,8 +115,6 @@ namespace CodeExplorinator
 
         public override void SetVisible(bool visible)
         {
-            VisualElement.Children().First().visible = visible;
-            
             if(visible)
             {
                 if(isHighlighted)
@@ -126,8 +124,10 @@ namespace CodeExplorinator
             }
             else
             {
-                VisualElement.visible = visible;
+                VisualElement.visible = false;
             }
+            
+            VisualElement.Children().First().visible = visible;
         }
     }
 }
