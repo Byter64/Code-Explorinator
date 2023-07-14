@@ -12,7 +12,7 @@ namespace CodeExplorinator
         private MenuGUI menu;
         public SearchListEntry(string text, MenuGUI menu) : base(text)
         {
-            clickBehaviour = new ClickBehaviour(this, OnMonoClick);
+            clickBehaviour = new ClickBehaviour(this, null, OnDoubleClick);
             clickBehaviour.RegisterOnControlMonoClick(OnControlMonoClick);
             this.menu = menu;
             originalText = text;
@@ -23,7 +23,7 @@ namespace CodeExplorinator
             text = originalText;
         }
 
-        private void OnMonoClick()
+        private void OnDoubleClick()
         {
             menu.AddSelectedClass(originalText);
             menu.ApplySelectedClasses();
