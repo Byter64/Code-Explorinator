@@ -293,10 +293,7 @@ namespace CodeExplorinator
             if (isFirstCall)
             {
                 VisualElement.BringToFront();
-                if(Connections == null)
-                {
-                    Connections = graphManager.FindAllConnections(this);
-                }
+                Connections = graphManager.FindAllConnections(this);
                 moveCollider = new ClassDragger(VisualElement, new Vector2(x,y), Connections);
                 VisualElement.Add(moveCollider);
                 moveCollider.visible = true;
@@ -306,7 +303,7 @@ namespace CodeExplorinator
                 moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
                 moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
             }
-        }
+        } 
 
         private Vector2Int CalculateBackgroundSize()
         {

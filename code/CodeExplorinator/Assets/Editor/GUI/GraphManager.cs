@@ -266,14 +266,24 @@ namespace CodeExplorinator
             HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
 
             ClassGraph containingGraph = null;
-
-            foreach (ClassGraph graph in classGraphs)
+            switch (state)
             {
-                if (graph.Contains(classGUI))
-                {
-                    containingGraph = graph;
+                case State.ClassLayer:
+                    foreach (ClassGraph graph in classGraphs)
+                    {
+                        if (graph.Contains(classGUI))
+                        {
+                            containingGraph = graph;
+                            break;
+                        }
+                    }
                     break;
-                }
+                case State.MethodLayer:
+                    if(methodGraph.Contains(classGUI))
+                    {
+                        containingGraph = methodGraph;
+                    }
+                    break;
             }
 
             if (containingGraph == null) { return null; }

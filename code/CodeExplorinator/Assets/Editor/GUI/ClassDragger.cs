@@ -25,8 +25,8 @@ public class ClassDragger : VisualElement
     void Move(PointerMoveEvent context)
     {
         Vector2 delta = (Vector2)context.position - mousePosOnStartMoving;
-        target.style.marginLeft = posOnStartMoving.x + delta.x * 1 / CodeExplorinatorGUI.Scale.x;
-        target.style.marginTop = posOnStartMoving.y + delta.y * 1 / CodeExplorinatorGUI.Scale.y;
+        target.style.marginLeft = posOnStartMoving.x + delta.x / CodeExplorinatorGUI.Scale.x;
+        target.style.marginTop = posOnStartMoving.y + delta.y / CodeExplorinatorGUI.Scale.y;
 
         foreach (ConnectionGUI conny in connections)
         {
