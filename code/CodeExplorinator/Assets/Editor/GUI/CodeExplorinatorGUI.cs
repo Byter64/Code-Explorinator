@@ -44,6 +44,11 @@ namespace CodeExplorinator
         private void OnGUI()
         {
             CheckControlKeys();
+
+            if(Event.current.keyCode == KeyCode.F5)
+            {
+                Reinitialize();
+            }
         }
 
         //This is called everytime the window is closed (therefore destroyed)
@@ -94,7 +99,13 @@ namespace CodeExplorinator
             return classDatas;
         }
 
-        public void Initialize()
+        public void Reinitialize()
+        {
+            //WARNING: THIS IS A VERY BAD WAY AND MIGHT NOT EVEN WORK
+            Initialize();
+        }
+
+        private void Initialize()
         {
             graph = new VisualElement();
             graph.style.scale = Vector2.one;

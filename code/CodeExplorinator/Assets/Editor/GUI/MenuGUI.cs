@@ -120,7 +120,7 @@ namespace CodeExplorinator
 
         private void OnClickRecompileProject()
         {
-            codeExplorinatorGUI.Initialize();
+            codeExplorinatorGUI.Reinitialize();
             /*
             List<ClassData> classData = codeExplorinatorGUI.GenerateClassDataFromProject();
             graphManager.UpdateGraphManager(classData);
