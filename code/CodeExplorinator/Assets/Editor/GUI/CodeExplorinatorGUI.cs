@@ -106,8 +106,8 @@ namespace CodeExplorinator
             graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0xFFFFF, 0xFFFFF));
             graph.style.width = 0xFFFFF;
             graph.style.height = 0xFFFFF;
-            //graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
-            graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.classLayerBackground));
+            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            //graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.classLayerBackground));
             //graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.methodLayerBackground));
             //graph.style.backgroundColor = new StyleColor(UnityEngine.Color.blue);
             //graph.style.backgroundColor = new StyleColor(new UnityEngine.Color(20,59,76, 255));
@@ -122,6 +122,7 @@ namespace CodeExplorinator
             menu.GenerateVisualElement();
 
             string settings = EditorPrefs.GetString(settingsKey);
+            Debug.Log(settings); 
             if (settings != null && settings != string.Empty)
             {
                 GraphManager.SerializationData data = graphManager.DeSerialize(settings);

@@ -19,6 +19,7 @@ namespace CodeExplorinator
 
         private bool isFocused = false;
         private bool isHighlighted = false;
+        private bool isVisible = false;
         private int distanceToClosestFocusMethod = -1;
         private GUIStyle style;
         private Texture2D backgroundTexture;
@@ -62,10 +63,11 @@ namespace CodeExplorinator
 
         public void ShowHighlight(bool isShowingHighlight)
         {
-            Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
             isHighlighted = isShowingHighlight;
-            VisualElement.style.visibility = visiBackground;
-            VisualElement.Children().First().style.visibility = Visibility.Visible;
+
+            Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
+            VisualElement.visible = isShowingHighlight;
+            VisualElement.Children().First().visible = isVisible;
         }
 
         public void SetFocused(bool isFocused, int distanceToClosestFocusMethod = -1)
@@ -98,6 +100,14 @@ namespace CodeExplorinator
             graphManager.ChangeToMethodLayer();
         }
 
+        public override void SetVisible(bool isVisible)
+        {
+            this.isVisible = isVisible;
+
+            ShowHighlight(isVisible && isHighlighted);
+            VisualElement.Children().First().visible = isVisible;
+        }
+
         private Vector2Int CalculateBackgroundSize()
         {
             Vector2 result = Vector2.zero;
@@ -113,21 +123,5 @@ namespace CodeExplorinator
             return new Vector2Int((int)result.x, (int)result.y);
         }
 
-        public override void SetVisible(bool visible)
-        {
-            if(visible)
-            {
-                if(isHighlighted)
-                {
-                    ShowHighlight(true);
-                }
-            }
-            else
-            {
-                VisualElement.visible = false;
-            }
-            
-            VisualElement.Children().First().visible = visible;
-        }
     }
 }

@@ -229,11 +229,6 @@ namespace CodeExplorinator
             {
                 methodGUI.SetVisible(isBodyVisible);
             }
-
-            if(isVisible == false)
-            {
-                Move(false, true, float.NaN, float.NaN);
-            }
         }
 
         public void SetFocused(bool isFocused)

@@ -35,7 +35,7 @@ namespace CodeExplorinator
             foreach(ClassGUI classGUI in methodLayer)
             {
                 classGUI.SetVisible(isVisible);
-                classGUI.SetIsExpanded(true);
+                if (isVisible) classGUI.SetIsExpanded(true);
             }
 
             foreach (MethodGUI methodGUI in methodLayerFocused)

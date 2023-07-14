@@ -276,7 +276,7 @@ namespace CodeExplorinator
                             containingGraph = graph;
                             break;
                         }
-                    }
+                    } 
                     break;
                 case State.MethodLayer:
                     if(methodGraph.Contains(classGUI))
