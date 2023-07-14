@@ -40,11 +40,11 @@ namespace CodeExplorinator
 
             foreach (MethodGUI methodGUI in methodLayerFocused)
             {
-                methodGUI.ShowHighlight(isVisible);
+                methodGUI.SetHighlight(isVisible);
             }
             foreach (MethodGUI methodGUI in methodLayerUnfocused)
             {
-                methodGUI.ShowHighlight(isVisible);
+                methodGUI.SetHighlight(isVisible);
             }
 
             foreach (ConnectionGUI connectionGUI in methodLayerConnections)
@@ -84,11 +84,11 @@ namespace CodeExplorinator
         {
             foreach (MethodGUI methodGUI in methodLayerFocused)
             {
-                methodGUI.ShowHighlight(false);
+                methodGUI.SetHighlight(false);
             }
             foreach (MethodGUI methodGUI in methodLayerUnfocused)
             {
-                methodGUI.ShowHighlight(false);
+                methodGUI.SetHighlight(false);
             }
 
             TryRemoveGUIsFromRoot(this.methodLayer, methodLayerRoot);

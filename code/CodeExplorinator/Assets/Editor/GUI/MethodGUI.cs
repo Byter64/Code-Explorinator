@@ -61,13 +61,17 @@ namespace CodeExplorinator
             TryAssignClickBehaviours();
         }
 
-        public void ShowHighlight(bool isShowingHighlight)
+        public void ShowHighlight()
+        {
+            bool showHighlight = isVisible && isHighlighted;
+            VisualElement.visible = showHighlight;
+            VisualElement.Children().First().visible = isVisible;
+        }
+
+        public void SetHighlight(bool isShowingHighlight)
         {
             isHighlighted = isShowingHighlight;
-
-            Visibility visiBackground = isShowingHighlight ? Visibility.Visible : Visibility.Hidden;
-            VisualElement.visible = isShowingHighlight;
-            VisualElement.Children().First().visible = isVisible;
+            ShowHighlight();
         }
 
         public void SetFocused(bool isFocused, int distanceToClosestFocusMethod = -1)
@@ -104,7 +108,7 @@ namespace CodeExplorinator
         {
             this.isVisible = isVisible;
 
-            ShowHighlight(isVisible && isHighlighted);
+            ShowHighlight();
             VisualElement.Children().First().visible = isVisible;
         }
 
