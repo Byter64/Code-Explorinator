@@ -22,7 +22,7 @@ namespace CodeExplorinator
         //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
         private static ZoomBehaviour zoomBehaviour;
         private static GraphManager graphManager;
-        public VisualElement graph;
+        private static VisualElement graph;
         private static MenuGUI menu;
         [MenuItem("Window/CodeExplorinator")]
         public static void OnShowWindow()
@@ -36,10 +36,10 @@ namespace CodeExplorinator
             if (graphManager == null)
             {
                 Initialize();
-            }
+            } 
             rootVisualElement.Add(graph);
             rootVisualElement.Add(menu.VisualElement);
-        }
+        } 
 
         private void OnGUI()
         {
