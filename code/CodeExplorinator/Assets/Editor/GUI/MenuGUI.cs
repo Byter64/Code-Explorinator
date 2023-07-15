@@ -11,8 +11,16 @@ namespace CodeExplorinator
 {
     public class MenuGUI : BaseGUI
     {
+        public static MenuGUI Instance { 
+            get
+            {
+                return instance;
+            }
+        }
+
         private const string classDepthText = "Class Depth";
         private const string methodDepthText = "Method Depth";
+        private static MenuGUI instance;
 
         private bool isCaseSensitive = false;
         private bool isClassExpanded = false;
@@ -32,13 +40,21 @@ namespace CodeExplorinator
         private Dictionary<string, ClassNode> classNodes;
         private Dictionary<string, SearchListEntry> searchListEntries;
         private CodeExplorinatorGUI codeExplorinatorGUI;
-
+        private HashSet<SearchListEntry> focusedEntries;
         public MenuGUI(GraphManager graphManager, Vector2Int size, CodeExplorinatorGUI codeExplorinatorGUI) : base(graphManager)
         {
+            if(instance != null)
+            {
+                throw new Exception("A second MenuGUI was instantiated. Something went horribly wrong");
+            }
+
+            instance = this;
+
             this.size = size;
             this.codeExplorinatorGUI = codeExplorinatorGUI;
             classNodes = new Dictionary<string, ClassNode>();
             searchListEntries = new Dictionary<string, SearchListEntry>();
+            focusedEntries = new HashSet<SearchListEntry>();
             UpdateDataBase();
         }
 
@@ -197,9 +213,26 @@ namespace CodeExplorinator
         public void ApplySelectedClasses()
         {
             graphManager.ApplySelectedClasses();
-            foreach (SearchListEntry entry in searchListEntries.Values)
+        }
+
+        public void UpdateFocusedEntries()
+        {
+            foreach(SearchListEntry entry in focusedEntries)
             {
                 entry.SetUnselected();
+            }
+
+            focusedEntries.Clear();
+
+            foreach (ClassNode node in graphManager.FocusedClassNodes)
+            {
+                string nodeKey = node.classGUI.ClassModifiers + " " + node.classGUI.ClassName;
+                if (searchListEntries.ContainsKey(nodeKey))
+                {
+                    SearchListEntry entry = searchListEntries[nodeKey];
+                    entry.SetFocused();
+                    focusedEntries.Add(entry);
+                }
             }
         }
 

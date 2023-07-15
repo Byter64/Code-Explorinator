@@ -104,13 +104,14 @@ namespace CodeExplorinator
         /// </summary>
         public HashSet<ClassNode> ClassNodes { get; private set; } = new();
 
+        public HashSet<ClassNode> FocusedClassNodes { get; private set; } = new();
+
         /// <summary>
         /// The maximum nodePair as edges from the focused nodes until which other nodes are still shown
         /// </summary>
         private int shownClassDepth;
         private int shownMethodDepth;
         private State state;
-        private HashSet<ClassNode> focusedClassNodes = new();
         private HashSet<ClassNode> selectedClassNodes = new();
         private HashSet<MethodNode> focusedMethodNodes = new();
         private HashSet<MethodNode> selectedMethodNodes = new();
@@ -203,11 +204,13 @@ namespace CodeExplorinator
                 graphVisualizer.ShowMethodLayer(false);
             }
 
-            focusedClassNodes.Clear();
-            focusedClassNodes.UnionWith(selectedClassNodes);
+            FocusedClassNodes.Clear();
+            FocusedClassNodes.UnionWith(selectedClassNodes);
             selectedClassNodes.Clear();
 
-            UpdateSubGraphs(focusedClassNodes, shownClassDepth);
+            MenuGUI.Instance?.UpdateFocusedEntries();
+
+            UpdateSubGraphs(FocusedClassNodes, shownClassDepth);
             ShowClassLayer();
         }
 
@@ -240,7 +243,7 @@ namespace CodeExplorinator
                 graphVisualizer.ShowMethodLayer(false);
             }
 
-            UpdateSubGraphs(focusedClassNodes, depth);
+            UpdateSubGraphs(FocusedClassNodes, depth);
             ShowClassLayer();
         }
 
@@ -259,7 +262,7 @@ namespace CodeExplorinator
 
         public string Serialize(bool prettyPrint)
         {
-            SerializationData data = new SerializationData(shownClassDepth, shownMethodDepth, state, focusedClassNodes, focusedMethodNodes);
+            SerializationData data = new SerializationData(shownClassDepth, shownMethodDepth, state, FocusedClassNodes, focusedMethodNodes);
             string result;
             if(prettyPrint)
             {
@@ -357,7 +360,7 @@ namespace CodeExplorinator
             HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(classGraphs);
             HashSet<ClassGUI> focusedGUIs = new();
             HashSet<ClassGUI> unfocusedGUIs = new();
-            focusedGUIs.UnionWith(GetAllClassGUIs(focusedClassNodes));
+            focusedGUIs.UnionWith(GetAllClassGUIs(FocusedClassNodes));
             unfocusedGUIs.UnionWith(classGUIs);
             unfocusedGUIs.ExceptWith(focusedGUIs);
 
@@ -434,7 +437,7 @@ namespace CodeExplorinator
         /// <returns></returns>
         private List<ClassGraph> GenerateOptimalSubgraphs(HashSet<ClassNode> superGraph, HashSet<ClassNode> focusNodes, int maxDistance)
         {
-            EditorUtility.DisplayProgressBar("Updating scene", "Generate overlapping subgraphs", 0);
+            EditorUtility.DisplayProgressBar("Updating scene", "Generating overlapping subgraphs", 0);
             //Generate a subgraph for every focus node
             List<(ClassNode, HashSet<ClassNode>)> overlappingSubGraphs = new();
             foreach(ClassNode focusNode in focusNodes)
@@ -444,7 +447,7 @@ namespace CodeExplorinator
                 overlappingSubGraphs.Add((focusNode, subgraph));
             }
 
-            EditorUtility.DisplayProgressBar("Updating scene", "Merge overlapping subgraphs", .6f);
+            EditorUtility.DisplayProgressBar("Updating scene", "Merging overlapping subgraphs", .6f);
             //Combine overlapping subgraphs
             List<(HashSet<ClassNode>, HashSet<ClassNode>)> subgraphs = new();
             foreach((ClassNode, HashSet<ClassNode>) overlappingSubgraph in overlappingSubGraphs)

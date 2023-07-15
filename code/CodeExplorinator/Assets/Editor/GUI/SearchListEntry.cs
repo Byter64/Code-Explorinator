@@ -22,6 +22,10 @@ namespace CodeExplorinator
         {
             text = originalText;
         }
+        public void SetFocused()
+        {
+            text = "<b><color=green>" + originalText + " F </color=green></b>";
+        }
 
         private void OnDoubleClick()
         {
@@ -37,7 +41,7 @@ namespace CodeExplorinator
 
         private void SetSelected()
         {
-            text = "<b><u>"+ originalText + "</b></u>";
+            text = "<color=green>" + originalText + " </color=green>";
         }
     }
 }

@@ -129,7 +129,7 @@ namespace CodeExplorinator
             
             List<ClassData> classData = GenerateClassDataFromProject();
             graphManager = new GraphManager(classData, graph, 0);
-            menu = new MenuGUI(graphManager, new Vector2Int(250, 600),this);
+            menu = new MenuGUI(graphManager, new Vector2Int(300, 600),this);
             menu.GenerateVisualElement();
 
             string settings = EditorPrefs.GetString(settingsKey);
