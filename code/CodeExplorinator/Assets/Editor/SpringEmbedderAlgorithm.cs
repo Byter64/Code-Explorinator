@@ -115,7 +115,7 @@ namespace CodeExplorinator
 
                 if (maxForce < thresholdOfClassAlgo)
                 {
-                    Debug.Log("we stopped the spring algo at " + t + " iterations");
+                    //Debug.Log("we stopped the spring algo at " + t + " iterations");
                     return;
                 }
                 
@@ -146,7 +146,7 @@ namespace CodeExplorinator
                 t++;
             }
             
-            Debug.Log("we stopped the spring algo at " + t + " iterations");
+            //Debug.Log("we stopped the spring algo at " + t + " iterations");
 
             //set the position for the visual elements
             //as we incorporated the height and width into the Node.position Vector2, we now have to undo this:
@@ -160,7 +160,7 @@ namespace CodeExplorinator
             }
             
             stopwatch.Stop();
-            Debug.Log("Time elapsed spring algo: " + stopwatch.Elapsed + " or in milliseconds: " + stopwatch.ElapsedMilliseconds);
+            Debug.Log("Time elapsed spring algo: " + stopwatch.ElapsedMilliseconds + "ms");
         }
 
         private static void DetermineConnectionBetweenNodes(HashSet<ClassNode> allNodes)

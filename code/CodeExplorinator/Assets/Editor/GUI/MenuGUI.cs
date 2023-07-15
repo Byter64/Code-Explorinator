@@ -70,10 +70,15 @@ namespace CodeExplorinator
             collapseOrExpandAllClassesButton.text = isClassExpanded ? "Collapse All" : "Expand All";
             collapseOrExpandAllClassesButton.clickable.clicked += OnCollapseOrExpandAll;
             VisualElement.Add(collapseOrExpandAllClassesButton);
-            
+
+            Button DEBUG_printInfo = new Button();
+            DEBUG_printInfo.text = "Print Debug Info";
+            DEBUG_printInfo.clickable.clicked += () => { Debug.Log("DEBUG INFO: \n" + graphManager.Serialize(true)); };
+            VisualElement.Add(DEBUG_printInfo);
+
             #endregion
-            
-            
+
+
             #region Sliders
 
             classDepthSlider = new Slider(0, 10, 0, SetClassDepth);
@@ -106,7 +111,7 @@ namespace CodeExplorinator
 
             #endregion
 
-
+             
             Label searchtext = new Label("Search");
             searchtext.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             VisualElement.Add(searchtext);
@@ -191,9 +196,8 @@ namespace CodeExplorinator
 
         public void ApplySelectedClasses()
         {
-            graphManager.ChangeToClassLayer();
-            graphManager.AdjustGraphToSelectedClasses();
-            foreach(SearchListEntry entry in searchListEntries.Values)
+            graphManager.ApplySelectedClasses();
+            foreach (SearchListEntry entry in searchListEntries.Values)
             {
                 entry.SetUnselected();
             }

@@ -59,7 +59,7 @@ namespace CodeExplorinator
             {
                 classGUI.SetVisible(isVisible);
                 classGUI.SetIsExpanded(false);
-            }
+            } 
             foreach(ClassGUI classGUI in classLayerFocused)
             {
                 classGUI.SetVisible(isVisible);

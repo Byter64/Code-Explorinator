@@ -276,7 +276,7 @@ namespace CodeExplorinator
             #endregion
 
             VisualElement = classElement;
-            TryAssignClickBehaviours();
+            TryAssignClickBehaviours(); 
         }
 
         public override void SetVisible(bool isVisible)
@@ -336,8 +336,7 @@ namespace CodeExplorinator
         private void SetFocusClass()
         {
             graphManager.AddSelectedClass(data.ClassNode);
-            graphManager.AdjustGraphToSelectedClasses();
-            graphManager.ChangeToClassLayer();
+            graphManager.ApplySelectedClasses();
         }
 
         private void AddClassToSelected()

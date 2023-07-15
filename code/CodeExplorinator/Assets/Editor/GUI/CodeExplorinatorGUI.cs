@@ -133,10 +133,19 @@ namespace CodeExplorinator
             menu.GenerateVisualElement();
 
             string settings = EditorPrefs.GetString(settingsKey);
-            Debug.Log(settings); 
             if (settings != null && settings != string.Empty)
             {
                 GraphManager.SerializationData data = graphManager.DeSerialize(settings);
+                 
+                graphManager.AddSelectedClasses(GraphManager.SerializationData.ToClassNodes(data.focusedClassNodes));
+                graphManager.ApplySelectedClasses();
+
+                if (data.state == GraphManager.State.MethodLayer)
+                {
+                    //AddSelectedMethods(focusMethods);
+                    //AdjustGraphToSelectedMethods();
+                }
+
                 menu.SetClassDepth(data.shownClassDepth);
                 menu.SetMethodDepth(data.shownMethodDepth);
             }

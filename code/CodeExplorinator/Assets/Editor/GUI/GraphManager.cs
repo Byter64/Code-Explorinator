@@ -190,33 +190,41 @@ namespace CodeExplorinator
             }
         }
 
-        public void AdjustGraphToSelectedClasses()
-        {
-            focusedClassNodes.Clear();
-            focusedClassNodes.UnionWith(selectedClassNodes);
-            ChangeClassGraphs(selectedClassNodes, shownClassDepth);
-            selectedClassNodes.Clear();
-        }
-
         public void AddSelectedMethod(MethodNode selectedMethod)
         {
             selectedMethodNodes.Add(selectedMethod);
         }
 
-        public void AddSelectedMethods(IEnumerable<MethodNode> selectedMethods)
+        public void ApplySelectedClasses()
         {
-            foreach (MethodNode node in selectedMethods)
+            if (state == State.MethodLayer)
             {
-                AddSelectedMethod(node);
+                ChangeToClassLayer();
+                graphVisualizer.ShowMethodLayer(false);
             }
+
+            focusedClassNodes.Clear();
+            focusedClassNodes.UnionWith(selectedClassNodes);
+            selectedClassNodes.Clear();
+
+            UpdateSubGraphs(focusedClassNodes, shownClassDepth);
+            ShowClassLayer();
         }
 
-        public void AdjustGraphToSelectedMethods()
+        public void ApplySelectedMethods()
         {
+            if (state == State.ClassLayer)
+            {
+                ChangeToMethodLayer();
+                graphVisualizer.ShowClassLayer(false);
+            }
+
             focusedMethodNodes.Clear();
             focusedMethodNodes.UnionWith(selectedMethodNodes);
-            ChangeMethodGraph(selectedMethodNodes, shownMethodDepth);
             selectedMethodNodes.Clear();
+
+            UpdateMethodGraph(focusedMethodNodes, shownMethodDepth);
+            ShowMethodLayer();
         }
 
         /// <summary>
@@ -228,7 +236,8 @@ namespace CodeExplorinator
             shownClassDepth = depth;
             if(state != State.ClassLayer) { return; }
 
-            ChangeClassGraphs(focusedClassNodes, depth);
+            UpdateSubGraphs(focusedClassNodes, depth);
+            ShowClassLayer();
         }
 
         /// <summary>
@@ -240,63 +249,8 @@ namespace CodeExplorinator
             shownMethodDepth = depth;
             if (state != State.MethodLayer) { return; }
 
-            ChangeMethodGraph(focusedMethodNodes, depth);
-        }
-
-        public void ChangeToMethodLayer()
-        {
-            graphVisualizer.ShowClassLayer(false);
-            graphVisualizer.ShowMethodLayer(true, GetAllMethodGUIs(shownMethodNodes));
-
-            state = State.MethodLayer;
-        }
-
-        public void ChangeToClassLayer()
-        {
-            graphVisualizer.ShowMethodLayer(false);
-            graphVisualizer.ShowClassLayer(true);
-
-            focusedMethodNodes.Clear();
-
-            state = State.ClassLayer;
-        }
-
-        public HashSet<ConnectionGUI> FindAllConnections(ClassGUI classGUI)
-        {
-            HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
-
-            ClassGraph containingGraph = null;
-            switch (state)
-            {
-                case State.ClassLayer:
-                    foreach (ClassGraph graph in classGraphs)
-                    {
-                        if (graph.Contains(classGUI))
-                        {
-                            containingGraph = graph;
-                            break;
-                        }
-                    } 
-                    break;
-                case State.MethodLayer:
-                    if(methodGraph.Contains(classGUI))
-                    {
-                        containingGraph = methodGraph;
-                    }
-                    break;
-            }
-
-            if (containingGraph == null) { return null; }
-
-            foreach (ConnectionGUI connection in containingGraph.connections)
-            {
-                if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
-                {
-                    result.Add(connection);
-                }
-            }
-
-            return result;
+            UpdateMethodGraph(focusedMethodNodes, shownMethodDepth);
+            ShowMethodLayer();
         }
 
         public string Serialize(bool prettyPrint)
@@ -323,56 +277,87 @@ namespace CodeExplorinator
             SerializationData data = JsonConvert.DeserializeObject<SerializationData>(jsonString);
             HashSet<ClassNode> focusClasses = SerializationData.ToClassNodes(data.focusedClassNodes);
             HashSet<MethodNode> focusMethods = SerializationData.ToMethodNodes(data.focusedMethodNodes);
-            
-            AddSelectedClasses(focusClasses);
-            AdjustGraphToSelectedClasses();
-
-            AddSelectedMethods(focusMethods);
-            AdjustGraphToSelectedMethods();
-
-            switch(data.state)
-            {
-                case State.ClassLayer:
-                    ChangeToClassLayer();
-                    break;
-
-                case State.MethodLayer:
-                    ChangeToMethodLayer();
-                    break;
-            }
 
             return data;
         }
 
-        private void ChangeClassGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
+        private void ChangeToMethodLayer()
         {
-            UpdateSubGraphs(focusClasses, shownDepth);
+            state = State.MethodLayer;
+        }
+
+        private void ChangeToClassLayer()
+        {
+            state = State.ClassLayer;
+            focusedMethodNodes.Clear();
+        }
+
+        private HashSet<ConnectionGUI> FindAllConnections(ClassGUI classGUI)
+        {
+            HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
+
+            ClassGraph containingGraph = null;
+            switch (state)
+            {
+                case State.ClassLayer:
+                    foreach (ClassGraph graph in classGraphs)
+                    {
+                        if (graph.Contains(classGUI))
+                        {
+                            containingGraph = graph;
+                            break;
+                        }
+                    }
+                    break;
+                case State.MethodLayer:
+                    if (methodGraph.Contains(classGUI))
+                    {
+                        containingGraph = methodGraph;
+                    }
+                    break;
+            }
+
+            if (containingGraph == null) { return null; }
+
+            foreach (ConnectionGUI connection in containingGraph.connections)
+            {
+                if (connection.TipNode == classGUI.VisualElement || connection.FootNode == classGUI.VisualElement)
+                {
+                    result.Add(connection);
+                }
+            }
+
+            return result;
+        }
+
+        private void ShowMethodLayer()
+        {
+            HashSet<ClassGUI> classGUIs = GetAllClassGUIs(new HashSet<ClassGraph>() { methodGraph });
+            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(new HashSet<ClassGraph>() { methodGraph });
+            HashSet<MethodGUI> methodGUIs = GetAllMethodGUIs(shownMethodNodes);
+            HashSet<MethodGUI> focusedMethods = GetAllMethodGUIs(focusedMethodNodes);
+            HashSet<MethodGUI> unfocusedMethods = new();
+
+            unfocusedMethods.UnionWith(methodGUIs); 
+            unfocusedMethods.ExceptWith(focusedMethods);
+
+            graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs, focusedMethods, unfocusedMethods);
+            graphVisualizer.ShowMethodLayer(true, methodGUIs);
+        } 
+
+        private void ShowClassLayer()
+        {
             HashSet<ClassGUI> classGUIs = GetAllClassGUIs(classGraphs);
             HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(classGraphs);
             HashSet<ClassGUI> focusedGUIs = new();
             HashSet<ClassGUI> unfocusedGUIs = new();
-
-            focusedGUIs.UnionWith(GetAllClassGUIs(focusClasses));
+            focusedGUIs.UnionWith(GetAllClassGUIs(focusedClassNodes));
             unfocusedGUIs.UnionWith(classGUIs);
             unfocusedGUIs.ExceptWith(focusedGUIs);
 
             graphVisualizer.SetClassLayer(focusedGUIs, unfocusedGUIs, connectionGUIs);
             graphVisualizer.ShowClassLayer(true);
         }
-
-        private void ChangeMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
-        {
-            UpdateMethodGraph(focusMethods, shownDepth);
-            HashSet<ClassGUI> classGUIs = GetAllClassGUIs(new HashSet<ClassGraph>() { methodGraph });
-            HashSet<ConnectionGUI> connectionGUIs = GetAllConnectionGUIs(new HashSet<ClassGraph>() { methodGraph });
-            HashSet<MethodGUI> methodGUIs = GetAllMethodGUIs(shownMethodNodes);
-            HashSet<MethodGUI> focusedMethods = GetAllMethodGUIs(focusMethods);
-            HashSet<MethodGUI> unfocusedMethods = new();
-            unfocusedMethods.UnionWith(methodGUIs); 
-            unfocusedMethods.ExceptWith(focusedMethods);
-            graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs, focusedMethods, unfocusedMethods);
-            graphVisualizer.ShowMethodLayer(true, methodGUIs);
-        } 
 
         private void UpdateSubGraphs(HashSet<ClassNode> focusClasses, int shownDepth)
         {
