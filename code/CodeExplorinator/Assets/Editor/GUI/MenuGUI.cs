@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -59,7 +60,7 @@ namespace CodeExplorinator
             recompileButton.text = "Refresh Project";
             recompileButton.clickable.clicked += OnClickRecompileProject;
             VisualElement.Add(recompileButton);
-            
+
             collapseOrExpandAllClassesButton = new Button();
             collapseOrExpandAllClassesButton.text = isClassExpanded ? "Collapse All" : "Expand All";
             collapseOrExpandAllClassesButton.clickable.clicked += OnCollapseOrExpandAll;

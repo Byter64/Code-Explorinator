@@ -17,10 +17,56 @@ namespace CodeExplorinator
         public List<MethodGUI> methodGUIs { get; private set; }
         public HashSet<ConnectionGUI> Connections { get; set; }
 
+        private bool IsExpanded {
+            get
+            {
+                return isExpanded;
+            }
+            set
+            {
+                isExpanded = value;
+                if(isExpanded)
+                {
+                    expansionArrow.style.backgroundImage = Background.FromTexture2D(ArrowDown);
+                }
+                else
+                {
+                    expansionArrow.style.backgroundImage = Background.FromTexture2D(ArrowRight);
+                }
+            }
+        }
+        private static Texture2D ArrowRight
+        {
+            get
+            {
+                if (arrowRight == null)
+                {
+                    arrowRight = AssetDatabase.LoadAssetAtPath<Texture2D>(arrowRightImagePath);
+                }
+                return arrowRight;
+            }
+        }
+        private static Texture2D ArrowDown
+        {
+            get
+            {
+                if (arrowDown == null)
+                {
+                    arrowDown = AssetDatabase.LoadAssetAtPath<Texture2D>(arrowDownImagePath);
+                }
+                return arrowDown;
+            }
+        }
+
         private const string classTexturePath = "Assets/Editor/TiledTextures/Class.asset";
         private const string headerTexturePath = "Assets/Editor/TiledTextures/Header.asset";
         private const string focusedClassTexturePath = "Assets/Editor/TiledTextures/FocusedClass.asset";
         private const string focusedHeaderTexturePath = "Assets/Editor/TiledTextures/FocusedHeader.asset";
+        private const string lineTexturePath = "Assets/Editor/Graphics/Linetexture.png";
+        private const string arrowRightImagePath = "Assets/Editor/Graphics/Arrow_Right.png";
+        private const string arrowDownImagePath = "Assets/Editor/Graphics/Arrow_Down.png";
+        private static Texture2D arrowRight;
+        private static Texture2D arrowDown;
 
         #region Defines for the graphics
         /// <summary>
@@ -35,10 +81,9 @@ namespace CodeExplorinator
         /// How much empty space will be between the last element in the box and the bottom border of the box
         /// </summary>
         private const int emptySpaceBottom = 10;
-        #endregion
 
-        private static TiledTextureBuilder backgroundBuilder;
-        private static TiledTextureBuilder headerBuilder;
+        private const int arrowMarginLeft = 30;
+        #endregion
 
         private bool isExpanded;
         private bool isVisible;
@@ -54,6 +99,7 @@ namespace CodeExplorinator
         private Texture2D focusedHeaderTexture;
         private Texture2D lineTexture;
         private VisualElement header;
+        private VisualElement expansionArrow;
         private VisualElement moveCollider;
         private ClickBehaviour bodyClick;
         private ClickBehaviour headerClick;
@@ -80,14 +126,13 @@ namespace CodeExplorinator
                 throw new System.ArgumentException("Font for field style is not dynamic and thus cannot be scaled");
             }
 
-            isExpanded = true;
             Position = position;
             this.data = data;
             this.classStyle = classStyle;
             this.fieldStyle = fieldStyle;
             this.methodStyle = methodStyle;
 
-            lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
+            lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(lineTexturePath);
             ClassModifiers = "<<" + data.ClassModifiersAsString + ">>";
             ClassName = data.GetName();
             methodGUIs = new List<MethodGUI>();
@@ -112,25 +157,44 @@ namespace CodeExplorinator
             classElement.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(widthInPixels, heightInPixels));
             classElement.style.height = heightInPixels;
             classElement.style.width = widthInPixels;
-            classElement.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
-            classElement.style.alignContent = new StyleEnum<Align>(Align.Stretch);
+            classElement.style.position = UnityEngine.UIElements.Position.Absolute;
+            classElement.style.alignContent = Align.Stretch;
             classElement.style.marginLeft = Position.x;
             classElement.style.marginTop = Position.y;
 
             #region DrawHeader
-            string headerText = ColorText(ClassModifiers + "\n" + ClassName, className);
-            Label header = new Label(headerText);
+            VisualElement header = new VisualElement();
+            classElement.Add(header); 
+            this.header = header;
+            header.style.flexDirection = FlexDirection.Row;
+            header.style.alignItems = Align.Center;
+            header.style.justifyContent = Justify.SpaceBetween;
             header.style.backgroundImage = Background.FromTexture2D(headerTexture);
             header.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(headerTexture.width, headerTexture.height));
-            header.style.unityFont = new StyleFont(classStyle.font);
-            header.style.unityFontDefinition = new StyleFontDefinition(classStyle.font);
-            header.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperCenter);
             header.style.height = headerTexture.height;
-            header.style.fontSize = classStyle.fontSize;
-            header.style.color = UnityEngine.Color.black;
-            this.header = header;
 
-            classElement.Add(header);
+            VisualElement arrowImage = new VisualElement();
+            header.Add(arrowImage);
+            expansionArrow = arrowImage;
+            arrowImage.style.backgroundImage = Background.FromTexture2D(arrowRight);
+            arrowImage.style.width = ArrowRight.width;
+            arrowImage.style.height = ArrowRight.height;
+            arrowImage.style.marginLeft = arrowMarginLeft; 
+
+            string headerText = ColorText(ClassModifiers + "\n" + ClassName, className);
+            Label headerLabel = new Label(headerText);
+            header.Add(headerLabel);
+            headerLabel.style.unityFont = new StyleFont(classStyle.font);
+            headerLabel.style.unityFontDefinition = new StyleFontDefinition(classStyle.font);
+            headerLabel.style.unityTextAlign = TextAnchor.UpperCenter;
+            headerLabel.style.fontSize = classStyle.fontSize;
+            headerLabel.style.color = UnityEngine.Color.black;
+
+            VisualElement alignHelper = new VisualElement();
+            alignHelper.style.width = arrowImage.style.width;
+            alignHelper.style.height = arrowImage.style.height; 
+            alignHelper.style.marginRight = arrowMarginLeft;
+            header.Add(alignHelper);
             #endregion
 
             #region DrawFieldsAndProperties
@@ -146,7 +210,7 @@ namespace CodeExplorinator
             {
                 Label field = new Label(fieldData.ToRichString());
                 field.style.unityFont = new StyleFont(fieldStyle.font);
-                header.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                headerLabel.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
@@ -170,7 +234,7 @@ namespace CodeExplorinator
             {
                 Label field = new Label(fieldData.ToRichString());
                 field.style.unityFont = new StyleFont(fieldStyle.font);
-                header.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                headerLabel.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
@@ -221,7 +285,7 @@ namespace CodeExplorinator
         {
             this.isVisible = isVisible;
 
-            bool isBodyVisible = isExpanded && isVisible;
+            bool isBodyVisible = IsExpanded && isVisible;
 
             VisualElement.visible = isBodyVisible;
             header.visible = isVisible;
@@ -247,7 +311,7 @@ namespace CodeExplorinator
 
         public void SetIsExpanded(bool isExpanded)
         {
-            this.isExpanded = isExpanded;
+            this.IsExpanded = isExpanded;
             SetVisible(isVisible);
         }
 
@@ -269,7 +333,7 @@ namespace CodeExplorinator
 
         private void SwapIsExpanded()
         {
-            SetIsExpanded(!isExpanded);
+            SetIsExpanded(!IsExpanded);
         }
         private void SetFocusClass()
         {
