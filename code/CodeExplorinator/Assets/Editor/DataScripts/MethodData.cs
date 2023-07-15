@@ -168,11 +168,13 @@ namespace CodeExplorinator
         public IMethodSymbol GetIMethodSymbol()
         {
             return MethodSymbol;
-        }
+        } 
 
         public override string ToString()
         {
-            string result = MethodSymbol.DeclaredAccessibility + " ";
+            string accessibility = MethodSymbol.DeclaredAccessibility.ToString();
+            accessibility = char.ToLower(accessibility[0]) + accessibility.Substring(1);
+            string result = accessibility + " ";
             result += MethodModifiersAsString;
             if (MethodModifiersList.Count != 0)
             {
@@ -196,7 +198,10 @@ namespace CodeExplorinator
 
         public string ToRichString()
         {
-            string result = ColorText(MethodSymbol.DeclaredAccessibility.ToString(), accessebility) + " ";
+            string accessibility = MethodSymbol.DeclaredAccessibility.ToString();
+            accessibility = char.ToLower(accessibility[0]) + accessibility.Substring(1);
+
+            string result = ColorText(accessibility, Color.accessibility) + " ";
             result += ColorText(MethodModifiersAsString, modifier);
             if (MethodModifiersList.Count != 0)
             {

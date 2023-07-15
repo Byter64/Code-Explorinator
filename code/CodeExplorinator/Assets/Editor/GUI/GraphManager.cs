@@ -281,18 +281,8 @@ namespace CodeExplorinator
             return data;
         }
 
-        private void ChangeToMethodLayer()
-        {
-            state = State.MethodLayer;
-        }
 
-        private void ChangeToClassLayer()
-        {
-            state = State.ClassLayer;
-            focusedMethodNodes.Clear();
-        }
-
-        private HashSet<ConnectionGUI> FindAllConnections(ClassGUI classGUI)
+        public HashSet<ConnectionGUI> FindAllConnections(ClassGUI classGUI)
         {
             HashSet<ConnectionGUI> result = new HashSet<ConnectionGUI>();
 
@@ -328,6 +318,18 @@ namespace CodeExplorinator
             }
 
             return result;
+        }
+
+
+        private void ChangeToMethodLayer()
+        {
+            state = State.MethodLayer;
+        }
+
+        private void ChangeToClassLayer()
+        {
+            state = State.ClassLayer;
+            focusedMethodNodes.Clear();
         }
 
         private void ShowMethodLayer()

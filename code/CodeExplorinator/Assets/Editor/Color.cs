@@ -11,7 +11,7 @@ namespace CodeExplorinator
     /// </summary>
     public static class Color
     {
-        public const string accessebility = "#263cd4";
+        public const string accessibility = "#263cd4";
         public const string modifier = "#263cd4";
         public const string variableName = "#4e4e4e";
         public const string methodName = "#4e4e4e";

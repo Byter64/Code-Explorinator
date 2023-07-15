@@ -75,7 +75,10 @@ namespace CodeExplorinator
         }
         public override string ToString()
         {
-            string result = PropertySymbol.DeclaredAccessibility + " ";
+            string accessibility = PropertySymbol.DeclaredAccessibility.ToString();
+            accessibility = char.ToLower(accessibility[0]) + accessibility.Substring(1);
+
+            string result = accessibility + " ";
             result += PropertyModifiersAsString;
             if (PropertyModifiersList.Count != 0)
             {
@@ -89,7 +92,10 @@ namespace CodeExplorinator
         }
         public string ToRichString()
         {
-            string result = ColorText(PropertySymbol.DeclaredAccessibility.ToString(), accessebility) + " ";
+            string accessibility = PropertySymbol.DeclaredAccessibility.ToString();
+            accessibility = char.ToLower(accessibility[0]) + accessibility.Substring(1);
+
+            string result = ColorText(accessibility, Color.accessibility) + " ";
             result += ColorText(PropertyModifiersAsString, modifier);
             if (PropertyModifiersList.Count != 0)
             {

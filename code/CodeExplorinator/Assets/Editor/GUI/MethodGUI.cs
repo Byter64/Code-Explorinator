@@ -97,11 +97,9 @@ namespace CodeExplorinator
         }
 
         private void SetFocusMethod()
-        {
+        { 
             graphManager.AddSelectedMethod(data.MethodNode);
             graphManager.ApplySelectedMethods();
-            //graphManager.AdjustGraphToSelectedMethods();
-            //graphManager.ChangeToMethodLayer();
         }
 
         public override void SetVisible(bool isVisible)

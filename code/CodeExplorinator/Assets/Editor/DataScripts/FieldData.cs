@@ -76,7 +76,10 @@ namespace CodeExplorinator
 
         public override string ToString()
         {
-            string result = FieldSymbol.DeclaredAccessibility + " ";
+            string accessibility = FieldSymbol.DeclaredAccessibility.ToString();
+            accessibility = char.ToLower(accessibility[0]) + accessibility.Substring(1);
+
+            string result = accessibility + " ";
             result += FieldModifiersAsString;
             if (FieldModifiersList.Count != 0)
             {
@@ -90,7 +93,10 @@ namespace CodeExplorinator
         }
         public string ToRichString()
         {
-            string result = ColorText(FieldSymbol.DeclaredAccessibility.ToString(), accessebility) + " ";
+            string accessibility = FieldSymbol.DeclaredAccessibility.ToString();
+            accessibility = char.ToLower(accessibility[0]) + accessibility.Substring(1);
+
+            string result = ColorText(accessibility, Color.accessibility) + " ";
             result += ColorText(FieldModifiersAsString, modifier);
             if (FieldModifiersList.Count != 0)
             {
