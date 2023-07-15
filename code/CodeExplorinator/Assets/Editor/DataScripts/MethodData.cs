@@ -180,6 +180,9 @@ namespace CodeExplorinator
             {
                 result += " ";
             }
+
+            result += MethodSymbol.ReturnType.ToString() + " ";
+
             result += GetName() + "(";
 
             ImmutableArray<IParameterSymbol> parameters = GetParameters();
@@ -207,6 +210,9 @@ namespace CodeExplorinator
             {
                 result += " ";
             }
+
+            result += ColorText(MethodSymbol.ReturnType.ToString(), returnType) + " ";
+
             result += ColorText(GetName(), methodName) + ColorText("(", rest);
 
             ImmutableArray<IParameterSymbol> parameters = GetParameters();
