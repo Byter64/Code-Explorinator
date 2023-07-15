@@ -49,7 +49,6 @@ namespace CodeExplorinator
 
             //TODO: add bold text here to improve visibility for example: new Label("<b>" + data.ToRichString() + "</b>");
             Label method = new Label(data.ToRichString());
-            method.style.unityFont = new StyleFont(style.font);
             method.style.unityFontDefinition = new StyleFontDefinition(style.font);
             method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleLeft);
             method.style.fontSize = style.fontSize;

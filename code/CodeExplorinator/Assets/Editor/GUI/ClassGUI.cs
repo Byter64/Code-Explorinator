@@ -209,19 +209,17 @@ namespace CodeExplorinator
             foreach (FieldData fieldData in data.PublicVariables)
             {
                 Label field = new Label(fieldData.ToRichString());
-                field.style.unityFont = new StyleFont(fieldStyle.font);
-                headerLabel.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                field.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
 
                 publicVariables.Add(field);
             }
-            
+
             foreach (PropertyData propertyData in data.PublicProperties)
             {
                 Label property = new Label(propertyData.ToRichString());
-                property.style.unityFont = new StyleFont(fieldStyle.font);
                 property.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 property.style.fontSize = fieldStyle.fontSize;
@@ -229,12 +227,11 @@ namespace CodeExplorinator
 
                 publicVariables.Add(property);
             }
-            
+
             foreach (FieldData fieldData in data.PrivateVariables)
             {
                 Label field = new Label(fieldData.ToRichString());
-                field.style.unityFont = new StyleFont(fieldStyle.font);
-                headerLabel.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
+                field.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
@@ -245,7 +242,6 @@ namespace CodeExplorinator
             foreach (PropertyData propertyData in data.PrivateProperties)
             {
                 Label property = new Label(propertyData.ToRichString());
-                property.style.unityFont = new StyleFont(fieldStyle.font);
                 property.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 property.style.fontSize = fieldStyle.fontSize;
@@ -253,7 +249,7 @@ namespace CodeExplorinator
 
                 privateVariables.Add(property);
             }
-            
+
             #endregion
 
             if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && data.PublicVariables.Concat(data.PrivateVariables).Count() != 0)
