@@ -1,4 +1,5 @@
 
+using Codice.Client.BaseCommands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +11,13 @@ namespace CodeExplorinator
 {
     public class MenuGUI : BaseGUI
     {
-        private string classDepthText = "Class Depth";
-        private string methodDepthText = "Method Depth";
+        private const string classDepthText = "Class Depth";
+        private const string methodDepthText = "Method Depth";
+
+        private bool isCaseSensitive = false;
+        private bool isClassExpanded = false;
+        private bool useExactSearch = false;
+        private string lastQuery;
         private Vector2Int size;
         private Label classDepth;
         private Label methodDepth;
@@ -20,10 +26,9 @@ namespace CodeExplorinator
         private TextField searchInput;
         private ScrollView scrollView;
         private Button recompileButton;
-        private bool isClassExpanded = false;
         private Button collapseOrExpandAllClassesButton;
-        private bool isCaseSensitive = false;
         private Toggle caseSensitiveToggle;
+        private Toggle exactSearchToggle;
         private Dictionary<string, ClassNode> classNodes;
         private Dictionary<string, SearchListEntry> searchListEntries;
         private CodeExplorinatorGUI codeExplorinatorGUI;
@@ -86,15 +91,22 @@ namespace CodeExplorinator
 
             
             #region Toggle
+
             caseSensitiveToggle = new Toggle();
-            caseSensitiveToggle.label = "Case Sensitive Search";
+            caseSensitiveToggle.text = "Case Sensitive Search";
             caseSensitiveToggle.value = false;
-            caseSensitiveToggle.RegisterValueChangedCallback(ToggleCaseSensitivity);
+            caseSensitiveToggle.RegisterValueChangedCallback(OnToggleCaseSensitivity);
             VisualElement.Add(caseSensitiveToggle);
 
+            exactSearchToggle = new Toggle();
+            exactSearchToggle.text = "Exact Search";
+            exactSearchToggle.value = false;
+            exactSearchToggle.RegisterValueChangedCallback(OnToggleExactSearch);
+            VisualElement.Add(exactSearchToggle);
+
             #endregion
-            
-            
+
+
             Label searchtext = new Label("Search");
             searchtext.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             VisualElement.Add(searchtext);
@@ -132,23 +144,27 @@ namespace CodeExplorinator
             */
         }
         
-        private void ToggleCaseSensitivity(ChangeEvent<bool> evt)
+        private void OnToggleCaseSensitivity(ChangeEvent<bool> evt)
         {
             isCaseSensitive = evt.newValue;
-            //Debug.Log("Toggle switched: " + isCaseSensitive);
+            UpdateResultEntries(lastQuery);
         }
-        
+
+        private void OnToggleExactSearch(ChangeEvent<bool> evt)
+        {
+            useExactSearch = evt.newValue;
+            UpdateResultEntries(lastQuery);
+        }
+
         private void OnCollapseOrExpandAll()
         {
             if (isClassExpanded)
             {
                 graphManager.graphVisualizer.ExpandAllClasses(false);
-                //Debug.Log("Collapsed All Classes");
             }
             else
             {
                 graphManager.graphVisualizer.ExpandAllClasses(true);
-                //Debug.Log("Expanded All Classes");
             }
             
             isClassExpanded = !isClassExpanded;
@@ -217,9 +233,9 @@ namespace CodeExplorinator
                     query = query.Remove(searchInput.cursorIndex - 1, 1);
                 }
             }
-            
-            UpdateResultEntries(isCaseSensitive? query:query.ToLower());
-            OrderEntriesByAlphabet();
+
+            lastQuery = query;
+            UpdateResultEntries(query);
         }
 
         private string RemoveSelection(string query)
@@ -241,22 +257,27 @@ namespace CodeExplorinator
 
         private void UpdateResultEntries(string query)
         {
+            query = isCaseSensitive ? query : query.ToLower();
+            Func<string, string, bool> matchFunction = useExactSearch ? DoesInputMatchExactly : DoesInputMatchJumpy;
 
-            foreach(string name in searchListEntries.Keys)
+            foreach (string entry in searchListEntries.Keys)
             {
-                bool isVisible = SearchAlgorithm( isCaseSensitive? name : name.ToLower(), query);
-                if (!isVisible && scrollView.Contains(searchListEntries[name]))
+                string text = isCaseSensitive ? entry : entry.ToLower();
+                bool isVisible = matchFunction(text, query);
+                if (!isVisible && scrollView.Contains(searchListEntries[entry]))
                 {
-                    searchListEntries[name].parent.Remove(searchListEntries[name]);
+                    searchListEntries[entry].parent.Remove(searchListEntries[entry]);
                 }
-                if(isVisible && !scrollView.Contains(searchListEntries[name]))
+                if(isVisible && !scrollView.Contains(searchListEntries[entry]))
                 {
-                    scrollView.Add(searchListEntries[name]);
+                    scrollView.Add(searchListEntries[entry]);
                 }
             }
+
+            OrderEntriesByAlphabet();
         }
 
-        private bool SearchAlgorithm(string text, string matcher)
+        private bool DoesInputMatchJumpy(string text, string matcher)
         {
             if(matcher.Length == 0) { return true; }
 
@@ -272,6 +293,11 @@ namespace CodeExplorinator
             }
 
             return false;
+        }
+
+        private bool DoesInputMatchExactly(string text, string matcher)
+        {
+            return text.Contains(matcher);
         }
 
         private void OrderEntriesByAlphabet()
