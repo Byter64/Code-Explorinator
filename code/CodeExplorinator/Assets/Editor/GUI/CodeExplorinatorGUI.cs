@@ -24,7 +24,7 @@ namespace CodeExplorinator
         private static GraphManager graphManager;
         private static VisualElement graph;
         private static MenuGUI menu;
-        [MenuItem("Window/CodeExplorinator")]
+        [MenuItem("Window/Code Explorinator")]
         public static void OnShowWindow()
         {
             EditorWindow editorWindow = GetWindow(typeof(CodeExplorinatorGUI));
