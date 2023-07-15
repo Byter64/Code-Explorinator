@@ -252,7 +252,9 @@ namespace CodeExplorinator
 
             #endregion
 
-            if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && data.PublicVariables.Concat(data.PrivateVariables).Count() != 0)
+            if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && 
+                (data.PublicVariables.Concat(data.PrivateVariables).Count() != 0 ||
+                data.PublicProperties.Concat(data.PublicProperties).Count() != 0))
             {
                 VisualElement line = new VisualElement();
                 line.style.backgroundImage = new StyleBackground(lineTexture);
