@@ -370,20 +370,21 @@ namespace CodeExplorinator
             {
                 nodes.UnionWith(graph.classNodes);
             }
-
+            EditorUtility.DisplayProgressBar("Updating scene", "Finding suboptimal layout", 0.8f);
             SpringEmbedderAlgorithm.StartAlgorithm(nodes);
 
             foreach (ClassGraph graph in classGraphs)
             {
-                nodes.UnionWith(graph.classNodes); //Warum nochmal????
-
                 graph.GenerateConnectionsBetweenClasses();
                 graph.GenerateVisualElementGraph();
             }
+
+            EditorUtility.ClearProgressBar();
         }
 
         private void UpdateMethodGraph(HashSet<MethodNode> focusMethods, int shownDepth)
         {
+            EditorUtility.DisplayProgressBar("Updating scene", "Generating graph", 0);
             BreadthSearch.Reset();
             shownMethodNodes.Clear();
             foreach(MethodNode methodNode in methodNodes)
@@ -402,6 +403,7 @@ namespace CodeExplorinator
                 focusedClasses.Add(node.MethodData.ContainingClass.ClassNode);
             }
 
+            EditorUtility.DisplayProgressBar("Updating scene", "Layouting graph", 0.5f);
             //Create classgraph that contains each class which contains a shown method
             methodGraph = new ClassGraph(this, FindClassNodes(shownMethodNodes), focusedClasses, shownDepth);
 
@@ -411,6 +413,8 @@ namespace CodeExplorinator
             //methodGraph.GenerateConnectionsBetweenClasses();
             methodGraph.GenerateMethodConnectionsBetweenClasses();
             methodGraph.GenerateVisualElementGraph();
+
+            EditorUtility.ClearProgressBar();
         }
 
         /// <summary>
@@ -426,6 +430,7 @@ namespace CodeExplorinator
         /// <returns></returns>
         private List<ClassGraph> GenerateOptimalSubgraphs(HashSet<ClassNode> superGraph, HashSet<ClassNode> focusNodes, int maxDistance)
         {
+            EditorUtility.DisplayProgressBar("Updating scene", "Generate overlapping subgraphs", 0);
             //Generate a subgraph for every focus node
             List<(ClassNode, HashSet<ClassNode>)> overlappingSubGraphs = new();
             foreach(ClassNode focusNode in focusNodes)
@@ -435,6 +440,7 @@ namespace CodeExplorinator
                 overlappingSubGraphs.Add((focusNode, subgraph));
             }
 
+            EditorUtility.DisplayProgressBar("Updating scene", "Merge overlapping subgraphs", .6f);
             //Combine overlapping subgraphs
             List<(HashSet<ClassNode>, HashSet<ClassNode>)> subgraphs = new();
             foreach((ClassNode, HashSet<ClassNode>) overlappingSubgraph in overlappingSubGraphs)
@@ -476,6 +482,7 @@ namespace CodeExplorinator
                 }
             }
 
+            EditorUtility.DisplayProgressBar("Updating scene", "Save result", .7f);
             //Create ClassGraph instances
             List<ClassGraph> graphs = new();
             foreach((HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) subgraph in subgraphs)
