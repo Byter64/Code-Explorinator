@@ -234,7 +234,11 @@ namespace CodeExplorinator
         public void ChangeClassDepth(int depth)
         {
             shownClassDepth = depth;
-            if(state != State.ClassLayer) { return; }
+            if(state != State.ClassLayer)
+            {
+                ChangeToClassLayer();
+                graphVisualizer.ShowMethodLayer(false);
+            }
 
             UpdateSubGraphs(focusedClassNodes, depth);
             ShowClassLayer();
