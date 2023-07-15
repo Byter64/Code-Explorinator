@@ -85,7 +85,7 @@ namespace CodeExplorinator
                 result += " ";
             }
 
-            result += GetType() + " ";
+            result += ClassData.RemoveNameSpace(GetType()) + " ";
 
             result += GetName() + ";";
             return result;
@@ -103,11 +103,11 @@ namespace CodeExplorinator
             }
             if (PropertySymbol.Type.IsValueType)
             {
-                result += ColorText(GetType().ToString(), structType) + " ";
+                result += ColorText(ClassData.RemoveNameSpace(GetType()), structType) + " ";
             }
             else
             {
-                result += ColorText(GetType().ToString(), classType) + " ";
+                result += ColorText(ClassData.RemoveNameSpace(GetType()), classType) + " ";
             }
             result += ColorText(GetName(), variableName) + ColorText(";", rest);
 

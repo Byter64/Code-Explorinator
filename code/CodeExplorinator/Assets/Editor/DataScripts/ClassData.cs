@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using GluonGui.Dialog;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections;
 using System.Collections.Generic;
@@ -152,6 +153,22 @@ namespace CodeExplorinator
             DetermineModifiers();
         }
 
+        public static string RemoveNameSpace(ITypeSymbol typeSymbol)
+        {
+            string result;
+            INamespaceSymbol namespaceSymbol = typeSymbol.ContainingNamespace;
+            if (namespaceSymbol == null || namespaceSymbol.IsGlobalNamespace || typeSymbol.ToString().LastIndexOf('.') == -1)
+            { 
+                result = typeSymbol.ToString();
+            }
+            else 
+            {
+                int namespaceLength = namespaceSymbol.ToString().Length;
+                result = typeSymbol.ToString().Substring(namespaceLength + 1);
+            }
+            return result;
+        }
+
         public string GetName()
         {
             return ClassInformation.Name;
@@ -250,7 +267,7 @@ namespace CodeExplorinator
                 }
 
                 privateMethodString += privateMethod.GetReturnType().Name + " " + privateMethod.GetName() + " (";
-
+                 
                 foreach (var parameter in privateMethod.GetParameters())
                 {
                     privateMethodString += parameter.Type.Name + " " + parameter.Name + ", ";

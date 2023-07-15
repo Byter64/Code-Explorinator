@@ -181,14 +181,14 @@ namespace CodeExplorinator
                 result += " ";
             }
 
-            result += MethodSymbol.ReturnType.ToString() + " ";
+            result += ClassData.RemoveNameSpace(MethodSymbol.ReturnType) + " ";
 
             result += GetName() + "(";
 
             ImmutableArray<IParameterSymbol> parameters = GetParameters();
             foreach (IParameterSymbol parameter in parameters)
             {
-                result += parameter.Type + " " + parameter.Name + ", ";
+                result += ClassData.RemoveNameSpace(parameter.Type) + " " + parameter.Name + ", ";
             }
             if (parameters.Length != 0)
             {
@@ -211,14 +211,14 @@ namespace CodeExplorinator
                 result += " ";
             }
 
-            result += ColorText(MethodSymbol.ReturnType.ToString(), returnType) + " ";
+            result += ColorText(ClassData.RemoveNameSpace(MethodSymbol.ReturnType), returnType) + " ";
 
             result += ColorText(GetName(), methodName) + ColorText("(", rest);
 
             ImmutableArray<IParameterSymbol> parameters = GetParameters();
             foreach (IParameterSymbol parameter in parameters)
             {
-                result += ColorText(parameter.Type.ToString(), parameterType) + " " + ColorText(parameter.Name, parameterName) + ColorText(", ", rest);
+                result += ColorText(ClassData.RemoveNameSpace(parameter.Type), parameterType) + " " + ColorText(parameter.Name, parameterName) + ColorText(", ", rest);
             }
             if (parameters.Length != 0)
             {
