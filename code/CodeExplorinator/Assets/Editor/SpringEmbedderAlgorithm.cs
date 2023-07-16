@@ -399,7 +399,7 @@ namespace CodeExplorinator
 
                 if (maxForce < thresholdOfMethodAlgo)
                 {
-                    Debug.Log("we stopped the method spring algo at " + t + " iterations");
+                    //Debug.Log("we stopped the method spring algo at " + t + " iterations");
                     return;
                 }
 

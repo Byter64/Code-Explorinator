@@ -107,7 +107,7 @@ namespace CodeExplorinator
         public HashSet<ClassNode> FocusedClassNodes { get; private set; } = new();
 
         /// <summary>
-        /// The maximum nodePair as edges from the focused nodes until which other nodes are still shown
+        /// The maximum distance from a node to its closest focused node, so that it is still shown
         /// </summary>
         private int shownClassDepth;
         private int shownMethodDepth;
@@ -150,14 +150,34 @@ namespace CodeExplorinator
             shownMethodDepth = shownDepth;
             this.graphRoot = graphRoot;
             graphVisualizer = new(graphRoot);
-            
-            UpdateGraphManager(data);
-            
+
+            //populate the lists with data
+            foreach (ClassData @class in data)
+            {
+                ClassNodes.Add(GenerateNode(@class));
+            }
+            ClassNode.CopyRerefencesFromClassData(ClassNodes);
+
+            foreach (ClassNode classNode in ClassNodes)
+            {
+                foreach (MethodGUI methodGUI in classNode.classGUI.methodGUIs)
+                {
+                    MethodNode node = GenerateNode(methodGUI.data, methodGUI);
+                    node.MethodData.ContainingClass.ClassNode.MethodNodes.Add(node);
+                    methodNodes.Add(node);
+                }
+            }
+
+            MethodNode.CopyRerefencesFromMethodData(methodNodes);
+
             state = State.ClassLayer;
         }
 
-        public void UpdateGraphManager(List<ClassData> data)
+        public void Reinitialize(List<ClassData> data)
         {
+            ClassNodes.Clear();
+            methodNodes.Clear();
+
             //populate the lists with data
             foreach (ClassData @class in data)
             {
@@ -176,6 +196,89 @@ namespace CodeExplorinator
             }
             
             MethodNode.CopyRerefencesFromMethodData(methodNodes);
+
+            #region Replace Old Data With New Data
+            //FocusedNodes
+            HashSet<ClassNode> newFocusedNodes = new();
+            foreach(ClassNode node in FocusedClassNodes)
+            {
+                IEnumerable<ClassNode> equivalentNodes = ClassNodes.Where(x => x.ClassData.GetName() == node.ClassData.GetName());
+                if (equivalentNodes.Count() > 0)
+                {
+                    newFocusedNodes.Add(equivalentNodes.First());
+                }
+            }
+            FocusedClassNodes = newFocusedNodes;
+
+            //SelectedNodes
+            HashSet<ClassNode> newSelectedClassNodes = new();
+            foreach (ClassNode node in selectedClassNodes)
+            {
+                IEnumerable<ClassNode> equivalentNodes = ClassNodes.Where(x => x.ClassData.GetName() == node.ClassData.GetName());
+                if (equivalentNodes.Count() > 0)
+                {
+                    newSelectedClassNodes.Add(equivalentNodes.First());
+                }
+            }
+            selectedClassNodes = newSelectedClassNodes;
+
+            //SelectedMethodNodes
+            HashSet<MethodNode> newSelectedMethodNodes = new();
+            foreach (MethodNode node in selectedMethodNodes)
+            {
+                IEnumerable<MethodNode> equivalentNodes = methodNodes.Where(x => x.MethodData.GetName() == node.MethodData.GetName());
+                if (equivalentNodes.Count() > 0)
+                {
+                    newSelectedMethodNodes.Add(equivalentNodes.First());
+                }
+            }
+            selectedMethodNodes = newSelectedMethodNodes;
+
+            //FocusedMethodNodes
+            HashSet<MethodNode> newFocusedMethodNodes = new();
+            foreach (MethodNode node in focusedMethodNodes)
+            {
+                IEnumerable<MethodNode> equivalentNodes = methodNodes.Where(x => x.MethodData.GetName() == node.MethodData.GetName());
+                if (equivalentNodes.Count() > 0)
+                {
+                    newFocusedMethodNodes.Add(equivalentNodes.First());
+                }
+            }
+            focusedMethodNodes = newFocusedMethodNodes;
+            #endregion
+
+            //Recalculate method graph and class graphs
+            MenuGUI.Instance?.UpdateFocusedEntries();
+            UpdateSubGraphs(FocusedClassNodes, shownClassDepth);
+            UpdateMethodGraph(focusedMethodNodes, shownMethodDepth);
+
+            //Update graph Visualizer
+            if(state == State.ClassLayer)
+            {
+                //Focus on previously focused nodes with preserving the selected nodes
+                HashSet<ClassNode> selectedClassNodes = new();
+                selectedClassNodes.UnionWith(this.selectedClassNodes);
+                this.selectedClassNodes.Clear();
+                this.selectedClassNodes.UnionWith(FocusedClassNodes);
+
+                AddSelectedClasses(this.selectedClassNodes);
+                state = State.MethodLayer; //so that highlights are set properly in ApplySelectedClasses
+                ApplySelectedClasses();
+                this.selectedClassNodes.UnionWith(selectedClassNodes);
+            }
+            else if(state == State.MethodLayer)
+            {
+                //Focus on previously focused nodes with preserving the selected nodes
+                HashSet<MethodNode> selectedMethodNodes = new();
+                selectedMethodNodes.UnionWith(this.selectedMethodNodes);
+                this.selectedMethodNodes.Clear();
+                this.selectedMethodNodes.UnionWith(focusedMethodNodes);
+
+                AddSelectedMethods(this.selectedMethodNodes);
+                state = State.ClassLayer; //so that highlights are set properly in ApplySelectedMethods
+                ApplySelectedMethods();
+                this.selectedMethodNodes.UnionWith(selectedMethodNodes);
+            }
         }
 
         public void AddSelectedClass(ClassNode selectedClass)
@@ -194,6 +297,14 @@ namespace CodeExplorinator
         public void AddSelectedMethod(MethodNode selectedMethod)
         {
             selectedMethodNodes.Add(selectedMethod);
+        }
+
+        public void AddSelectedMethods(IEnumerable<MethodNode> selectedMethods)
+        {
+            foreach (MethodNode node in selectedMethods)
+            {
+                AddSelectedMethod(node);
+            }
         }
 
         public void ApplySelectedClasses()

@@ -61,6 +61,36 @@ namespace CodeExplorinator
             UpdateDataBase();
         }
 
+        public void Reinitialize()
+        {
+            //Update classNodes
+            UpdateDataBase();
+
+            //Update SearchlistEntries
+            foreach(SearchListEntry entry in searchListEntries.Values)
+            {
+                if(scrollView.Contains(entry))
+                {
+                    scrollView.Remove(entry);
+                }
+            }
+            searchListEntries.Clear();
+            foreach (string className in classNodes.Keys)
+            { 
+                SearchListEntry label = new SearchListEntry(className, this);
+                label.style.marginBottom = 2;
+                label.style.marginTop = 2;
+                scrollView.Add(label);
+                searchListEntries.Add(className, label);
+            }
+            
+            //Update FocusedEntries
+            UpdateFocusedEntries();
+
+            //Update search results
+            UpdateResultEntries(lastQuery);
+        }
+
         public override void GenerateVisualElement()
         {
             VisualElement = new VisualElement();
@@ -163,14 +193,6 @@ namespace CodeExplorinator
             searchListEntries[GetClassNodeKey(node)].SetSelected();
         }
 
-
-        private void UpdateMenuGUI()
-        {
-            classNodes.Clear();
-            searchListEntries.Clear();
-            UpdateDataBase();
-        }
-
         private void OnClickRecompileProject()
         {
             codeExplorinatorGUI.Reinitialize();
@@ -229,6 +251,8 @@ namespace CodeExplorinator
 
         public void UpdateDataBase()
         {
+            classNodes.Clear();
+
             foreach(ClassNode classNode in graphManager.ClassNodes)
             {
                 classNodes.Add(GetClassNodeKey(classNode), classNode);
@@ -324,6 +348,8 @@ namespace CodeExplorinator
 
         private void UpdateResultEntries(string query)
         {
+            if(query == null) { query = string.Empty; }
+             
             query = isCaseSensitive ? query : query.ToLower();
             Func<string, string, bool> matchFunction = useExactSearch ? DoesInputMatchExactly : DoesInputMatchJumpy;
 

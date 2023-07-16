@@ -17,9 +17,7 @@ namespace CodeExplorinator
 
         private const string settingsKey = "CodeExplorinatorSettings";
 
-        //Only exists to prevent garbage collection from deleting the dragBehaviour object. Might not even be necessary
         private static DragBehaviour dragBehaviour;
-        //Only exists to prevent garbage collection from deleting the zoomBehaviour object. Might not even be necessary
         private static ZoomBehaviour zoomBehaviour;
         private static GraphManager graphManager;
         private static VisualElement graph;
@@ -101,8 +99,9 @@ namespace CodeExplorinator
 
         public void Reinitialize()
         {
-            //WARNING: THIS IS A VERY BAD WAY AND MIGHT NOT EVEN WORK
-            Initialize();
+            List<ClassData> classData = GenerateClassDataFromProject();
+            graphManager.Reinitialize(classData);
+            menu.Reinitialize();
         }
 
         private void Initialize()
