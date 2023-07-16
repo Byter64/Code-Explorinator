@@ -437,7 +437,7 @@ namespace CodeExplorinator
         /// <returns></returns>
         private List<ClassGraph> GenerateOptimalSubgraphs(HashSet<ClassNode> superGraph, HashSet<ClassNode> focusNodes, int maxDistance)
         {
-            EditorUtility.DisplayProgressBar("Updating scene", "Generating overlapping subgraphs", 0);
+            EditorUtility.DisplayProgressBar("Updating scene", "Generating subgraphs", 0);
             //Generate a subgraph for every focus node
             List<(ClassNode, HashSet<ClassNode>)> overlappingSubGraphs = new();
             foreach(ClassNode focusNode in focusNodes)
@@ -447,7 +447,7 @@ namespace CodeExplorinator
                 overlappingSubGraphs.Add((focusNode, subgraph));
             }
 
-            EditorUtility.DisplayProgressBar("Updating scene", "Merging overlapping subgraphs", .6f);
+            EditorUtility.DisplayProgressBar("Updating scene", "Merging subgraphs", .6f);
             //Combine overlapping subgraphs
             List<(HashSet<ClassNode>, HashSet<ClassNode>)> subgraphs = new();
             foreach((ClassNode, HashSet<ClassNode>) overlappingSubgraph in overlappingSubGraphs)
@@ -489,7 +489,7 @@ namespace CodeExplorinator
                 }
             }
 
-            EditorUtility.DisplayProgressBar("Updating scene", "Save result", .7f);
+            EditorUtility.DisplayProgressBar("Updating scene", "Saving result", .7f);
             //Create ClassGraph instances
             List<ClassGraph> graphs = new();
             foreach((HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) subgraph in subgraphs)
