@@ -47,7 +47,6 @@ namespace CodeExplorinator
             background.style.flexShrink = 1;
             background.style.visibility = Visibility.Hidden;
 
-            //TODO: add bold text here to improve visibility for example: new Label("<b>" + data.ToRichString() + "</b>");
             Label method = new Label(data.ToRichString());
             method.style.unityFontDefinition = new StyleFontDefinition(style.font);
             method.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleLeft);

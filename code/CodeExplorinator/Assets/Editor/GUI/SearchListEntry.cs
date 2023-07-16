@@ -27,6 +27,11 @@ namespace CodeExplorinator
             text = "<b><color=green>" + originalText + " F </color=green></b>";
         }
 
+        public void SetSelected()
+        {
+            text = "<color=green>" + originalText + " </color=green>";
+        }
+
         private void OnDoubleClick()
         {
             menu.AddSelectedClass(originalText);
@@ -39,9 +44,5 @@ namespace CodeExplorinator
             SetSelected();
         }
 
-        private void SetSelected()
-        {
-            text = "<color=green>" + originalText + " </color=green>";
-        }
     }
 }

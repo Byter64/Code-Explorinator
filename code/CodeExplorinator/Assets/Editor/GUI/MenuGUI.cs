@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -35,6 +36,8 @@ namespace CodeExplorinator
         private ScrollView scrollView;
         private Button recompileButton;
         private Button collapseOrExpandAllClassesButton;
+        private Button focusOnSelectedButton;
+        private Button addSelectedClassesButton;
         private Toggle caseSensitiveToggle;
         private Toggle exactSearchToggle;
         private Dictionary<string, ClassNode> classNodes;
@@ -55,13 +58,6 @@ namespace CodeExplorinator
             classNodes = new Dictionary<string, ClassNode>();
             searchListEntries = new Dictionary<string, SearchListEntry>();
             focusedEntries = new HashSet<SearchListEntry>();
-            UpdateDataBase();
-        }
-
-        private void UpdateMenuGUI()
-        {
-            classNodes.Clear();
-            searchListEntries.Clear();
             UpdateDataBase();
         }
 
@@ -86,6 +82,16 @@ namespace CodeExplorinator
             collapseOrExpandAllClassesButton.text = isClassExpanded ? "Collapse All" : "Expand All";
             collapseOrExpandAllClassesButton.clickable.clicked += OnCollapseOrExpandAll;
             VisualElement.Add(collapseOrExpandAllClassesButton);
+
+            focusOnSelectedButton = new Button();
+            focusOnSelectedButton.text = "Focus On Selected Classes";
+            focusOnSelectedButton.clickable.clicked += OnFocusOnSelectedClasses;
+            VisualElement.Add(focusOnSelectedButton);
+
+            addSelectedClassesButton = new Button();
+            addSelectedClassesButton.text = "Add Selected Classes";
+            addSelectedClassesButton.clickable.clicked += OnAddSelectedClasses;
+            VisualElement.Add(addSelectedClassesButton);
 
             Button DEBUG_printInfo = new Button();
             DEBUG_printInfo.text = "Print Debug Info";
@@ -152,6 +158,19 @@ namespace CodeExplorinator
             OrderEntriesByAlphabet();
         }
 
+        public void SetClassSelected(ClassNode node)
+        {
+            searchListEntries[GetClassNodeKey(node)].SetSelected();
+        }
+
+
+        private void UpdateMenuGUI()
+        {
+            classNodes.Clear();
+            searchListEntries.Clear();
+            UpdateDataBase();
+        }
+
         private void OnClickRecompileProject()
         {
             codeExplorinatorGUI.Reinitialize();
@@ -165,6 +184,17 @@ namespace CodeExplorinator
             */
         }
         
+        private void OnFocusOnSelectedClasses()
+        {
+            ApplySelectedClasses();
+        }
+
+        private void OnAddSelectedClasses()
+        {
+            graphManager.AddSelectedClasses(graphManager.FocusedClassNodes);
+            ApplySelectedClasses();
+        }
+
         private void OnToggleCaseSensitivity(ChangeEvent<bool> evt)
         {
             isCaseSensitive = evt.newValue;
@@ -199,9 +229,9 @@ namespace CodeExplorinator
 
         public void UpdateDataBase()
         {
-            foreach(ClassNode classnode in graphManager.ClassNodes)
+            foreach(ClassNode classNode in graphManager.ClassNodes)
             {
-                classNodes.Add(classnode.classGUI.ClassModifiers + " " + classnode.classGUI.ClassName, classnode);
+                classNodes.Add(GetClassNodeKey(classNode), classNode);
             }
         }
 
@@ -226,7 +256,7 @@ namespace CodeExplorinator
 
             foreach (ClassNode node in graphManager.FocusedClassNodes)
             {
-                string nodeKey = node.classGUI.ClassModifiers + " " + node.classGUI.ClassName;
+                string nodeKey = GetClassNodeKey(node);
                 if (searchListEntries.ContainsKey(nodeKey))
                 {
                     SearchListEntry entry = searchListEntries[nodeKey];
@@ -349,6 +379,11 @@ namespace CodeExplorinator
         {
             target.RegisterCallback<KeyDownEvent>((KeyDownEvent x) => { CodeExplorinatorGUI.SetControlKey(true); });
             target.RegisterCallback<KeyUpEvent>((KeyUpEvent x) => { CodeExplorinatorGUI.SetControlKey(false); });
+        }
+
+        private string GetClassNodeKey(ClassNode classNode)
+        {
+            return classNode.classGUI.ClassModifiers + " " + classNode.classGUI.ClassName;
         }
     }
 }

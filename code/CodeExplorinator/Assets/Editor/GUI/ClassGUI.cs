@@ -325,6 +325,7 @@ namespace CodeExplorinator
             if (headerClick == null)
             {
                 headerClick = new ClickBehaviour(header, SwapIsExpanded, SetFocusClass);
+                headerClick.RegisterOnControlMonoClick(AddClassToSelected);
                 headerClick.RegisterOnHoldingClick(Move);
             }
         }
@@ -342,6 +343,7 @@ namespace CodeExplorinator
         private void AddClassToSelected()
         {
             graphManager.AddSelectedClass(data.ClassNode);
+            MenuGUI.Instance.SetClassSelected(data.ClassNode);
         }
 
         private void Move(bool isFirstCall, bool isLastCall, float x, float y)
