@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using static CodeExplorinator.Color;
 using System.Collections.Generic;
+using static Codice.CM.Common.Serialization.PacketFileReader;
 
 namespace CodeExplorinator
 {
@@ -212,7 +213,9 @@ namespace CodeExplorinator
                 field.style.unityFontDefinition = new StyleFontDefinition(fieldStyle.font);
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
+                field.style.width = field.MeasureTextSize(fieldData.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
                 field.style.color = UnityEngine.Color.black;
+                field.RegisterCallback<PointerDownEvent>((PointerDownEvent context) => { context.StopPropagation(); });
 
                 publicVariables.Add(field);
             }
@@ -224,6 +227,8 @@ namespace CodeExplorinator
                 property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 property.style.fontSize = fieldStyle.fontSize;
                 property.style.color = UnityEngine.Color.black;
+                property.style.width = property.MeasureTextSize(propertyData.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
+                property.RegisterCallback<PointerDownEvent>((PointerDownEvent context) => { context.StopPropagation(); });
 
                 publicVariables.Add(property);
             }
@@ -235,6 +240,8 @@ namespace CodeExplorinator
                 field.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 field.style.fontSize = fieldStyle.fontSize;
                 field.style.color = UnityEngine.Color.black;
+                field.style.width = field.MeasureTextSize(fieldData.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
+                field.RegisterCallback<PointerDownEvent>((PointerDownEvent context) => { context.StopPropagation(); });
 
                 privateVariables.Add(field);
             }
@@ -246,7 +253,9 @@ namespace CodeExplorinator
                 property.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.UpperLeft);
                 property.style.fontSize = fieldStyle.fontSize;
                 property.style.color = UnityEngine.Color.black;
-
+                property.style.width = property.MeasureTextSize(propertyData.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
+                property.RegisterCallback<PointerDownEvent>((PointerDownEvent context) => { context.StopPropagation(); });
+                
                 privateVariables.Add(property);
             }
 
