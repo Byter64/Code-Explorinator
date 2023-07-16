@@ -123,11 +123,6 @@ namespace CodeExplorinator
             addSelectedClassesButton.clickable.clicked += OnAddSelectedClasses;
             VisualElement.Add(addSelectedClassesButton);
 
-            Button DEBUG_printInfo = new Button();
-            DEBUG_printInfo.text = "Print Debug Info";
-            DEBUG_printInfo.clickable.clicked += () => { Debug.Log("DEBUG INFO: \n" + graphManager.Serialize(true)); };
-            VisualElement.Add(DEBUG_printInfo);
-
             #endregion
 
 
