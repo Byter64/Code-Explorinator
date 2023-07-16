@@ -198,15 +198,16 @@ namespace CodeExplorinator
 
         public void ApplySelectedClasses()
         {
+            FocusedClassNodes.Clear();
+            FocusedClassNodes.UnionWith(selectedClassNodes);
+            selectedClassNodes.Clear();
+
             if (state == State.MethodLayer)
             {
                 ChangeToClassLayer();
                 graphVisualizer.ShowMethodLayer(false);
             }
 
-            FocusedClassNodes.Clear();
-            FocusedClassNodes.UnionWith(selectedClassNodes);
-            selectedClassNodes.Clear();
 
             MenuGUI.Instance?.UpdateFocusedEntries();
 
@@ -216,15 +217,16 @@ namespace CodeExplorinator
 
         public void ApplySelectedMethods()
         {
+
+            focusedMethodNodes.Clear();
+            focusedMethodNodes.UnionWith(selectedMethodNodes);
+            selectedMethodNodes.Clear();
+
             if (state == State.ClassLayer)
             {
                 ChangeToMethodLayer();
                 graphVisualizer.ShowClassLayer(false);
             }
-
-            focusedMethodNodes.Clear();
-            focusedMethodNodes.UnionWith(selectedMethodNodes);
-            selectedMethodNodes.Clear();
 
             UpdateMethodGraph(focusedMethodNodes, shownMethodDepth);
             ShowMethodLayer();
@@ -331,11 +333,33 @@ namespace CodeExplorinator
         private void ChangeToMethodLayer()
         {
             state = State.MethodLayer;
+
+            foreach (ClassNode node in FocusedClassNodes)
+            {
+                node.classGUI.SetFocused(false);
+            }
+
+            foreach (MethodNode node in focusedMethodNodes)
+            {
+                node.MethodData.ContainingClass.ClassNode.classGUI.SetFocused(true);
+            }
         }
 
         private void ChangeToClassLayer()
         {
             state = State.ClassLayer;
+
+            foreach (MethodNode node in focusedMethodNodes)
+            {
+                node.MethodData.ContainingClass.ClassNode.classGUI.SetFocused(false);
+            }
+
+            foreach(ClassNode node in FocusedClassNodes)
+            {
+                node.classGUI.SetFocused(true);
+            }
+
+
             focusedMethodNodes.Clear();
         }
 
