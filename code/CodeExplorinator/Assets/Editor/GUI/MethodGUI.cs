@@ -86,7 +86,7 @@ namespace CodeExplorinator
 
         private void TryAssignClickBehaviours()
         {
-            clickBehaviour ??= new ClickBehaviour(VisualElement, SetFocusMethod, null);
+            clickBehaviour ??= new ClickBehaviour(VisualElement, null, SetFocusMethod);
             clickBehaviour.RegisterOnControlMonoClick(AddSelectedMethod);
         }
 
