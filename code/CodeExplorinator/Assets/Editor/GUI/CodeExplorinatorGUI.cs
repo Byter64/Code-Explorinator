@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using System.Linq;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
@@ -34,16 +34,16 @@ namespace CodeExplorinator
             if (graphManager == null)
             {
                 Initialize();
-            } 
+            }
             rootVisualElement.Add(graph);
             rootVisualElement.Add(menu.VisualElement);
-        } 
+        }
 
         private void OnGUI()
         {
             CheckControlKeys();
 
-            if(Event.current.keyCode == KeyCode.F5)
+            if (Event.current.keyCode == KeyCode.F5)
             {
                 Reinitialize();
             }
@@ -60,7 +60,7 @@ namespace CodeExplorinator
         {
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
-            
+
             CSharpCompilation compilation = CSharpCompilation.Create("myAssembly");
             List<ClassData> classDatas = new List<ClassData>();
 
@@ -80,20 +80,9 @@ namespace CodeExplorinator
                 CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
                 classDatas.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
-            
-            ReferenceFinder.RefillAllReferences(classDatas,compilation);
-            
-            /*
-            TODO: we need for that: Microsoft.CodeAnalysis.Workspaces.MSBuild
-             
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
-            Solution solution = await workspace.OpenSolutionAsync(nancyApp);
-            
-            var solution = Solution.Create(SolutionId.CreateNewId()).AddCSharpProject("Foo", "Foo").Solution;
 
-            Roslyn.Services.Workspace.LoadSolution
-            */
-            
+            ReferenceFinder.RefillAllReferences(classDatas, compilation);
+
             return classDatas;
         }
 
@@ -117,48 +106,32 @@ namespace CodeExplorinator
             graph.style.width = 0xFFFFF;
             graph.style.height = 0xFFFFF;
             graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
-            //graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.classLayerBackground));
-            //graph.style.backgroundColor = new StyleColor(Color.HexadecimalToRGBConverter(Color.methodLayerBackground));
-            //graph.style.backgroundColor = new StyleColor(UnityEngine.Color.blue);
-            //graph.style.backgroundColor = new StyleColor(new UnityEngine.Color(20,59,76, 255));
-            graph.style.marginLeft = -0x7FFFF; //Bigger numbers resulted in the background being not on the start view anymore :(
+            graph.style.marginLeft = -0x7FFFF;
             graph.style.marginTop = -0x7FFFF;
             #endregion
 
-            
+
             List<ClassData> classData = GenerateClassDataFromProject();
             graphManager = new GraphManager(classData, graph, 0);
-            menu = new MenuGUI(graphManager, new Vector2Int(300, 600),this);
+            menu = new MenuGUI(graphManager, new Vector2Int(300, 600), this);
             menu.GenerateVisualElement();
 
             string settings = EditorPrefs.GetString(settingsKey);
             if (settings != null && settings != string.Empty)
             {
                 GraphManager.SerializationData data = graphManager.DeSerialize(settings);
-                 
+
+                menu.SetClassDepth(data.shownClassDepth);
+                menu.SetMethodDepth(data.shownMethodDepth);
                 graphManager.AddSelectedClasses(GraphManager.SerializationData.ToClassNodes(data.focusedClassNodes));
                 graphManager.ApplySelectedClasses();
 
                 if (data.state == GraphManager.State.MethodLayer)
                 {
-                    //AddSelectedMethods(focusMethods);
-                    //AdjustGraphToSelectedMethods();
+                    graphManager.AddSelectedMethods(GraphManager.SerializationData.ToMethodNodes(data.focusedMethodNodes));
+                    graphManager.ApplySelectedMethods();
                 }
-
-                menu.SetClassDepth(data.shownClassDepth);
-                menu.SetMethodDepth(data.shownMethodDepth);
             }
-        }
-        
-        private List<MethodData> CollectAllMethodData(List<ClassData> classData)
-        {
-            List<MethodData> data = new List<MethodData>();
-            foreach(ClassData @class in classData)
-            {
-                data.AddRange(@class.PublicMethods.Concat(@class.PrivateMethods));
-            }
-
-            return data;
         }
 
         public static void CheckControlKeys()

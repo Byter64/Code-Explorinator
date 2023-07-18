@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace CodeExplorinator
@@ -38,9 +36,9 @@ namespace CodeExplorinator
             return "<color=" + color + ">" + text + "</color>";
         }
 
-        public static UnityEngine.Color HexadecimalToRGBConverter( string hexadecimal)
+        public static UnityEngine.Color HexadecimalToRGBConverter(string hexadecimal)
         {
-            if (ColorUtility.TryParseHtmlString(hexadecimal,out var color))
+            if (ColorUtility.TryParseHtmlString(hexadecimal, out var color))
             {
                 return color;
             }

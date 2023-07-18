@@ -1,10 +1,6 @@
-
-using Codice.Client.BaseCommands;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,7 +8,8 @@ namespace CodeExplorinator
 {
     public class MenuGUI : BaseGUI
     {
-        public static MenuGUI Instance { 
+        public static MenuGUI Instance
+        {
             get
             {
                 return instance;
@@ -46,7 +43,7 @@ namespace CodeExplorinator
         private HashSet<SearchListEntry> focusedEntries;
         public MenuGUI(GraphManager graphManager, Vector2Int size, CodeExplorinatorGUI codeExplorinatorGUI) : base(graphManager)
         {
-            if(instance != null)
+            if (instance != null)
             {
                 throw new Exception("A second MenuGUI was instantiated. Something went horribly wrong");
             }
@@ -67,23 +64,23 @@ namespace CodeExplorinator
             UpdateDataBase();
 
             //Update SearchlistEntries
-            foreach(SearchListEntry entry in searchListEntries.Values)
+            foreach (SearchListEntry entry in searchListEntries.Values)
             {
-                if(scrollView.Contains(entry))
+                if (scrollView.Contains(entry))
                 {
                     scrollView.Remove(entry);
                 }
             }
             searchListEntries.Clear();
             foreach (string className in classNodes.Keys)
-            { 
+            {
                 SearchListEntry label = new SearchListEntry(className, this);
                 label.style.marginBottom = 2;
                 label.style.marginTop = 2;
                 scrollView.Add(label);
                 searchListEntries.Add(className, label);
             }
-            
+
             //Update FocusedEntries
             UpdateFocusedEntries();
 
@@ -100,9 +97,9 @@ namespace CodeExplorinator
             VisualElement.style.height = size.y;
             VisualElement.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
 
-            
+
             #region Buttons
-            
+
             recompileButton = new Button();
             recompileButton.text = "Refresh Project";
             recompileButton.clickable.clicked += OnClickRecompileProject;
@@ -141,7 +138,7 @@ namespace CodeExplorinator
 
             #endregion
 
-            
+
             #region Toggle
 
             caseSensitiveToggle = new Toggle();
@@ -158,7 +155,7 @@ namespace CodeExplorinator
 
             #endregion
 
-             
+
             Label searchtext = new Label("Search");
             searchtext.style.unityTextAlign = new StyleEnum<TextAnchor>(TextAnchor.MiddleCenter);
             VisualElement.Add(searchtext);
@@ -171,7 +168,7 @@ namespace CodeExplorinator
             scrollView = new ScrollView();
             scrollView.style.flexDirection = new StyleEnum<FlexDirection>(FlexDirection.Column);
             VisualElement.Add(scrollView);
-            foreach(string className in classNodes.Keys)
+            foreach (string className in classNodes.Keys)
             {
                 SearchListEntry label = new SearchListEntry(className, this);
                 label.style.marginBottom = 2;
@@ -191,16 +188,8 @@ namespace CodeExplorinator
         private void OnClickRecompileProject()
         {
             codeExplorinatorGUI.Reinitialize();
-            /*
-            List<ClassData> classData = codeExplorinatorGUI.GenerateClassDataFromProject();
-            graphManager.UpdateGraphManager(classData);
-            
-            UpdateMenuGUI();
-
-            GenerateVisualElement();
-            */
         }
-        
+
         private void OnFocusOnSelectedClasses()
         {
             ApplySelectedClasses();
@@ -234,7 +223,7 @@ namespace CodeExplorinator
             {
                 graphManager.graphVisualizer.ExpandAllClasses(true);
             }
-            
+
             isClassExpanded = !isClassExpanded;
             collapseOrExpandAllClassesButton.text = isClassExpanded ? "Collapse All" : "Expand All";
         }
@@ -248,7 +237,7 @@ namespace CodeExplorinator
         {
             classNodes.Clear();
 
-            foreach(ClassNode classNode in graphManager.ClassNodes)
+            foreach (ClassNode classNode in graphManager.ClassNodes)
             {
                 classNodes.Add(GetClassNodeKey(classNode), classNode);
             }
@@ -266,7 +255,7 @@ namespace CodeExplorinator
 
         public void UpdateFocusedEntries()
         {
-            foreach(SearchListEntry entry in focusedEntries)
+            foreach (SearchListEntry entry in focusedEntries)
             {
                 entry.SetUnselected();
             }
@@ -308,13 +297,13 @@ namespace CodeExplorinator
                 query = query.Insert(searchInput.cursorIndex, context.character.ToString());
             }
 
-            if(context.keyCode == KeyCode.Backspace && query.Length > 0)
+            if (context.keyCode == KeyCode.Backspace && query.Length > 0)
             {
                 if (searchInput.textSelection.HasSelection())
                 {
                     query = RemoveSelection(query);
                 }
-                else if(searchInput.cursorIndex > 0)
+                else if (searchInput.cursorIndex > 0)
                 {
                     query = query.Remove(searchInput.cursorIndex - 1, 1);
                 }
@@ -343,8 +332,8 @@ namespace CodeExplorinator
 
         private void UpdateResultEntries(string query)
         {
-            if(query == null) { query = string.Empty; }
-             
+            if (query == null) { query = string.Empty; }
+
             query = isCaseSensitive ? query : query.ToLower();
             Func<string, string, bool> matchFunction = useExactSearch ? DoesInputMatchExactly : DoesInputMatchJumpy;
 
@@ -356,7 +345,7 @@ namespace CodeExplorinator
                 {
                     searchListEntries[entry].parent.Remove(searchListEntries[entry]);
                 }
-                if(isVisible && !scrollView.Contains(searchListEntries[entry]))
+                if (isVisible && !scrollView.Contains(searchListEntries[entry]))
                 {
                     scrollView.Add(searchListEntries[entry]);
                 }
@@ -367,17 +356,17 @@ namespace CodeExplorinator
 
         private bool DoesInputMatchJumpy(string text, string matcher)
         {
-            if(matcher.Length == 0) { return true; }
+            if (matcher.Length == 0) { return true; }
 
             int index = 0;
-            for(int i = 0; i < text.Length; i++)
+            for (int i = 0; i < text.Length; i++)
             {
                 if (text[i] == matcher[index])
                 {
                     index++;
                 }
 
-                if(index == matcher.Length) { return true; }
+                if (index == matcher.Length) { return true; }
             }
 
             return false;
@@ -390,7 +379,7 @@ namespace CodeExplorinator
 
         private void OrderEntriesByAlphabet()
         {
-            foreach(var entry in searchListEntries.OrderBy(x => x.Key.ToLower()))
+            foreach (var entry in searchListEntries.OrderBy(x => x.Key.ToLower()))
             {
                 entry.Value.BringToFront();
             }

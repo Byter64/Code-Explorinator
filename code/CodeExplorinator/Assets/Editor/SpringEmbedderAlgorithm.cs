@@ -1,14 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
-using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
-using Random = UnityEngine.Random;
 
 
 namespace CodeExplorinator
@@ -24,7 +19,7 @@ namespace CodeExplorinator
         /// The iterations that the class spring algorithm is supposed to do.
         /// </summary>
         private const int iterationsOfClassAlgo = 10000;
-        
+
         /// <summary>
         /// The force threshold of the method spring algorithm that stops it if the forces fall under its value.
         /// </summary>
@@ -33,7 +28,7 @@ namespace CodeExplorinator
         /// The iterations that the method spring algorithm is supposed to do.
         /// </summary>
         private const int iterationsOfMethodAlgo = 10000;
-        
+
         /// <summary>
         /// The bigger the number, the stronger the repulsion force between two not connected nodes.
         /// 4 delivers okay results
@@ -44,19 +39,19 @@ namespace CodeExplorinator
         /// 2 delivers okay results
         /// </summary>
         private const float attractionConstant = 2000f;
-        
+
         /// <summary>
         /// CANNOT BE ZERO!
         /// This is the ideal length of a connection between nodes. The connections that go to nowhere are 500 long, the smallest class has a height of ca. 500.
         /// </summary>
         private const float idealSpringLength = 1500f;
-        
+
         /// <summary>
         /// CANNOT BE ZERO!
         /// This is the ideal length of a connection between methodNodes. The connections that go to nowhere are 500 long, the smallest class has a height of ca. 500.
         /// </summary>
         private const float idealSpringLengthMethods = 1500f;
-        
+
         /// <summary>
         /// CANNOT BE ZERO!
         /// The bigger the number, the faster the force gets smaller with increased iterations, for example:
@@ -73,34 +68,34 @@ namespace CodeExplorinator
         public static void StartAlgorithm(HashSet<ClassNode> nodes)
         {
             List<ClassNode> nodesList = nodes.ToList();
-            
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            
+
             int t = 1;
 
             DetermineConnectionBetweenNodes(nodes);
-            
+
             while (t <= iterationsOfClassAlgo)
             {
                 foreach (var node in nodes)
                 {
                     Vector2 resultRepulsion = Vector2.zero;
                     Vector2 resultSpring = Vector2.zero;
-                    
+
                     foreach (var connectedNode in node.ConnectedNodes)
                     {
                         //the force of attraction
                         resultSpring += ForceSpring(connectedNode, node, idealSpringLength);
                     }
-                    
+
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
                         //the force of repulsion
                         resultRepulsion += ForceRepulsion(notConnectedNode, node);
                     }
 
-                    node.F = (resultRepulsion + resultSpring);
+                    node.F = resultRepulsion + resultSpring;
                 }
 
                 float maxForce = 0;
@@ -118,20 +113,20 @@ namespace CodeExplorinator
                     //Debug.Log("we stopped the spring algo at " + t + " iterations");
                     return;
                 }
-                
-                
+
+
                 float cooling = coolingFactor(t, iterationsOfClassAlgo);
 
-                
+
                 //this is ignoring the first element, aka the focus class, to force it to stay in the same place
                 for (int i = 1; i < nodesList.Count; i++)
                 {
                     nodesList[i].position.x += cooling * nodesList[i].F.x;
                     nodesList[i].position.y += cooling * nodesList[i].F.y;
                 }
-                
-               
-                
+
+
+
                 /*
                 foreach (var node in nodes)
                 {
@@ -142,10 +137,10 @@ namespace CodeExplorinator
                     //Debug.Log("Node "+ node.ClassData.GetName() + ": " + node.position.x + "/" + node.position.y);
                 }
                 */
-                
+
                 t++;
             }
-            
+
             //Debug.Log("we stopped the spring algo at " + t + " iterations");
 
             //set the position for the visual elements
@@ -154,11 +149,11 @@ namespace CodeExplorinator
             {
                 //node.classGUI.VisualElement.style.marginLeft = node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
                 //node.classGUI.VisualElement.style.marginTop = node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
-                
+
                 node.classGUI.VisualElement.style.marginLeft = node.position.x;
                 node.classGUI.VisualElement.style.marginTop = node.position.y;
             }
-            
+
             stopwatch.Stop();
             Debug.Log("Time elapsed spring algo: " + stopwatch.ElapsedMilliseconds + "ms");
         }
@@ -167,7 +162,7 @@ namespace CodeExplorinator
         {
             Profiler.BeginSample("determine connections classes");
 
-            
+
             foreach (var analysedNode in allNodes)
             {
                 analysedNode.ConnectedNodes.Clear();
@@ -349,7 +344,7 @@ namespace CodeExplorinator
             }
         }
         */
-        
+
         /// <summary>
         /// this is a less complicated algo that maps the connections between methods to their classes
         /// </summary>
@@ -358,7 +353,7 @@ namespace CodeExplorinator
         public static void StartMethodAlgorithm(HashSet<ClassNode> nodes, HashSet<MethodNode> allMethods)
         {
             List<ClassNode> nodesList = nodes.ToList();
-            
+
             int t = 1;
 
             DetermineConnectionsBetweenMethodNodes(allMethods, nodes);
@@ -377,15 +372,15 @@ namespace CodeExplorinator
 
                     foreach (var notConnectedNode in node.NotConnectedNodes)
                     {
-                        resultRepulsion += ForceRepulsion(notConnectedNode,node);
+                        resultRepulsion += ForceRepulsion(notConnectedNode, node);
                     }
 
-                    
+
                     node.F = resultRepulsion + resultSpring;
                 }
 
-                
-                
+
+
                 float maxForce = 0;
 
                 foreach (var node in
@@ -403,21 +398,21 @@ namespace CodeExplorinator
                     return;
                 }
 
-                
+
                 float cooling = coolingFactor(t, iterationsOfMethodAlgo);
 
-                
-                
+
+
                 //this is ignoring the first element, aka the class of the focused method, to force it to stay in the same place
                 for (int i = 1; i < nodesList.Count; i++)
                 {
                     nodesList[i].position.x += cooling * nodesList[i].F.x;
                     nodesList[i].position.y += cooling * nodesList[i].F.y;
-                    
+
                     //Debug.Log("Node "+ nodesList[i].ClassData.GetName() + ": " + nodesList[i].position.x + "/" + nodesList[i].position.y);
-                    
+
                 }
-                
+
                 /*
                 foreach (var node in nodes)
                 {
@@ -433,12 +428,12 @@ namespace CodeExplorinator
             }
 
             Debug.Log("we stopped the method spring algo at " + t + " iterations");
-            
+
             //as we incorporated the height and width into the Node.position Vector2, we now have to undo this
             foreach (var node in nodes)
             {
-                node.classGUI.VisualElement.style.marginLeft = node.position.x - node.classGUI.VisualElement.style.width.value.value * 0.5f;
-                node.classGUI.VisualElement.style.marginTop = node.position.y - node.classGUI.VisualElement.style.height.value.value * 0.5f;
+                node.classGUI.VisualElement.style.marginLeft = node.position.x - (node.classGUI.VisualElement.style.width.value.value * 0.5f);
+                node.classGUI.VisualElement.style.marginTop = node.position.y - (node.classGUI.VisualElement.style.height.value.value * 0.5f);
             }
         }
 
@@ -455,7 +450,7 @@ namespace CodeExplorinator
                 classNode.ConnectedNodes.Clear();
                 classNode.NotConnectedNodes.Clear();
             }
-            
+
             foreach (var method in methodNodes)
             {
 
@@ -468,7 +463,7 @@ namespace CodeExplorinator
                             //if the method is a leaf, we have to check whether the connection leads to a drawn class or not
                             if (method.IsLeaf)
                             {
-                                
+
                                 if (method != randomMethod && methodNodes.Contains(connectedMethod.MethodNode))
                                 {
                                     //if the random method is a connected method, add it to the connected nodes, or else to the not connected ones
@@ -516,12 +511,12 @@ namespace CodeExplorinator
         private static Vector2 ForceRepulsion(ClassNode u, ClassNode v)
         {
             Profiler.BeginSample("forceRepulsion");
-            Vector2 direction = (v.position - u.position);
+            Vector2 direction = v.position - u.position;
 
             //factor = repulsionContant / (direction.magnitude�)
             float factor = direction.magnitude * direction.magnitude;
             //factor = (factor == 0) ? float.Epsilon : factor;
-            factor += newEpsilon; 
+            factor += newEpsilon;
 
             //if (float.IsInfinity(factor)) factor = float.IsPositiveInfinity(factor) ? float.MaxValue : float.MinValue; //unnecessary
             factor = repulsionConstant / factor;
@@ -530,7 +525,7 @@ namespace CodeExplorinator
             Vector2 result = factor * (direction / (direction.magnitude + newEpsilon));
 
             Profiler.EndSample();
-            
+
             return result;
         }
 
@@ -540,20 +535,20 @@ namespace CodeExplorinator
 
             if (t == 0) return 1;
             //if (coolingSpeed == 0) return 1;
-            
+
             //return iterations / (coolingSpeed * t);
 
             float factor = coolingSpeed * 5;
-                
-            if (t >= iterations - iterations / coolingSpeed)
+
+            if (t >= iterations - (iterations / coolingSpeed))
             {
                 factor = 1;
             }
 
             return iterations * factor / (coolingSpeed * t);
         }
-        
-        
+
+
 
         /// <summary>
         /// Returns the attraction of v that is generated by u
@@ -576,14 +571,14 @@ namespace CodeExplorinator
             factor = Mathf.Log10(factor);
 
             //if (factor == 0) factor = float.Epsilon; //is very unlikely that factor is exactly 1 
-            
+
 
             factor = attractionConstant * factor;
-            
+
 
             //direction.Normalize();
-            Vector2 result = factor * (direction/ (direction.magnitude + newEpsilon));
-            
+            Vector2 result = factor * (direction / (direction.magnitude + newEpsilon));
+
 
             return result;
         }

@@ -1,11 +1,9 @@
-using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static CodeExplorinator.Color;
-using System.Collections.Generic;
-using static Codice.CM.Common.Serialization.PacketFileReader;
 
 namespace CodeExplorinator
 {
@@ -18,7 +16,8 @@ namespace CodeExplorinator
         public List<MethodGUI> methodGUIs { get; private set; }
         public HashSet<ConnectionGUI> Connections { get; set; }
 
-        private bool IsExpanded {
+        private bool IsExpanded
+        {
             get
             {
                 return isExpanded;
@@ -26,7 +25,7 @@ namespace CodeExplorinator
             set
             {
                 isExpanded = value;
-                if(isExpanded)
+                if (isExpanded)
                 {
                     expansionArrow.style.backgroundImage = Background.FromTexture2D(ArrowDown);
                 }
@@ -165,7 +164,7 @@ namespace CodeExplorinator
 
             #region DrawHeader
             VisualElement header = new VisualElement();
-            classElement.Add(header); 
+            classElement.Add(header);
             this.header = header;
             header.style.flexDirection = FlexDirection.Row;
             header.style.alignItems = Align.Center;
@@ -180,7 +179,7 @@ namespace CodeExplorinator
             arrowImage.style.backgroundImage = Background.FromTexture2D(arrowRight);
             arrowImage.style.width = ArrowRight.width;
             arrowImage.style.height = ArrowRight.height;
-            arrowImage.style.marginLeft = arrowMarginLeft; 
+            arrowImage.style.marginLeft = arrowMarginLeft;
 
             string headerText = ColorText(ClassModifiers + "\n" + ClassName, className);
             Label headerLabel = new Label(headerText);
@@ -193,7 +192,7 @@ namespace CodeExplorinator
 
             VisualElement alignHelper = new VisualElement();
             alignHelper.style.width = arrowImage.style.width;
-            alignHelper.style.height = arrowImage.style.height; 
+            alignHelper.style.height = arrowImage.style.height;
             alignHelper.style.marginRight = arrowMarginLeft;
             header.Add(alignHelper);
             #endregion
@@ -202,7 +201,7 @@ namespace CodeExplorinator
             VisualElement publicVariables = new VisualElement();
             publicVariables.style.paddingLeft = intendation;
             classElement.Add(publicVariables);
-            
+
             VisualElement privateVariables = new VisualElement();
             privateVariables.style.paddingLeft = intendation;
             classElement.Add(privateVariables);
@@ -255,13 +254,13 @@ namespace CodeExplorinator
                 property.style.color = UnityEngine.Color.black;
                 property.style.width = property.MeasureTextSize(propertyData.ToString(), 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
                 property.RegisterCallback<PointerDownEvent>((PointerDownEvent context) => { context.StopPropagation(); });
-                
+
                 privateVariables.Add(property);
             }
 
             #endregion
 
-            if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 && 
+            if (data.PublicMethods.Concat(data.PrivateMethods).Count() != 0 &&
                 (data.PublicVariables.Concat(data.PrivateVariables).Count() != 0 ||
                 data.PublicProperties.Concat(data.PublicProperties).Count() != 0))
             {
@@ -285,7 +284,7 @@ namespace CodeExplorinator
             #endregion
 
             VisualElement = classElement;
-            TryAssignClickBehaviours(); 
+            TryAssignClickBehaviours();
         }
 
         public override void SetVisible(bool isVisible)
@@ -304,7 +303,7 @@ namespace CodeExplorinator
 
         public void SetFocused(bool isFocused)
         {
-            if(isFocused)
+            if (isFocused)
             {
                 VisualElement.style.backgroundImage = Background.FromTexture2D(focusedBackgroundTexture);
                 header.style.backgroundImage = Background.FromTexture2D(focusedHeaderTexture);
@@ -361,7 +360,7 @@ namespace CodeExplorinator
             {
                 VisualElement.BringToFront();
                 Connections = graphManager.FindAllConnections(this);
-                moveCollider = new ClassDragger(VisualElement, new Vector2(x,y), Connections);
+                moveCollider = new ClassDragger(VisualElement, new Vector2(x, y), Connections);
                 VisualElement.Add(moveCollider);
                 moveCollider.visible = true;
                 moveCollider.style.height = new StyleLength(float.MaxValue);
@@ -370,16 +369,16 @@ namespace CodeExplorinator
                 moveCollider.style.marginTop = new StyleLength(-0x7FFFF);
                 moveCollider.style.position = new StyleEnum<Position>(UnityEngine.UIElements.Position.Absolute);
             }
-        } 
+        }
 
         private Vector2Int CalculateBackgroundSize()
         {
             Vector2 result = Vector2.zero;
 
             result.y += headerHeight;
-            const float lineSpace = 1.5f; //Measuered by hand. May need to be adjusted when changing font, or font size.
+            const float lineSpace = 1.5f;
 
-            foreach(FieldData field in data.PublicVariables.Concat(data.PrivateVariables))
+            foreach (FieldData field in data.PublicVariables.Concat(data.PrivateVariables))
             {
                 result.y += Mathf.Ceil(fieldStyle.lineHeight) + lineSpace;
                 float min, max;
@@ -396,8 +395,6 @@ namespace CodeExplorinator
                 result.y += Mathf.Ceil(fieldStyle.lineHeight) + lineSpace;
                 float min, max;
                 fieldStyle.CalcMinMaxWidth(new GUIContent(property.ToString()), out min, out max);
-
-                //Debug.Log("For " + property.ToString() + " is " + min + " space needed");
 
                 if (min > result.x)
                 {

@@ -11,7 +11,7 @@ namespace CodeExplorinator
         /// The field in which the reference is saved in
         /// </summary>
         public FieldData FieldContainingReference;
-            
+
 
 
         public ClassFieldReferenceData(ClassData referencedClass, FieldData fieldContainingReference)

@@ -1,30 +1,27 @@
-﻿using System;
-using Microsoft.CodeAnalysis;
-using System.Collections;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using UnityEngine;
 using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
-    public class MethodData 
+    public class MethodData
     {
         /// <summary>
         /// The underlying IMethodSymbol which contains all important information about the method itself
         /// </summary>
-        public  IMethodSymbol MethodSymbol { get; private set; }
+        public IMethodSymbol MethodSymbol { get; private set; }
         /// <summary>
         /// The class in which this method is defined and declared in
         /// </summary>
-        public ClassData ContainingClass { get; private set;}
-        
+        public ClassData ContainingClass { get; private set; }
+
         /// <summary>
         /// the graph node that belongs to this methodData
         /// </summary>
         public MethodNode MethodNode { get; set; }
-        
+
         /// <summary>
         /// All invocations to this method within the project (Concatination of in and external invocations)
         /// </summary>
@@ -50,7 +47,7 @@ namespace CodeExplorinator
         /// All invocations this method makes to other methods in its own class
         /// </summary>
         public List<MethodInvocationData> IsInvokingInternalMethods { get; private set; }
-        
+
         /// <summary>
         /// All invocations this method makes to other methods outside its own class
         /// </summary>
@@ -60,30 +57,29 @@ namespace CodeExplorinator
         /// All accesses to a field outside of the class this method is declared in within the project
         /// </summary>
         public List<FieldAccessData> IsAccessingExternalField { get; private set; }
-        
+
         /// <summary>
         /// All accesses to a field inside the class this method is declared in within the project
         /// </summary>
         public List<FieldAccessData> IsAccessingInternalField { get; private set; }
-        
+
         /// <summary>
         /// All accesses to a property outside of the class this method is declared in within the project
         /// </summary>
-        public List<PropertyAccessData> IsAccessingExternalProperty{ get; private set; }
-        
+        public List<PropertyAccessData> IsAccessingExternalProperty { get; private set; }
+
         /// <summary>
         /// All accesses to a property inside the class this method is declared in within the project
         /// </summary>
         public List<PropertyAccessData> IsAccessingInternalProperty { get; private set; }
-        
+
         /// <summary>
         /// A list of all Methods that are referenced by or are referencing this method
         /// </summary>
         public HashSet<MethodData> AllConnectedMethods { get; private set; }
-        
+
         public List<MethodModifiers> MethodModifiersList { get; private set; }
-        
-        //maybe create this once the method is created, else this is probably generated each time this string is accessed
+
         public string MethodModifiersAsString
         {
             get
@@ -139,7 +135,7 @@ namespace CodeExplorinator
         {
             return MethodSymbol.DeclaredAccessibility;
         }
-        
+
         public string GetAccessibilityAsString()
         {
             if (MethodSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
@@ -168,7 +164,7 @@ namespace CodeExplorinator
         public IMethodSymbol GetIMethodSymbol()
         {
             return MethodSymbol;
-        } 
+        }
 
         public override string ToString()
         {
@@ -235,7 +231,7 @@ namespace CodeExplorinator
             {
                 MethodModifiersList.Add(MethodModifiers.STATIC);
             }
-            
+
             if (MethodSymbol.IsAbstract)
             {
                 MethodModifiersList.Add(MethodModifiers.ABSTRACT);
@@ -251,7 +247,7 @@ namespace CodeExplorinator
                 MethodModifiersList.Add(MethodModifiers.EXTERN);
             }
 
-            if ( MethodSymbol.IsOverride)
+            if (MethodSymbol.IsOverride)
             {
                 MethodModifiersList.Add(MethodModifiers.OVERRIDE);
             }
@@ -277,14 +273,9 @@ namespace CodeExplorinator
             SEALED, //works with override
             VIRTUAL,
 
-            NEW, //not implemented, but exists
-            UNSAFE, //not implemented and doesnt work because we havent got unsafe blocks enabled:
-                    //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/compiler-options/language#allowunsafeblocks
-                    //https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/unsafe
-            
-            //not sure if this counts:
+            NEW, //not implemented
+            UNSAFE, //not implemented
             DELEGATE //not implemented
-
         }
     };
 }

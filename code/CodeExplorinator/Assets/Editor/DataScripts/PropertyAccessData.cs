@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using JetBrains.Annotations;
-using UnityEngine;
-
 namespace CodeExplorinator
 {
     public class PropertyAccessData
@@ -11,7 +6,7 @@ namespace CodeExplorinator
         /// The method in which this access takes place
         /// </summary>
         public MethodData ContainingMethod { get; private set; }
-        
+
         /// <summary>
         /// The property that is accessed
         /// </summary>

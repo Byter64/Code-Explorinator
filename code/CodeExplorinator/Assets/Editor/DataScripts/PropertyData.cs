@@ -1,16 +1,13 @@
 using Microsoft.CodeAnalysis;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using UnityEngine;
 using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
     public class PropertyData
     {
-        
+
         public IPropertySymbol PropertySymbol { get; private set; }
         public ClassData ContainingClass { get; private set; }
         public List<PropertyAccessData> AllAccesses
@@ -20,27 +17,27 @@ namespace CodeExplorinator
                 return AccessedByExternalMethod.Concat(AccessedByInternalMethod).ToList();
             }
         }
-        
+
         /// <summary>
         /// All accesses to this property outside of the class it is declared in within the project
         /// </summary>
         public List<PropertyAccessData> AccessedByExternalMethod { get; private set; }
-        
+
         /// <summary>
         /// All accesses to this property inside the class it is declared in within the project
         /// </summary>
         public List<PropertyAccessData> AccessedByInternalMethod { get; private set; }
-        
+
         /// <summary>
         /// If the property is a reference to the class it is declared in, the class is inserted here; can be null
         /// </summary>
         public List<ClassPropertyReferenceData> ReferencingContainingClass { get; private set; }
-        
+
         /// <summary>
         /// If the property is a reference to another class, the class is inserted here; can be null
         /// </summary>
         public List<ClassPropertyReferenceData> ReferencingExternalClass { get; private set; }
-        
+
         public List<PropertyModifiers> PropertyModifiersList { get; private set; }
 
         public string PropertyModifiersAsString
@@ -85,7 +82,7 @@ namespace CodeExplorinator
                 result += " ";
             }
 
-            result += ClassData.RemoveNameSpace(GetType()) + " ";
+            result += ClassData.RemoveNameSpace(GetPropertyType()) + " ";
 
             result += GetName() + ";";
             return result;
@@ -103,11 +100,11 @@ namespace CodeExplorinator
             }
             if (PropertySymbol.Type.IsValueType)
             {
-                result += ColorText(ClassData.RemoveNameSpace(GetType()), structType) + " ";
+                result += ColorText(ClassData.RemoveNameSpace(GetPropertyType()), structType) + " ";
             }
             else
             {
-                result += ColorText(ClassData.RemoveNameSpace(GetType()), classType) + " ";
+                result += ColorText(ClassData.RemoveNameSpace(GetPropertyType()), classType) + " ";
             }
             result += ColorText(GetName(), variableName) + ColorText(";", rest);
 
@@ -123,7 +120,7 @@ namespace CodeExplorinator
         {
             return PropertySymbol.DeclaredAccessibility;
         }
-        
+
         public string GetAccessibilityAsString()
         {
             if (PropertySymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
@@ -135,13 +132,11 @@ namespace CodeExplorinator
             {
                 return "private protected";
             }
-            
-            //irgendwelche weirden spezialfälle sind nicht bedacht
 
             return PropertySymbol.DeclaredAccessibility.ToString().ToLower();
         }
-        
-        public ITypeSymbol GetType()
+
+        public ITypeSymbol GetPropertyType()
         {
             return PropertySymbol.Type;
         }
@@ -157,7 +152,7 @@ namespace CodeExplorinator
             {
                 PropertyModifiersList.Add(PropertyModifiers.STATIC);
             }
-            
+
             if (PropertySymbol.IsAbstract)
             {
                 PropertyModifiersList.Add(PropertyModifiers.ABSTRACT);
@@ -168,7 +163,7 @@ namespace CodeExplorinator
                 PropertyModifiersList.Add(PropertyModifiers.EXTERN);
             }
 
-            if ( PropertySymbol.IsOverride)
+            if (PropertySymbol.IsOverride)
             {
                 PropertyModifiersList.Add(PropertyModifiers.OVERRIDE);
             }
@@ -187,20 +182,17 @@ namespace CodeExplorinator
         public enum PropertyModifiers
         {
             STATIC,
-            ABSTRACT, 
+            ABSTRACT,
             OVERRIDE,
             SEALED, //works with override
-            VIRTUAL, 
-            EXTERN, 
-            
-            NEW, //not implemented, but exists
-            FIXED, //not implemented, but exists
-            UNSAFE, //not implemented, doesnt work cuz not enabled in compiler
-            
-            //not sure if these count: 
-            //(event must be of delegate type)
-            EVENT
-            
+            VIRTUAL,
+            EXTERN,
+
+            NEW, //not implemented
+            FIXED, //not implemented
+            UNSAFE, //not implemented
+            EVENT  //not implemented
+
         }
     }
 }

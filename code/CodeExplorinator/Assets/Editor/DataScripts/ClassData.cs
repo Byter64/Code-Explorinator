@@ -1,10 +1,5 @@
-﻿using GluonGui.Dialog;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Collections;
+﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using UnityEngine;
 
 namespace CodeExplorinator
@@ -109,13 +104,13 @@ namespace CodeExplorinator
                 foreach (ClassModifiers modifier in ClassModifiersList)
                 {
                     result += modifier.ToString().ToLower() + " ";
-                    if(modifier == ClassModifiers.STRUCT) { isStruct = true; }
-                    if(modifier == ClassModifiers.RECORD) { isRecord = true; }
-                    if(modifier == ClassModifiers.INTERFACE) { isInterface = true; }
+                    if (modifier == ClassModifiers.STRUCT) { isStruct = true; }
+                    if (modifier == ClassModifiers.RECORD) { isRecord = true; }
+                    if (modifier == ClassModifiers.INTERFACE) { isInterface = true; }
                 }
 
-                //If it is just a class:
-                if(!isStruct && !isRecord && !isInterface && !isInterface)
+                //If it is a normal class:
+                if (!isStruct && !isRecord && !isInterface && !isInterface)
                 {
                     result += "class ";
                 }
@@ -158,10 +153,10 @@ namespace CodeExplorinator
             string result;
             INamespaceSymbol namespaceSymbol = typeSymbol.ContainingNamespace;
             if (namespaceSymbol == null || namespaceSymbol.IsGlobalNamespace || typeSymbol.ToString().LastIndexOf('.') == -1)
-            { 
+            {
                 result = typeSymbol.ToString();
             }
-            else 
+            else
             {
                 int namespaceLength = namespaceSymbol.ToString().Length;
                 result = typeSymbol.ToString().Substring(namespaceLength + 1);
@@ -172,120 +167,6 @@ namespace CodeExplorinator
         public string GetName()
         {
             return ClassInformation.Name;
-        }
-
-        public Accessibility GetAccessibility()
-        {
-            return ClassInformation.DeclaredAccessibility;
-        }
-
-        public string GetAccessibilityAsString()
-        {
-            if (ClassInformation.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
-            {
-                return "protected internal";
-            }
-
-            if (ClassInformation.DeclaredAccessibility == Accessibility.ProtectedAndInternal)
-            {
-                return "private protected";
-            }
-
-            return ClassInformation.DeclaredAccessibility.ToString().ToLower();
-        }
-
-        public void ReadOutMyInformation()
-        {
-            string classString = "Class: ".ToUpper() + GetAccessibilityAsString() + " ";
-
-            foreach (var classModifier in ClassModifiersList)
-            {
-                classString += classModifier.ToString().ToLower() + " ";
-            }
-
-            classString += GetName() + "\n";
-
-            string publicVariableString = "has out of class accessible Variables:\n".ToUpper();
-            foreach (var publicVariable in PublicVariables)
-            {
-                publicVariableString += publicVariable.GetAccessibilityAsString() + " ";
-
-                foreach (var fieldModifier in publicVariable.FieldModifiersList)
-                {
-                    publicVariableString += fieldModifier.ToString().ToLower() + " ";
-                }
-
-                publicVariableString += publicVariable.FieldSymbol.Type.Name + " " + publicVariable.GetName() + "\n";
-            }
-
-            string privateVariableString = "has private Variables:\n".ToUpper();
-            foreach (var privateVariable in PrivateVariables)
-            {
-                privateVariableString += privateVariable.GetAccessibilityAsString() + " ";
-
-                foreach (var fieldModifier in privateVariable.FieldModifiersList)
-                {
-                    privateVariableString += fieldModifier.ToString().ToLower() + " ";
-                }
-
-                privateVariableString += privateVariable.FieldSymbol.Type.Name + " " + privateVariable.GetName() + "\n";
-            }
-
-            string publicMethodString = "has out of class accessible Methods:\n".ToUpper();
-            foreach (var publicMethod in PublicMethods)
-            {
-                publicMethodString += publicMethod.GetAccessibilityAsString() + " ";
-
-                foreach (var methodModifier in publicMethod.MethodModifiersList)
-                {
-                    publicMethodString += methodModifier.ToString().ToLower() + " ";
-                }
-
-                publicMethodString += publicMethod.GetReturnType().Name + " " + publicMethod.GetName() + " (";
-
-                foreach (var parameter in publicMethod.GetParameters())
-                {
-                    publicMethodString += parameter.Type.Name + " " + parameter.Name + ", ";
-                }
-
-                if (publicMethod.GetParameters().Length > 0)
-                {
-                    publicMethodString = publicMethodString.Remove(publicMethodString.Length - 2);
-                }
-
-                publicMethodString += ")\n";
-            }
-
-            string privateMethodString = "has private Methods:\n".ToUpper();
-            foreach (var privateMethod in PrivateMethods)
-            {
-                privateMethodString += privateMethod.GetAccessibilityAsString() + " ";
-
-                foreach (var methodModifier in privateMethod.MethodModifiersList)
-                {
-                    privateMethodString += methodModifier.ToString().ToLower() + " ";
-                }
-
-                privateMethodString += privateMethod.GetReturnType().Name + " " + privateMethod.GetName() + " (";
-                 
-                foreach (var parameter in privateMethod.GetParameters())
-                {
-                    privateMethodString += parameter.Type.Name + " " + parameter.Name + ", ";
-                }
-
-                if (privateMethod.GetParameters().Length > 0)
-                {
-                    privateMethodString = privateMethodString.Remove(privateMethodString.Length - 2);
-                }
-
-
-                privateMethodString += ")\n";
-            }
-
-            string result = classString + publicVariableString + privateVariableString + publicMethodString +
-                            privateMethodString;
-
-            Debug.Log(result);
         }
 
         public enum ClassModifiers
@@ -334,11 +215,6 @@ namespace CodeExplorinator
             return result;
         }
 
-        public string ToRichString()
-        {
-            return ToString();
-        }
-
         private void DetermineModifiers()
         {
             if (ClassInformation.IsStatic)
@@ -353,8 +229,8 @@ namespace CodeExplorinator
 
             if (ClassInformation.IsSealed)
             {
-                ClassModifiersList.Add((ClassInformation.IsReferenceType)? ClassModifiers.SEALED : ClassModifiers.STRUCT);
-                
+                ClassModifiersList.Add(ClassInformation.IsReferenceType ? ClassModifiers.SEALED : ClassModifiers.STRUCT);
+
             }
 
             if (ClassInformation.IsRecord)
@@ -365,7 +241,7 @@ namespace CodeExplorinator
             if (ClassInformation.DeclaringSyntaxReferences.Length > 1) //https://github.com/dotnet/roslyn/issues/19386 
             {
                 //if the class is declared as partial but not declared twice, it doesnt get recognised as partial
-                ClassModifiersList.Add(ClassModifiers.PARTIAL); 
+                ClassModifiersList.Add(ClassModifiers.PARTIAL);
             }
         }
     }

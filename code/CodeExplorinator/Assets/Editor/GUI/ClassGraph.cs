@@ -1,8 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
@@ -21,7 +18,7 @@ namespace CodeExplorinator
         /// <summary>
         /// All ClassNodes that this graph contains
         /// </summary>
-        public  HashSet<ClassNode> classNodes;
+        public HashSet<ClassNode> classNodes;
 
         public HashSet<ConnectionGUI> connections;
 
@@ -62,13 +59,13 @@ namespace CodeExplorinator
 
         public void GenerateConnectionsBetweenClasses()
         {
-            foreach(ClassNode node in classNodes.Where(x => x.IsLeaf))
+            foreach (ClassNode node in classNodes.Where(x => x.IsLeaf))
             {
                 int connectionsThatLeadOutsideTheGraph = 0;
                 int connectionsThatOriginateOutsideTheGraph = 0;
-                foreach(ClassNode otherNode in node.outgoingConnections)
+                foreach (ClassNode otherNode in node.outgoingConnections)
                 {
-                    if(classNodes.Contains(otherNode) == false)
+                    if (classNodes.Contains(otherNode) == false)
                     {
                         connectionsThatLeadOutsideTheGraph++;
                         continue;
@@ -89,13 +86,13 @@ namespace CodeExplorinator
 
                 foreach (ClassData otherNode in node.ClassData.ExtendingOrImplementingClasses)
                 {
-                    if(classNodes.Contains(otherNode.ClassNode) == false)
+                    if (classNodes.Contains(otherNode.ClassNode) == false)
                     {
                         connectionsThatLeadOutsideTheGraph++;
                         continue;
                     }
 
-                    ConnectionGUI connection = new ConnectionGUI(graphManager, node.classGUI.VisualElement, 
+                    ConnectionGUI connection = new ConnectionGUI(graphManager, node.classGUI.VisualElement,
                                                                 otherNode.ClassNode.classGUI.VisualElement, true);
                     connections.Add(connection);
                 }
@@ -109,13 +106,13 @@ namespace CodeExplorinator
                     }
                 }
 
-                if(connectionsThatLeadOutsideTheGraph != 0)
+                if (connectionsThatLeadOutsideTheGraph != 0)
                 {
                     ConnectionGUI implicatingArrowAway = new ConnectionGUI(graphManager, node.classGUI.VisualElement, false);
                     connections.Add(implicatingArrowAway);
                 }
 
-                if(connectionsThatOriginateOutsideTheGraph != 0)
+                if (connectionsThatOriginateOutsideTheGraph != 0)
                 {
                     ConnectionGUI implicatingArrowToward = new ConnectionGUI(graphManager, node.classGUI.VisualElement, true);
                     connections.Add(implicatingArrowToward);
@@ -141,26 +138,26 @@ namespace CodeExplorinator
 
         public void GenerateMethodConnectionsBetweenClasses()
         {
-             foreach (ClassNode foot in classNodes)
-             {
-                 foreach (ClassNode tip in foot.ConnectedNodes)
-                 {
-                     if (foot == tip)
-                     {
-                         continue;
-                     }
-                     
-                     ConnectionGUI connection = new ConnectionGUI(graphManager, foot.classGUI.VisualElement, tip.classGUI.VisualElement, false, false, false);
-                     connections.Add(connection);
-                 }
-             }
+            foreach (ClassNode foot in classNodes)
+            {
+                foreach (ClassNode tip in foot.ConnectedNodes)
+                {
+                    if (foot == tip)
+                    {
+                        continue;
+                    }
+
+                    ConnectionGUI connection = new ConnectionGUI(graphManager, foot.classGUI.VisualElement, tip.classGUI.VisualElement, false, false);
+                    connections.Add(connection);
+                }
+            }
         }
 
         public bool Contains(ClassGUI classGUI)
         {
-            foreach(ClassNode node in classNodes)
+            foreach (ClassNode node in classNodes)
             {
-                if(node.classGUI == classGUI)
+                if (node.classGUI == classGUI)
                 {
                     return true;
                 }

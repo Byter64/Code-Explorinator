@@ -1,16 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
-using UnityEngine;
 using static CodeExplorinator.Color;
 
 namespace CodeExplorinator
 {
     public class FieldData
     {
-        
+
         public IFieldSymbol FieldSymbol { get; private set; }
         public ClassData ContainingClass { get; private set; }
         public List<FieldAccessData> AllAccesses
@@ -20,12 +17,12 @@ namespace CodeExplorinator
                 return AccessedByExternalMethod.Concat(AccessedByInternalMethod).ToList();
             }
         }
-        
+
         /// <summary>
         /// All accesses to this field outside of the class it is declared in within the project
         /// </summary>
         public List<FieldAccessData> AccessedByExternalMethod { get; private set; }
-        
+
         /// <summary>
         /// All accesses to this field inside the class it is declared in within the project
         /// </summary>
@@ -35,7 +32,7 @@ namespace CodeExplorinator
         /// If the field is a reference to the class it is declared in, the class is inserted here; can be null
         /// </summary>
         public List<ClassFieldReferenceData> ReferencingContainingClass { get; private set; }
-        
+
         /// <summary>
         /// If the field is a reference to another class, the class is inserted here; can be null
         /// </summary>
@@ -86,7 +83,7 @@ namespace CodeExplorinator
                 result += " ";
             }
 
-            result += ClassData.RemoveNameSpace(GetType()) + " ";
+            result += ClassData.RemoveNameSpace(GetFieldType()) + " ";
 
             result += GetName() + ";";
             return result;
@@ -105,11 +102,11 @@ namespace CodeExplorinator
 
             if (FieldSymbol.Type.IsValueType)
             {
-                result += ColorText(ClassData.RemoveNameSpace(GetType()), structType) + " ";
+                result += ColorText(ClassData.RemoveNameSpace(GetFieldType()), structType) + " ";
             }
             else
             {
-                result += ColorText(ClassData.RemoveNameSpace(GetType()), classType) + " ";
+                result += ColorText(ClassData.RemoveNameSpace(GetFieldType()), classType) + " ";
             }
 
             result += ColorText(GetName(), variableName) + ColorText(";", rest);
@@ -126,7 +123,7 @@ namespace CodeExplorinator
         {
             return FieldSymbol.DeclaredAccessibility;
         }
-        
+
         public string GetAccessibilityAsString()
         {
             if (FieldSymbol.DeclaredAccessibility == Accessibility.ProtectedOrInternal)
@@ -138,13 +135,11 @@ namespace CodeExplorinator
             {
                 return "private protected";
             }
-            
-            //irgendwelche weirden spezialfälle sind nicht bedacht
 
             return FieldSymbol.DeclaredAccessibility.ToString().ToLower();
         }
-        
-        public ITypeSymbol GetType()
+
+        public ITypeSymbol GetFieldType()
         {
             return FieldSymbol.Type;
         }
@@ -166,7 +161,7 @@ namespace CodeExplorinator
                 FieldModifiersList.Add(FieldModifiers.EXTERN);
             }
 
-            if ( FieldSymbol.IsReadOnly)
+            if (FieldSymbol.IsReadOnly)
             {
                 FieldModifiersList.Add(FieldModifiers.READONLY);
             }
@@ -180,25 +175,23 @@ namespace CodeExplorinator
             {
                 FieldModifiersList.Add(FieldModifiers.VOLATILE);
             }
-            
+
         }
 
         public enum FieldModifiers
         {
             STATIC,
-            CONST, 
-            READONLY, 
-            VOLATILE, 
-            EXTERN, //i guess this could exist but i havent managed to make it work
-            
-            NEW, //not implemented, but exists
-            FIXED, //not implemented, but exists
-            UNSAFE, //not implemented, doesnt work cuz not enabled in compiler
-            
-            //not sure if these count:
-            //(event must be of delegate type)
+            CONST,
+            READONLY,
+            VOLATILE,
+
+            EXTERN, //not tested
+
+            NEW, //not implemented
+            FIXED, //not implemented
+            UNSAFE, //not implemented
             EVENT
-            
+
         }
     }
 }

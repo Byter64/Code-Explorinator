@@ -1,5 +1,4 @@
 using CodeExplorinator;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -22,11 +21,11 @@ public class ClassDragger : VisualElement
         this.RegisterCallback<PointerUpEvent>(UpWrapper);
     }
 
-    void Move(PointerMoveEvent context)
+    private void Move(PointerMoveEvent context)
     {
         Vector2 delta = (Vector2)context.position - mousePosOnStartMoving;
-        target.style.marginLeft = posOnStartMoving.x + delta.x / CodeExplorinatorGUI.Scale.x;
-        target.style.marginTop = posOnStartMoving.y + delta.y / CodeExplorinatorGUI.Scale.y;
+        target.style.marginLeft = posOnStartMoving.x + (delta.x / CodeExplorinatorGUI.Scale.x);
+        target.style.marginTop = posOnStartMoving.y + (delta.y / CodeExplorinatorGUI.Scale.y);
 
         foreach (ConnectionGUI conny in connections)
         {
@@ -34,21 +33,21 @@ public class ClassDragger : VisualElement
         }
     }
 
-    void LeaveWrapper(PointerLeaveEvent context)
+    private void LeaveWrapper(PointerLeaveEvent context)
     {
         EndMoveChild();
     }
 
-    void UpWrapper(PointerUpEvent context)
+    private void UpWrapper(PointerUpEvent context)
     {
         EndMoveChild();
     }
 
-    void EndMoveChild()
+    private void EndMoveChild()
     {
         if (target.Contains(this))
         {
             target.Remove(this);
-        } 
+        }
     }
 }

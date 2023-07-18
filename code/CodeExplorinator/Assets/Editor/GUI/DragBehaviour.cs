@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
@@ -53,7 +50,7 @@ namespace CodeExplorinator
         private void PointerUpHandler(PointerUpEvent context)
         {
             isDragging = false;
-            if(target.HasPointerCapture(context.pointerId))
+            if (target.HasPointerCapture(context.pointerId))
             {
                 target.ReleasePointer(context.pointerId);
             }

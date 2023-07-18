@@ -1,20 +1,12 @@
 using Microsoft.CodeAnalysis;
-using UnityEngine;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEngine.UIElements;
-using UnityEditor.Graphs;
-using Codice.Client.BaseCommands.CheckIn;
 
 namespace CodeExplorinator
 {
     public static class BreadthSearch
     {
-  
+
         public static List<MethodNode> AnalysedMethods;
         public static List<ClassNode> AnalysedClasses;
 
@@ -23,7 +15,7 @@ namespace CodeExplorinator
             AnalysedClasses = new List<ClassNode>();
             AnalysedMethods = new List<MethodNode>();
         }
-        
+
         public static void Reset()
         {
             AnalysedClasses = new List<ClassNode>();
@@ -39,19 +31,19 @@ namespace CodeExplorinator
         /// <returns>the minimum amount of edges that need to be travelled to go from start to end node</returns>
         public static int CalculateDistance(IEnumerable<ClassNode> graph, ClassNode start, ClassNode end)
         {
-            if(start == end) { return 0; }
+            if (start == end) { return 0; }
 
             int depth = 0;
             //This is not very nicely implemented
             HashSet<ClassNode> oldRound = start.ingoingConnections.Concat(start.outgoingConnections).ToHashSet();
             HashSet<ClassNode> newRound = new HashSet<ClassNode>();
-            while(depth < graph.Count()) // :/
+            while (depth < graph.Count()) // :/
             {
                 depth++;
 
-                foreach(ClassNode node in oldRound)
+                foreach (ClassNode node in oldRound)
                 {
-                    if(node == end)
+                    if (node == end)
                     {
                         goto CalculateDistanceEnd;
                     }
@@ -66,7 +58,7 @@ namespace CodeExplorinator
                 newRound = new HashSet<ClassNode>();
             }
 
-            CalculateDistanceEnd:
+        CalculateDistanceEnd:
             return depth;
         }
 
@@ -90,7 +82,7 @@ namespace CodeExplorinator
             {
                 return;
             }
-            
+
             //if the class was already analysed but we can still search, the node is not generated but the tree explored further
             //impacts the searchtime negatively tho
             //if we wanted to perfectly run through all ClassNodes we would have to save the highest searchradius that was gone trough, and go through
@@ -108,7 +100,7 @@ namespace CodeExplorinator
                     return;
                 }
             }
-            
+
             startingNode.IsLeaf = searchRadius == 0;
             AnalysedClasses.Add(startingNode);
             result.Add(startingNode);
@@ -150,7 +142,7 @@ namespace CodeExplorinator
             {
                 GenerateClassGraph(connectedClass.ClassNode, searchRadius - 1, result);
             }
-            
+
             /*
             foreach (var connectedClass in startingNode.ConnectedNodes) //connected ClassNodes could be made to a hashset
             {
@@ -160,7 +152,7 @@ namespace CodeExplorinator
 
 
         }
-        
+
         /// <summary>
         /// Generates a subgraph from the full graph centered around the starting node with the given depth. It is not a real subgraph though because
         /// the "leaf ClassNodes" still contain edges that lead out of the subgraph. These edges are part of the original graph.
@@ -182,7 +174,7 @@ namespace CodeExplorinator
             {
                 return;
             }
-            
+
             //if the class was already analysed but we can still search, the node is not generated but the tree explored further
             //impacts the searchtime negatively tho
             //if we wanted to perfectly run through all ClassNodes we would have to save the highest searchradius that was gone trough, and go through
@@ -200,17 +192,17 @@ namespace CodeExplorinator
                     return;
                 }
             }
-            
+
             startingMethod.IsLeaf = searchRadius == 0;
             AnalysedMethods.Add(startingMethod);
             result.Add(startingMethod);
-            
+
             //set the distance to be able to show the distance visually (done in other classes)
             startingMethod.distanceFromFocusMethod = searchRadius;
-            
 
-            SkipOverGeneration:
-            
+
+        SkipOverGeneration:
+
 
             /*
             //checking incoming and outgoing references
@@ -240,12 +232,12 @@ namespace CodeExplorinator
 
             foreach (var connectedMethod in startingMethod.MethodData.AllConnectedMethods)
             {
-                GenerateMethodGraph(connectedMethod.MethodNode,searchRadius - 1, result);
+                GenerateMethodGraph(connectedMethod.MethodNode, searchRadius - 1, result);
             }
-            
+
         }
 
-        
+
         /// <summary>
         /// This method inverts the methodNodes.distanceFromFocusMethod so that 0 is the focusmethod, 1 are the methods direclty connected to it, the numbers increasing with distance
         /// </summary>

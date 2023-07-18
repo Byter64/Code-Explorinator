@@ -1,16 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp;
-using System.Linq;
-using System;
-using System.Collections;
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.FlowAnalysis;
-using UnityEngine;
-using UnityEngine.Assertions.Must;
-using PlasticPipe.PlasticProtocol.Messages;
+using System.Linq;
 
 namespace CodeExplorinator
 {
@@ -127,7 +120,7 @@ namespace CodeExplorinator
                 {
                     //var methodSymbol = typeSymbol.GetMembers(methodName).OfType<IMethodSymbol>().FirstOrDefault();
                     var methodSymbol = methodData.MethodSymbol;
-                    
+
                     /*
                     var disposeMethodSymbol = methodSymbol;
                     var type = disposeMethodSymbol.ContainingType;
@@ -185,10 +178,10 @@ namespace CodeExplorinator
 
             var containingType = symbol.ContainingType;
             var query = from iface in containingType.AllInterfaces
-                from interfaceMember in iface.GetMembers()
-                let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
-                where symbol.Equals(impl)
-                select interfaceMember;
+                        from interfaceMember in iface.GetMembers()
+                        let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
+                        where symbol.Equals(impl)
+                        select interfaceMember;
             return query.ToImmutableArray();
         }
 
@@ -282,7 +275,7 @@ namespace CodeExplorinator
 
             return null;
 
-            EndOfGenerateMethodInvocationData:
+        EndOfGenerateMethodInvocationData:
             return new MethodInvocationData(containingMethod, referencedMethod);
         }
 
@@ -432,7 +425,7 @@ namespace CodeExplorinator
 
             return null;
 
-            EndOfGenerateFieldAccessData:
+        EndOfGenerateFieldAccessData:
             return new FieldAccessData(containingMethod, referencedField);
         }
 
@@ -583,7 +576,7 @@ namespace CodeExplorinator
 
             return null;
 
-            EndOfGeneratePropertyAccessData:
+        EndOfGeneratePropertyAccessData:
 
             return new PropertyAccessData(containingMethod, referencedProperty);
         }
@@ -667,7 +660,7 @@ namespace CodeExplorinator
                     */
 
                     //if the class is referenced by this field, set information
-                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
+                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetFieldType()))
                     {
                         SetFieldReferenceInformation(referencedClass, fieldData);
                     }
@@ -708,7 +701,7 @@ namespace CodeExplorinator
                 foreach (ClassData referencedClass in classDatas)
                 {
                     //if the class is referenced by this property set information
-                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetType()))
+                    if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetPropertyType()))
                     {
                         //Debug.Log("found a reference to the class: " + referencedClass + " in class: " + propertyData.ContainingClass);
                         ClassPropertyReferenceData reference =

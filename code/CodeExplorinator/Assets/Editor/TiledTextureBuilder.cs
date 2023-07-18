@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -31,7 +30,7 @@ namespace CodeExplorinator
             get { return scale; }
             set
             {
-                if(value.x < 1) { value.x = 1; }
+                if (value.x < 1) { value.x = 1; }
                 if (value.y < 1) { value.y = 1; }
                 Vector2 sizeAsFloat = (Vector2)OriginalSize * value;
                 size = new Vector2Int(Mathf.RoundToInt(sizeAsFloat.x), Mathf.RoundToInt(sizeAsFloat.y));
@@ -50,7 +49,7 @@ namespace CodeExplorinator
             {
                 if (value.x < OriginalSize.x) { value.x = OriginalSize.x; }
                 if (value.y < OriginalSize.y) { value.y = OriginalSize.y; }
-                scale = new Vector2(value.x / (float)OriginalSize.x, value.y/ (float)OriginalSize.y);
+                scale = new Vector2(value.x / (float)OriginalSize.x, value.y / (float)OriginalSize.y);
                 size = value;
                 mustUpdateTiledTexture = true;
             }

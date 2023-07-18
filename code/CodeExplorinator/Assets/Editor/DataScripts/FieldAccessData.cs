@@ -1,19 +1,13 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using UnityEngine;
-
-namespace CodeExplorinator
+﻿namespace CodeExplorinator
 {
     public class FieldAccessData
     {
-        
+
         /// <summary>
         /// The method in which this access takes place
         /// </summary>
         public MethodData ContainingMethod { get; private set; }
-        
+
         /// <summary>
         /// The field that is accessed
         /// </summary>

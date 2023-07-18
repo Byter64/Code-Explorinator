@@ -1,10 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using UnityEngine;
-
-namespace CodeExplorinator
+﻿namespace CodeExplorinator
 {
     /// <summary>
     /// Class that represents the invocation of a method

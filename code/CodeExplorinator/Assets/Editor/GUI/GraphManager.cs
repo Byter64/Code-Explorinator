@@ -1,14 +1,8 @@
-﻿using Codice.Client.BaseCommands.CheckIn;
-using Codice.Client.Common.TreeGrouper;
-using Codice.CM.SEIDInfo;
-using JetBrains.Annotations;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.Graphs;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Random = System.Random;
@@ -39,7 +33,7 @@ namespace CodeExplorinator
                 ClassNode[] classNodesArray = classNodes.ToArray();
                 string[] result = new string[classNodes.Count];
 
-                for(int i = 0; i < result.Length; i++)
+                for (int i = 0; i < result.Length; i++)
                 {
                     result[i] = classNodesArray[i].ClassData.ClassInformation.ToDisplayString();
                 }
@@ -61,11 +55,11 @@ namespace CodeExplorinator
             public static HashSet<ClassNode> ToClassNodes(string[] displayStrings)
             {
                 HashSet<ClassNode> result = new();
-                
-                foreach(string instance in displayStrings)
+
+                foreach (string instance in displayStrings)
                 {
                     IEnumerable<ClassNode> nodes = Instance.ClassNodes.Where(x => x.ClassData.ClassInformation.ToDisplayString().Equals(instance));
-                    if(nodes.Count() == 1)
+                    if (nodes.Count() == 1)
                     {
                         result.Add(nodes.First());
                     }
@@ -106,26 +100,21 @@ namespace CodeExplorinator
 
         public HashSet<ClassNode> FocusedClassNodes { get; private set; } = new();
 
+        public GraphVisualizer graphVisualizer;
+
         /// <summary>
         /// The maximum distance from a node to its closest focused node, so that it is still shown
         /// </summary>
         private int shownClassDepth;
         private int shownMethodDepth;
         private State state;
+        private Random random = new Random(0987653);
+        private VisualElement graphRoot;
+        private ClassGraph methodGraph;
         private HashSet<ClassNode> selectedClassNodes = new();
         private HashSet<MethodNode> focusedMethodNodes = new();
         private HashSet<MethodNode> selectedMethodNodes = new();
-        public GraphVisualizer graphVisualizer;
-
-        /// <summary>
-        /// The root visualElement of the editor window
-        /// </summary>
-        private VisualElement graphRoot;
-
-        /// <summary>
-        /// all classes that have a method from shownMethodNodes
-        /// </summary>
-        private ClassGraph methodGraph;
+        private List<ClassGraph> classGraphs = new();
 
         /// <summary>
         /// all methodNodes in the currently analyzed project
@@ -137,12 +126,7 @@ namespace CodeExplorinator
         /// </summary>
         private HashSet<MethodNode> shownMethodNodes = new();
 
-        private List<ClassGraph> classGraphs = new();
-        
-        /// <summary>
-        /// randomize via a seed to spawn the classes. TODO: make actually random
-        /// </summary>
-        private Random random = new Random(0987653); 
+
         public GraphManager(List<ClassData> data, VisualElement graphRoot, int shownDepth)
         {
             Instance = this;
@@ -188,19 +172,19 @@ namespace CodeExplorinator
             foreach (ClassNode classNode in ClassNodes)
             {
                 foreach (MethodGUI methodGUI in classNode.classGUI.methodGUIs)
-                { 
+                {
                     MethodNode node = GenerateNode(methodGUI.data, methodGUI);
                     node.MethodData.ContainingClass.ClassNode.MethodNodes.Add(node);
                     methodNodes.Add(node);
                 }
             }
-            
+
             MethodNode.CopyRerefencesFromMethodData(methodNodes);
 
             #region Replace Old Data With New Data
             //FocusedNodes
             HashSet<ClassNode> newFocusedNodes = new();
-            foreach(ClassNode node in FocusedClassNodes)
+            foreach (ClassNode node in FocusedClassNodes)
             {
                 IEnumerable<ClassNode> equivalentNodes = ClassNodes.Where(x => x.ClassData.GetName() == node.ClassData.GetName());
                 if (equivalentNodes.Count() > 0)
@@ -253,7 +237,7 @@ namespace CodeExplorinator
             UpdateMethodGraph(focusedMethodNodes, shownMethodDepth);
 
             //Update graph Visualizer
-            if(state == State.ClassLayer)
+            if (state == State.ClassLayer)
             {
                 //Focus on previously focused nodes with preserving the selected nodes
                 HashSet<ClassNode> selectedClassNodes = new();
@@ -266,7 +250,7 @@ namespace CodeExplorinator
                 ApplySelectedClasses();
                 this.selectedClassNodes.UnionWith(selectedClassNodes);
             }
-            else if(state == State.MethodLayer)
+            else if (state == State.MethodLayer)
             {
                 //Focus on previously focused nodes with preserving the selected nodes
                 HashSet<MethodNode> selectedMethodNodes = new();
@@ -288,7 +272,7 @@ namespace CodeExplorinator
 
         public void AddSelectedClasses(IEnumerable<ClassNode> selectedClasses)
         {
-            foreach(ClassNode node in selectedClasses)
+            foreach (ClassNode node in selectedClasses)
             {
                 AddSelectedClass(node);
             }
@@ -344,13 +328,13 @@ namespace CodeExplorinator
         }
 
         /// <summary>
-        /// Changes the maxDistance for claesses and adapts the UI to it
+        /// Changes the maxDistance for classes and adapts the UI to it
         /// </summary>
         /// <param name="depth"></param>
         public void ChangeClassDepth(int depth)
         {
             shownClassDepth = depth;
-            if(state != State.ClassLayer)
+            if (state != State.ClassLayer)
             {
                 ChangeToClassLayer();
                 graphVisualizer.ShowMethodLayer(false);
@@ -377,7 +361,7 @@ namespace CodeExplorinator
         {
             SerializationData data = new SerializationData(shownClassDepth, shownMethodDepth, state, FocusedClassNodes, focusedMethodNodes);
             string result;
-            if(prettyPrint)
+            if (prettyPrint)
             {
                 result = JsonConvert.SerializeObject(data, Formatting.Indented);
             }
@@ -390,13 +374,11 @@ namespace CodeExplorinator
 
         public SerializationData DeSerialize(string jsonString)
         {
-            if(jsonString == null)
+            if (jsonString == null)
             {
                 throw new ArgumentNullException();
             }
             SerializationData data = JsonConvert.DeserializeObject<SerializationData>(jsonString);
-            HashSet<ClassNode> focusClasses = SerializationData.ToClassNodes(data.focusedClassNodes);
-            HashSet<MethodNode> focusMethods = SerializationData.ToMethodNodes(data.focusedMethodNodes);
 
             return data;
         }
@@ -465,7 +447,7 @@ namespace CodeExplorinator
                 node.MethodData.ContainingClass.ClassNode.classGUI.SetFocused(false);
             }
 
-            foreach(ClassNode node in FocusedClassNodes)
+            foreach (ClassNode node in FocusedClassNodes)
             {
                 node.classGUI.SetFocused(true);
             }
@@ -482,12 +464,12 @@ namespace CodeExplorinator
             HashSet<MethodGUI> focusedMethods = GetAllMethodGUIs(focusedMethodNodes);
             HashSet<MethodGUI> unfocusedMethods = new();
 
-            unfocusedMethods.UnionWith(methodGUIs); 
+            unfocusedMethods.UnionWith(methodGUIs);
             unfocusedMethods.ExceptWith(focusedMethods);
 
             graphVisualizer.SetMethodLayer(classGUIs, connectionGUIs, focusedMethods, unfocusedMethods);
             graphVisualizer.ShowMethodLayer(true, methodGUIs);
-        } 
+        }
 
         private void ShowClassLayer()
         {
@@ -508,7 +490,7 @@ namespace CodeExplorinator
             classGraphs.Clear();
             classGraphs = GenerateOptimalSubgraphs(ClassNodes, focusClasses, shownDepth);
             HashSet<ClassNode> nodes = new();
-            foreach(ClassGraph graph in classGraphs)
+            foreach (ClassGraph graph in classGraphs)
             {
                 nodes.UnionWith(graph.classNodes);
             }
@@ -529,7 +511,7 @@ namespace CodeExplorinator
             EditorUtility.DisplayProgressBar("Updating scene", "Generating graph", 0);
             BreadthSearch.Reset();
             shownMethodNodes.Clear();
-            foreach(MethodNode methodNode in methodNodes)
+            foreach (MethodNode methodNode in methodNodes)
             {
                 methodNode.distanceFromFocusMethod = int.MinValue;
             }
@@ -551,8 +533,6 @@ namespace CodeExplorinator
 
             //Calculate new positions
             SpringEmbedderAlgorithm.StartMethodAlgorithm(methodGraph.classNodes, shownMethodNodes);
-            //methodGraph.GenerateConnectionsBetweenMethods(shownMethodNodes);
-            //methodGraph.GenerateConnectionsBetweenClasses();
             methodGraph.GenerateMethodConnectionsBetweenClasses();
             methodGraph.GenerateVisualElementGraph();
 
@@ -575,7 +555,7 @@ namespace CodeExplorinator
             EditorUtility.DisplayProgressBar("Updating scene", "Generating subgraphs", 0);
             //Generate a subgraph for every focus node
             List<(ClassNode, HashSet<ClassNode>)> overlappingSubGraphs = new();
-            foreach(ClassNode focusNode in focusNodes)
+            foreach (ClassNode focusNode in focusNodes)
             {
                 BreadthSearch.Reset();
                 HashSet<ClassNode> subgraph = BreadthSearch.GenerateClassSubgraph(superGraph, focusNode, maxDistance);
@@ -585,9 +565,9 @@ namespace CodeExplorinator
             EditorUtility.DisplayProgressBar("Updating scene", "Merging subgraphs", .6f);
             //Combine overlapping subgraphs
             List<(HashSet<ClassNode>, HashSet<ClassNode>)> subgraphs = new();
-            foreach((ClassNode, HashSet<ClassNode>) overlappingSubgraph in overlappingSubGraphs)
+            foreach ((ClassNode, HashSet<ClassNode>) overlappingSubgraph in overlappingSubGraphs)
             {
-                if(subgraphs.Count == 0) //first element
+                if (subgraphs.Count == 0) //first element
                 {
                     var newGraph = (new HashSet<ClassNode> { overlappingSubgraph.Item1 }, overlappingSubgraph.Item2);
                     subgraphs.Add(newGraph);
@@ -603,7 +583,7 @@ namespace CodeExplorinator
                         int distance = BreadthSearch.CalculateDistance(superGraph, focusNode, overlappingSubgraph.Item1);
                         //If two focus nodes are closer equal 2 * maxDistance, their graphs need to overlap
                         //If two focus nodes distance is equal to 2 * maxDistance + 1, their graphs are adjacent. In this case we also want to merge them
-                        if (distance <= 2 * maxDistance + 1) 
+                        if (distance <= (2 * maxDistance) + 1)
                         {
                             overlappedSubGraph = subgraph;
                             goto foundOverlap;
@@ -611,7 +591,7 @@ namespace CodeExplorinator
                     }
                 }
 
-                foundOverlap:
+            foundOverlap:
                 if (overlappedSubGraph != (null, null))
                 {
                     overlappedSubGraph.graph.UnionWith(overlappingSubgraph.Item2);
@@ -620,14 +600,14 @@ namespace CodeExplorinator
                 else
                 {
                     var newGraph = (new HashSet<ClassNode> { overlappingSubgraph.Item1 }, overlappingSubgraph.Item2);
-                    subgraphs.Add(newGraph); //Darf nicht im foreach über subgraphs passieren!!!
+                    subgraphs.Add(newGraph);
                 }
             }
 
             EditorUtility.DisplayProgressBar("Updating scene", "Saving result", .7f);
             //Create ClassGraph instances
             List<ClassGraph> graphs = new();
-            foreach((HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) subgraph in subgraphs)
+            foreach ((HashSet<ClassNode> focusNodes, HashSet<ClassNode> graph) subgraph in subgraphs)
             {
                 graphs.Add(new ClassGraph(this, subgraph.graph, subgraph.focusNodes, maxDistance));
             }
@@ -653,9 +633,8 @@ namespace CodeExplorinator
             GUIStyle methodStyle = new GUIStyle(classStyle);
             methodStyle.alignment = TextAnchor.UpperLeft;
 
-            
-            
-            //The ClassGUI should not be generated in here but should rather be given to this method as a parameter!!!!
+
+
             ClassGUI classGUI = new ClassGUI(
                 new Vector2(random.Next(-500, 500) - graphRoot.style.marginLeft.value.value,
                     random.Next(-500, 500) - graphRoot.style.marginTop.value.value), classData, classStyle,
@@ -682,7 +661,6 @@ namespace CodeExplorinator
             methodStyle.alignment = TextAnchor.UpperLeft;
 
             MethodNode node = new MethodNode(methodData, methodGUI);
-            //Debug.Log("Visualelement: " + node.methodGUI.style.marginLeft + "/" + node.methodGUI.style.marginTop);
             methodData.MethodNode = node;
 
             return node;
@@ -701,7 +679,7 @@ namespace CodeExplorinator
             {
                 classNodes.Add(methodNode.MethodData.ContainingClass.ClassNode);
             }
-            
+
             return classNodes;
         }
 

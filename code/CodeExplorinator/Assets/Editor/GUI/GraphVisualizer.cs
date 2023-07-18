@@ -1,14 +1,6 @@
-﻿using Codice.Client.BaseCommands.CheckIn;
-using Codice.Client.Common.TreeGrouper;
-using JetBrains.Annotations;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
-using Random = System.Random;
 
 namespace CodeExplorinator
 {
@@ -32,7 +24,7 @@ namespace CodeExplorinator
 
         public void ShowMethodLayer(bool isVisible, HashSet<MethodGUI> toBeHighlightedMethods = null)
         {
-            foreach(ClassGUI classGUI in methodLayer)
+            foreach (ClassGUI classGUI in methodLayer)
             {
                 classGUI.SetVisible(isVisible);
                 if (isVisible) classGUI.SetIsExpanded(true);
@@ -59,8 +51,8 @@ namespace CodeExplorinator
             {
                 classGUI.SetVisible(isVisible);
                 classGUI.SetIsExpanded(false);
-            } 
-            foreach(ClassGUI classGUI in classLayerFocused)
+            }
+            foreach (ClassGUI classGUI in classLayerFocused)
             {
                 classGUI.SetVisible(isVisible);
                 classGUI.SetIsExpanded(true);
@@ -74,7 +66,7 @@ namespace CodeExplorinator
 
         public void ExpandAllClasses(bool isExpanded)
         {
-            foreach(ClassGUI classGUI in methodLayer.Concat(classLayerUnfocused.Concat(classLayerFocused)))
+            foreach (ClassGUI classGUI in methodLayer.Concat(classLayerUnfocused.Concat(classLayerFocused)))
             {
                 classGUI.SetIsExpanded(isExpanded);
             }
@@ -100,11 +92,11 @@ namespace CodeExplorinator
             this.methodLayerFocused = focusedMethods;
             this.methodLayerUnfocused = unfocusedMethods;
 
-            foreach(MethodGUI methodGUI in focusedMethods)
+            foreach (MethodGUI methodGUI in focusedMethods)
             {
                 methodGUI.SetFocused(true, methodGUI.data.MethodNode.distanceFromFocusMethod);
             }
-            foreach(MethodGUI methodGUI in unfocusedMethods)
+            foreach (MethodGUI methodGUI in unfocusedMethods)
             {
                 methodGUI.SetFocused(false, methodGUI.data.MethodNode.distanceFromFocusMethod);
             }
@@ -118,11 +110,11 @@ namespace CodeExplorinator
             TryRemoveGUIsFromRoot(this.classLayerConnections, classLayerRoot);
             TryRemoveGUIsFromRoot(this.classLayerFocused, classLayerRoot);
 
-            foreach(ClassGUI classGUI in focusedClasses)
+            foreach (ClassGUI classGUI in focusedClasses)
             {
                 classGUI.SetFocused(true);
             }
-            foreach(ClassGUI classGUI in unfocusedClasses)
+            foreach (ClassGUI classGUI in unfocusedClasses)
             {
                 classGUI.SetFocused(false);
             }

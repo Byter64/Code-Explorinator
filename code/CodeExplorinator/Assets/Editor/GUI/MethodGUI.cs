@@ -1,11 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.Remoting.Messaging;
-using UnityEditor;
-using UnityEngine;
-using System.IO;
-using UnityEngine.UIElements;
 using System.Linq;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace CodeExplorinator
 {
@@ -13,14 +8,10 @@ namespace CodeExplorinator
     {
         public MethodData data { get; private set; }
 
-        private const string methodHighlightPath = "Assets/Editor/TiledTextures/HighlightedMethod "; //This needs a number between [0, 10]  + ".asset" inserted
-        private static TiledTextureData backgroundData;
-        private static TiledTextureBuilder backgroundBuilder;
+        private const string methodHighlightPath = "Assets/Editor/TiledTextures/HighlightedMethod "; //This path needs a number between [0, 10]  + ".asset" appended
 
-        private bool isFocused = false;
         private bool isHighlighted = false;
         private bool isVisible = false;
-        private int distanceToClosestFocusMethod = -1;
         private GUIStyle style;
         private Texture2D backgroundTexture;
         private ClickBehaviour clickBehaviour;
@@ -74,9 +65,6 @@ namespace CodeExplorinator
 
         public void SetFocused(bool isFocused, int distanceToClosestFocusMethod = -1)
         {
-            this.isFocused = isFocused;
-            this.distanceToClosestFocusMethod = distanceToClosestFocusMethod;
-
             if (distanceToClosestFocusMethod >= 0)
             {
                 backgroundTexture = Create9SlicedTexture(methodHighlightPath + distanceToClosestFocusMethod + ".asset", CalculateBackgroundSize());
@@ -96,7 +84,7 @@ namespace CodeExplorinator
         }
 
         private void SetFocusMethod()
-        { 
+        {
             graphManager.AddSelectedMethod(data.MethodNode);
             graphManager.ApplySelectedMethods();
         }
@@ -112,7 +100,7 @@ namespace CodeExplorinator
         private Vector2Int CalculateBackgroundSize()
         {
             Vector2 result = Vector2.zero;
-            result.y = 0; //because y depends on the texture, we don't know it yet.
+            result.y = 0; //because y depends on the texture, we don't know its width yet.
 
             Label tempLabel = new Label();
             tempLabel.style.unityFont = style.font;

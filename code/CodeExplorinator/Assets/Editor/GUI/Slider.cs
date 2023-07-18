@@ -1,6 +1,4 @@
-using CodeExplorinator;
 using System;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace CodeExplorinator
@@ -41,7 +39,7 @@ namespace CodeExplorinator
         /// Slider behaves weirdly. 
         /// You get PointerMoveEvents only while the pointer is NOT pressed down.
         /// After a PointerDownEvent is fired, a PointerCaptureOutEvent is directly fired.
-        /// After the pointer is released a POinterCaptureOutEvent is once more fired.
+        /// After the pointer is released a PointerCaptureOutEvent is once more fired.
         /// A PointerUpEvent is never fired.
         /// </summary>
         /// <param name="context"></param>

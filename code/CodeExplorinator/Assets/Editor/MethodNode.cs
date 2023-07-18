@@ -1,13 +1,11 @@
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace CodeExplorinator
 {
     public class MethodNode
     {
         public MethodData MethodData;
-        
+
         //these are for determining the connections between methods for the spring algo
         public HashSet<MethodNode> ConnectedNodes;
         public HashSet<MethodNode> NotConnectedNodes;
@@ -27,7 +25,7 @@ namespace CodeExplorinator
         /// </summary>
         public bool IsLeaf;
 
-        public MethodNode(MethodData methodData,MethodGUI methodGUI, bool isLeaf = false)
+        public MethodNode(MethodData methodData, MethodGUI methodGUI, bool isLeaf = false)
         {
             MethodData = methodData;
             MethodGUI = methodGUI;
@@ -35,7 +33,7 @@ namespace CodeExplorinator
             ConnectedNodes = new HashSet<MethodNode>();
             NotConnectedNodes = new HashSet<MethodNode>();
             ingoingConnections = new List<MethodNode>();
-            outgoingConnections= new List<MethodNode>();
+            outgoingConnections = new List<MethodNode>();
         }
 
         public static void CopyRerefencesFromMethodData(IEnumerable<MethodNode> nodes)
