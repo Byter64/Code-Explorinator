@@ -46,20 +46,6 @@ namespace CodeExplorinator
             {
                 throw new ArgumentException("Invalid hexadecimal color code.");
             }
-            /*
-            ColorUtility.TryParseHtmlString(hexadecimal,out var color)
-            
-            if (!hexadecimal.StartsWith("#") || hexadecimal.Length != 7)
-            {
-                throw new ArgumentException("Invalid hexadecimal color code.");
-            }
-            float red = int.Parse(hexadecimal.Substring(1, 2), System.Globalization.NumberStyles.HexNumber);
-            float green = int.Parse(hexadecimal.Substring(3, 2), System.Globalization.NumberStyles.HexNumber);
-            float blue = int.Parse(hexadecimal.Substring(5, 2), System.Globalization.NumberStyles.HexNumber);
-
-            Debug.Log($"Red: {red}, Green: {green}, Blue: {blue}");
-            return new UnityEngine.Color(red, green, blue, 0);
-            */
         }
     }
 }

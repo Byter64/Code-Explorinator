@@ -9,38 +9,6 @@ namespace CodeExplorinator
 {
     public static class ClassAnalyzer
     {
-        #region Test4
-
-        /*
-    [MenuItem("KeyDownHandler/Test4")]
-    public static void Test3()
-    {
-        string[] allCSharpScripts =
-            Directory.GetFiles(Application.dataPath, "*.cs",
-                SearchOption.AllDirectories); //maybe searching all directories not needed?
-
-        CSharpCompilation compilation = CSharpCompilation.Create("myAssembly")
-            .AddReferences(MetadataReference.CreateFromFile(typeof(string).Assembly.Location));
-
-        //goes through all files and generates the syntax trees and the semantic model
-        foreach (var cSharpScript in allCSharpScripts)
-        {
-            StreamReader streamReader = new StreamReader(cSharpScript);
-            SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(streamReader.ReadToEnd());
-            streamReader.Close();
-
-            compilation = compilation.AddSyntaxTrees(syntaxTree);
-
-            SemanticModel semanticModel = compilation.GetSemanticModel(syntaxTree);
-
-            CompilationUnitSyntax root = syntaxTree.GetCompilationUnitRoot();
-            GenerateAllClassInfo(root, semanticModel);
-        }
-    }
-    */
-
-        #endregion
-
         /// <summary>
         /// checks if the file has multiple class declarations and generates the information for each class
         /// </summary>
@@ -130,7 +98,7 @@ namespace CodeExplorinator
 
         private static List<IMethodSymbol> FindAllMethods(SyntaxNode root, SemanticModel model)
         {
-            // Use the syntax model to find all methoddeclarations:
+            // Use the syntax model to find all methoddeclarations
             IEnumerable<MethodDeclarationSyntax> methodDeclarations = root.DescendantNodes()
                 .OfType<MethodDeclarationSyntax>();
 
@@ -168,7 +136,7 @@ namespace CodeExplorinator
             }
             catch (NullReferenceException)
             {
-                //Debug.Log("no public methods found");
+                
             }
 
             return null;
@@ -196,7 +164,7 @@ namespace CodeExplorinator
             }
             catch (NullReferenceException)
             {
-                //Debug.Log("no private methods found");
+                
             }
 
             return null;
@@ -247,7 +215,7 @@ namespace CodeExplorinator
             }
             catch (NullReferenceException)
             {
-                //Debug.Log("no public vars found");
+                
             }
 
             return null;
@@ -273,7 +241,7 @@ namespace CodeExplorinator
             }
             catch (NullReferenceException)
             {
-                //Debug.Log("no private vars found");
+                
             }
 
             return null;
@@ -322,7 +290,7 @@ namespace CodeExplorinator
             }
             catch (NullReferenceException)
             {
-                //Debug.Log("no public property found");
+                
             }
 
             return null;
@@ -349,7 +317,7 @@ namespace CodeExplorinator
             }
             catch (NullReferenceException)
             {
-                //Debug.Log("no private property found");
+                
             }
 
             return null;
