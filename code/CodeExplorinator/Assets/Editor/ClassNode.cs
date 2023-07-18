@@ -8,7 +8,7 @@ namespace CodeExplorinator
         public ClassData ClassData;
         public Vector2 F;
         /// <summary>
-        /// this position is used to calculate the position of the node and taking into consideration the width and height of the box
+        /// used to calculate the position of the node and taking into consideration the width and height of the box
         /// </summary>
         public Vector2 position;
 

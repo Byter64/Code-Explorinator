@@ -34,10 +34,10 @@ namespace CodeExplorinator
             if (start == end) { return 0; }
 
             int depth = 0;
-            //This is not very nicely implemented
+            
             HashSet<ClassNode> oldRound = start.ingoingConnections.Concat(start.outgoingConnections).ToHashSet();
             HashSet<ClassNode> newRound = new HashSet<ClassNode>();
-            while (depth < graph.Count()) // :/
+            while (depth < graph.Count())
             {
                 depth++;
 
@@ -49,7 +49,6 @@ namespace CodeExplorinator
                     }
 
                     //Only add nodes to the next iteration which are not in the current one. 
-                    //This doesn't guarantee that one node is only stepped through once but it should still catch a notable amount of these cases
                     newRound.UnionWith(node.ingoingConnections.Where(x => !oldRound.Contains(x)));
                     newRound.UnionWith(node.outgoingConnections.Where(x => !oldRound.Contains(x)));
                 }
@@ -84,9 +83,6 @@ namespace CodeExplorinator
             }
 
             //if the class was already analysed but we can still search, the node is not generated but the tree explored further
-            //impacts the searchtime negatively tho
-            //if we wanted to perfectly run through all ClassNodes we would have to save the highest searchradius that was gone trough, and go through
-            //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
             foreach (var node in AnalysedClasses)
             {
                 if (node == startingNode)
@@ -107,50 +103,12 @@ namespace CodeExplorinator
 
         SkipOverGeneration:
 
-            //checking incoming and outgoing references
-
-            /*
-            
-            foreach (var fieldReference in startingClass.IsReferencingExternalClassAsField)
-            {
-                //instantiate fieldReference.FieldContainingReference.ContainingClass
-                GenerateClassGraph(fieldReference.ReferencedClass, searchRadius - 1);
-            }
-
-            foreach (var propertyReference in startingClass.IsReferencingExternalClassAsProperty)
-            {
-                //instantiate propertyReference.PropertyContainingReference.ContainingClass
-                GenerateClassGraph(propertyReference.ReferencedClass, searchRadius - 1);
-            }
-
-            foreach (var fieldReference in startingClass.ReferencedByExternalClassField)
-            {
-                //instantiate fieldReference.FieldContainingReference.ContainingClass
-                GenerateClassGraph(fieldReference.FieldContainingReference.ContainingClass, searchRadius - 1);
-            }
-
-            foreach (var propertyReference in startingClass.ReferencedByExternalClassProperty)
-            {
-                //instantiate propertyReference.PropertyContainingReference.ContainingClass
-                GenerateClassGraph(propertyReference.PropertyContainingReference.ContainingClass, searchRadius - 1);
-            }
-            */
-
-            //or just iterate though AllContainingClasses:
+            //iterate though AllContainingClasses:
 
             foreach (var connectedClass in startingNode.ClassData.AllConnectedClasses)
             {
                 GenerateClassGraph(connectedClass.ClassNode, searchRadius - 1, result);
             }
-
-            /*
-            foreach (var connectedClass in startingNode.ConnectedNodes) //connected ClassNodes could be made to a hashset
-            {
-                GenerateClassGraph(connectedClass, searchRadius - 1, result);
-            }
-            */
-
-
         }
 
         /// <summary>
@@ -176,9 +134,6 @@ namespace CodeExplorinator
             }
 
             //if the class was already analysed but we can still search, the node is not generated but the tree explored further
-            //impacts the searchtime negatively tho
-            //if we wanted to perfectly run through all ClassNodes we would have to save the highest searchradius that was gone trough, and go through
-            //the node again if our current searchradius is higher. i think that could cause performance issuses if a lot of circular references are present
             foreach (var node in AnalysedMethods)
             {
                 if (node == startingMethod)
@@ -202,33 +157,6 @@ namespace CodeExplorinator
 
 
         SkipOverGeneration:
-
-
-            /*
-            //checking incoming and outgoing references
-
-            foreach (var methodInvocation in startingMethod.MethodData.InvokedByExternal)
-            {
-                //instantiate reference to method and maybe even the containing class
-                GenerateMethodGraph(methodInvocation.ContainingMethod, searchRadius - 1, result);
-            }
-
-            foreach (var methodInvocation in startingMethod.MethodData.IsInvokingExternalMethods)
-            {
-                //instantiate reference to method and maybe even the containing class
-                GenerateMethodGraph(methodInvocation.ReferencedMethod, searchRadius - 1, result);
-            }
-
-            foreach (var fieldAccess in startingMethod.MethodData.IsAccessingExternalField)
-            {
-                // just instantiate the class if needed, this is a dead end and not currently shown
-            }
-
-            foreach (var propertyAccess in startingMethod.MethodData.IsAccessingExternalProperty)
-            {
-                // just instantiate the class if needed, this is a dead end and not currently shown
-            }
-            */
 
             foreach (var connectedMethod in startingMethod.MethodData.AllConnectedMethods)
             {
