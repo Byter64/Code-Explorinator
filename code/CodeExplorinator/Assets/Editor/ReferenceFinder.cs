@@ -3,14 +3,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Linq;
-using System;
-using System.Collections;
-using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.FindSymbols;
-using Microsoft.CodeAnalysis.FlowAnalysis;
-using UnityEngine;
-using UnityEngine.Assertions.Must;
-using PlasticPipe.PlasticProtocol.Messages;
 
 namespace CodeExplorinator
 {
@@ -80,118 +72,7 @@ namespace CodeExplorinator
                     }
                 }
             }
-
-            RefillAllMethodExtensions(classDatas);
         }
-
-        private static void RefillAllMethodExtensions(IEnumerable<ClassData> classDatas)
-        {
-            foreach (var classData in classDatas)
-            {
-                foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
-                {
-                    if (methodData.MethodSymbol.IsOverride)
-                    {
-                        //Debug.Log(methodData.GetName() + " has override: " + methodData.MethodSymbol.OverriddenMethod); //TODO this works perfectly for inheritance, implement
-                        //Debug.Log(methodData.MethodSymbol.OriginalDefinition);
-                    }
-
-                    //if (methodData.MethodSymbol.ContainingType.TypeKind.GetType())
-                    /*
-                    Debug.Log(methodData.GetName() + " has extension method: " +
-                              methodData.MethodSymbol.ConstructedFrom + " " +
-                              methodData.MethodSymbol.OriginalDefinition + " " +
-                              methodData.MethodSymbol.ExplicitInterfaceImplementations + " " +
-                              methodData.MethodSymbol.PartialImplementationPart);
-                    */
-
-                    if (classData.GetName().Equals("small Mom"))
-                    {
-                        //Debug.Log("smalll mom: " + methodData.MethodSymbol.OriginalDefinition);
-                    }
-                }
-
-                /*
-                if (classData.ClassInformation.TypeKind == TypeKind.Interface)
-                {
-                    foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
-                    {
-                        
-                    }
-                }
-                */
-
-                //TODO: implement interface inheritance by methodData. var c = methodData.ContainingClass.ImplementingInterfaces.SelectMany(m => m.PrivateMethods.Concat(m.PublicMethods));
-                //TODO: in short, just compare the symbols by going through all the methods of the interface
-                foreach (var methodData in classData.PrivateMethods.Concat(classData.PublicMethods))
-                {
-                    //var methodSymbol = typeSymbol.GetMembers(methodName).OfType<IMethodSymbol>().FirstOrDefault();
-                    var methodSymbol = methodData.MethodSymbol;
-                    
-                    /*
-                    var disposeMethodSymbol = methodSymbol;
-                    var type = disposeMethodSymbol.ContainingType;
-                    try
-                    {
-                        var isInterfaceImplementaton = type.FindImplementationForInterfaceMember(type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single()) == disposeMethodSymbol;
-                        if (isInterfaceImplementaton)
-                        {
-                            Debug.Log("found: " + type.FindImplementationForInterfaceMember(
-                                type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single()).Name);
-                        }
-
-                        var gag = type.FindImplementationForInterfaceMember(
-                            type.Interfaces.Single().GetMembers().OfType<IMethodSymbol>().Single());
-
-                        if (gag != null)
-                        {
-                            Debug.Log("finally found: " + gag.Name + " for " + methodData.GetName()); //TODO this somehow finds itself (eg: finally found: IAdder.Add for IAdder.Add), maybe still useful
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        //throw;
-                    }
-                    */
-                    /*
-                    //this doesnt work, maybe beause of: methodSymbol.ContainingType, gives out weird stuff
-                    if (methodSymbol != null && (methodSymbol.ExplicitInterfaceImplementations.Any() || methodSymbol
-                            .ContainingType.AllInterfaces.SelectMany(i => i.GetMembers()).OfType<IMethodSymbol>()
-                            .Any(m => methodSymbol.Equals(methodSymbol.ContainingType
-                                .FindImplementationForInterfaceMember(m)))))
-                    {
-                        Debug.Log("YAY");
-
-                        // The method implements an interface method.
-                        foreach (var interfaceMethod in methodSymbol.ContainingType.AllInterfaces
-                                     .SelectMany(i => i.GetMembers()).OfType<IMethodSymbol>().Select(m =>
-                                         methodSymbol.ContainingType.FindImplementationForInterfaceMember(m)))
-                        {
-                            Debug.Log("found: " + interfaceMethod.Name + " of "+ interfaceMethod.OriginalDefinition + " that is implemented by " + methodData.GetName() + " of "+ methodData.MethodSymbol.OriginalDefinition);
-                        }
-                        
-                    }
-                     */
-                }
-            }
-        }
-
-        public static ImmutableArray<ISymbol> ExplicitOrImplicitInterfaceImplementations(this ISymbol symbol)
-        {
-            if (symbol.Kind != SymbolKind.Method && symbol.Kind != SymbolKind.Property &&
-                symbol.Kind != SymbolKind.Event)
-                return ImmutableArray<ISymbol>.Empty;
-
-            var containingType = symbol.ContainingType;
-            var query = from iface in containingType.AllInterfaces
-                from interfaceMember in iface.GetMembers()
-                let impl = containingType.FindImplementationForInterfaceMember(interfaceMember)
-                where symbol.Equals(impl)
-                select interfaceMember;
-            return query.ToImmutableArray();
-        }
-
 
         private static IEnumerable<MethodInvocationData> GenerateAllInvocationDataForCompilation(
             IEnumerable<ClassData> classDatas,
@@ -292,7 +173,6 @@ namespace CodeExplorinator
         #region VariableAccesses
 
         /// <summary>
-        /// !!THIS METHOD SHOULD PROBABLY BE IN ANOTHER CLASS AND NOT HERE!!!
         /// Clears all accesses in all ClassData, 
         ///  generates FieldAccessData for all accesses in the whole compilation and sorts them into all ClassDatas.
         /// </summary>
@@ -442,7 +322,6 @@ namespace CodeExplorinator
         #region PropertyAccesses
 
         /// <summary>
-        /// !!THIS METHOD SHOULD PROBABLY BE IN ANOTHER CLASS AND NOT HERE!!!
         /// Clears all accesses in all ClassData, 
         ///  generates PropertyAccessData for all accesses in the whole compilation and sorts them into all ClassDatas.
         /// </summary>
@@ -593,10 +472,10 @@ namespace CodeExplorinator
 
         #region ClassReferences
 
-        public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas,
-            Compilation compilation) //not sure if this is overwriting information or just adding it
+        public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas, Compilation compilation)
         {
-            //creates all ClassFieldReferenceData and ClassPropertyReferenceData and inserts these references into the ClassData, FieldData and PropertyData
+            //creates all ClassFieldReferenceData and ClassPropertyReferenceData and
+            //inserts these references into the ClassData, FieldData and PropertyData
             foreach (ClassData classData in classDatas)
             {
                 FindAllClassFields(classData, classDatas);
@@ -607,65 +486,11 @@ namespace CodeExplorinator
 
         private static void FindAllClassFields(ClassData classData, IEnumerable<ClassData> classDatas)
         {
-            //could be improved to ignore basic types
-
             foreach (FieldData fieldData in classData.PublicVariables.Concat(classData.PrivateVariables).ToList())
             {
-                /* TODO WORK IN PROGRESS, check if the type is a simple type, if so, ignore it for performance reasons
-                if (fieldData.FieldSymbol.Type.)
-                {
-                    Debug.Log(fieldData.GetName() + " is a simple type");
-                    continue;
-                }
-                */
 
                 foreach (ClassData referencedClass in classDatas)
                 {
-                    /*
-                    var isArray = fieldData.FieldSymbol.Type.TypeKind == TypeKind.Array;
-                    if (fieldData.FieldSymbol.Type is IArrayTypeSymbol arrayTypeSymbol)
-                    {
-                        ITypeSymbol elementType = arrayTypeSymbol.ElementType;
-                        
-                        if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, elementType.ContainingType))
-                        {
-                            SetFieldReferenceInformation(referencedClass,fieldData);
-                        }
-                    }
-                    */
-
-                    /*
-                    if (fieldData.FieldSymbol.Type.AllInterfaces.Any(i => i.Name == nameof(IEnumerable))) {//this already doesnt trigger
-                        
-                        if (!(fieldData.FieldSymbol.Type as INamedTypeSymbol).IsGenericType) {
-                            if (fieldData.FieldSymbol is IArrayTypeSymbol arrayType) {
-                                var elementType = arrayType.ElementType;
-                                Debug.Log("YAAAAAAAAAAAAAY");
-                                
-                                if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, elementType))
-                                {
-                                    SetFieldReferenceInformation(referencedClass,fieldData);
-                                }
-                                
-                                // do whatever
-                            } else {
-                                // no element type found, oof
-                            }
-                        } else {
-                            foreach (var generic in fieldData.FieldSymbol.ContainingType.TypeArguments) {
-                                // do whatever you need to do
-                                
-                                Debug.Log("YAAAAAAAAAAAAAY");
-                                
-                                if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, generic))
-                                {
-                                    SetFieldReferenceInformation(referencedClass,fieldData);
-                                }
-                            }
-                        }
-                    }
-                    */
-
                     //if the class is referenced by this field, set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, fieldData.GetType()))
                     {
@@ -677,8 +502,6 @@ namespace CodeExplorinator
 
         private static void SetFieldReferenceInformation(ClassData referencedClass, FieldData fieldData)
         {
-            //Debug.Log("found a reference to the class: " + referencedClass + " in class: " +
-            //fieldData.ContainingClass);
             ClassFieldReferenceData reference = new ClassFieldReferenceData(referencedClass, fieldData);
 
             //if the class has declared an instance of itself it is sorted in "internal" lists, otherwise in "external" lists
@@ -700,8 +523,6 @@ namespace CodeExplorinator
 
         private static void FindAllClassProperties(ClassData classData, IEnumerable<ClassData> classDatas)
         {
-            //could be improved to ignore basic types
-
             foreach (PropertyData propertyData in classData.PublicProperties.Concat(classData.PrivateProperties)
                          .ToList())
             {
@@ -710,7 +531,6 @@ namespace CodeExplorinator
                     //if the class is referenced by this property set information
                     if (SymbolEqualityComparer.Default.Equals(referencedClass.ClassInformation, propertyData.GetType()))
                     {
-                        //Debug.Log("found a reference to the class: " + referencedClass + " in class: " + propertyData.ContainingClass);
                         ClassPropertyReferenceData reference =
                             new ClassPropertyReferenceData(referencedClass, propertyData);
 
@@ -726,8 +546,6 @@ namespace CodeExplorinator
                             propertyData.ReferencingExternalClass.Add(reference);
                             propertyData.ContainingClass.IsReferencingExternalClassAsProperty.Add(reference);
 
-
-                            //this still needs to be tested!!
                             if (!referencedClass.AllConnectedClasses.Contains(propertyData.ContainingClass))
                             {
                                 referencedClass.AllConnectedClasses.Add(propertyData.ContainingClass);
@@ -743,7 +561,6 @@ namespace CodeExplorinator
             }
         }
 
-        //this still need to be tested
         private static void FindAllInheritance(ClassData analyzedClass, IEnumerable<ClassData> classDatas)
         {
             foreach (TypeInfo type in analyzedClass.AllParentsAndInheritanceTypes)
