@@ -105,7 +105,7 @@ namespace CodeExplorinator
             graph.style.backgroundSize = new StyleBackgroundSize(new BackgroundSize(0xFFFFF, 0xFFFFF));
             graph.style.width = 0xFFFFF;
             graph.style.height = 0xFFFFF;
-            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/TEST_GraphBackground.png"));
+            graph.style.backgroundImage = Background.FromTexture2D(AssetDatabase.LoadAssetAtPath<Texture2D>(Utilities.pathroot + "Editor/Graphics/TEST_GraphBackground.png"));
             graph.style.marginLeft = -0x7FFFF;
             graph.style.marginTop = -0x7FFFF;
             #endregion

@@ -27,7 +27,7 @@ namespace CodeExplorinator
         protected static Texture2D Create9SlicedTexture(string assetPath, Vector2Int size)
         {
             TiledTextureData backgroundData = (TiledTextureData)AssetDatabase.LoadAssetAtPath(assetPath, typeof(TiledTextureData));
-            byte[] fileData = File.ReadAllBytes(Application.dataPath + "/Editor/Graphics/" + backgroundData.graphicsPath);
+            byte[] fileData = File.ReadAllBytes(Utilities.pathroot + "Editor/Graphics/" + backgroundData.graphicsPath);
             Texture2D texture = new Texture2D(1, 1);
             ImageConversion.LoadImage(texture, fileData);
             return TiledTextureBuilder.NineSliceScaleTexture(texture, backgroundData.middleRectangle, size);

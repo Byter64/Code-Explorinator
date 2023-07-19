@@ -13,7 +13,7 @@ namespace CodeExplorinator
             {
                 if (lineTexture == null)
                 {
-                    lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Linetexture.png");
+                    lineTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(Utilities.pathroot + "Editor/Graphics/Linetexture.png");
                 }
                 return lineTexture;
             }
@@ -24,7 +24,7 @@ namespace CodeExplorinator
             {
                 if (arrowTexture == null)
                 {
-                    arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/pfeil_centered_new.png");
+                    arrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(Utilities.pathroot + "Editor/Graphics/pfeil_centered_new.png");
                 }
                 return arrowTexture;
             }
@@ -35,7 +35,7 @@ namespace CodeExplorinator
             {
                 if (inheritanceArrowTexture == null)
                 {
-                    inheritanceArrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Editor/Graphics/Arrow_inheritance.png");
+                    inheritanceArrowTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(Utilities.pathroot + "Editor/Graphics/Arrow_inheritance.png");
                 }
                 return inheritanceArrowTexture;
             }

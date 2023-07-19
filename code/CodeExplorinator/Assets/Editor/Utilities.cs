@@ -8,11 +8,11 @@ namespace CodeExplorinator
     {
 
 #if UNITY_EDITOR
-        public const string pathroot = @"Packages/com.code.explorinator";
+        public const string pathroot = @"Assets/";
 
 #else
-        public const string pathroot = @"Assets\";
-
+        
+        public const string pathroot = @"Packages/com.code.explorinator/";
 #endif
     }
 }

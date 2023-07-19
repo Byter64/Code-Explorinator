@@ -58,13 +58,13 @@ namespace CodeExplorinator
             }
         }
 
-        private const string classTexturePath = "Assets/Editor/TiledTextures/Class.asset";
-        private const string headerTexturePath = "Assets/Editor/TiledTextures/Header.asset";
-        private const string focusedClassTexturePath = "Assets/Editor/TiledTextures/FocusedClass.asset";
-        private const string focusedHeaderTexturePath = "Assets/Editor/TiledTextures/FocusedHeader.asset";
-        private const string lineTexturePath = "Assets/Editor/Graphics/Linetexture.png";
-        private const string arrowRightImagePath = "Assets/Editor/Graphics/Arrow_Right.png";
-        private const string arrowDownImagePath = "Assets/Editor/Graphics/Arrow_Down.png";
+        private const string classTexturePath = Utilities.pathroot + "Editor/TiledTextures/Class.asset";
+        private const string headerTexturePath = Utilities.pathroot + "Editor/TiledTextures/Header.asset";
+        private const string focusedClassTexturePath = Utilities.pathroot + "Editor/TiledTextures/FocusedClass.asset";
+        private const string focusedHeaderTexturePath = Utilities.pathroot + "Editor/TiledTextures/FocusedHeader.asset";
+        private const string lineTexturePath = Utilities.pathroot + "Editor/Graphics/Linetexture.png";
+        private const string arrowRightImagePath = Utilities.pathroot + "Editor/Graphics/Arrow_Right.png";
+        private const string arrowDownImagePath = Utilities.pathroot + "Editor/Graphics/Arrow_Down.png";
         private static Texture2D arrowRight;
         private static Texture2D arrowDown;
 

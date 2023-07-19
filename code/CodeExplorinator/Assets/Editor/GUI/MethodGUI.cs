@@ -8,7 +8,7 @@ namespace CodeExplorinator
     {
         public MethodData data { get; private set; }
 
-        private const string methodHighlightPath = "Assets/Editor/TiledTextures/HighlightedMethod "; //This path needs a number between [0, 10]  + ".asset" appended
+        private const string methodHighlightPath = Utilities.pathroot + "Editor/TiledTextures/HighlightedMethod "; //This path needs a number between [0, 10]  + ".asset" appended
 
         private bool isHighlighted = false;
         private bool isVisible = false;
