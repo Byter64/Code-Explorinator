@@ -473,7 +473,7 @@ namespace CodeExplorinator
 
         #region ClassReferences
 
-        public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas,^Compilation compilation)
+        public static void ReFillAllClassReferences(IEnumerable<ClassData> classDatas,Compilation compilation)
         {
             //creates all ClassFieldReferenceData and ClassPropertyReferenceData and inserts these references into the ClassData, FieldData and PropertyData
             foreach (ClassData classData in classDatas)
