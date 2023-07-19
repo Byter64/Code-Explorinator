@@ -654,7 +654,7 @@ namespace CodeExplorinator
             GUIStyle methodStyle = new GUIStyle
             {
                 alignment = TextAnchor.MiddleCenter,
-                font = AssetDatabase.LoadAssetAtPath<Font>("Assets/Editor/Fonts/DroidSansMono.ttf"),
+                font = AssetDatabase.LoadAssetAtPath<Font>(Utilities.pathroot + "/Editor/Fonts/DroidSansMono.ttf"),
                 fontSize = 20,
                 richText = true
             };
