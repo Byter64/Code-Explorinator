@@ -1,0 +1,22 @@
+{
+  "name": "com.code.explorinator",
+  "version": "1.0.0",
+  "displayName": "Code Explorinator",
+  "description": "Code Explorinator is a Unity Plugin that helps you visually explore code. The days of spaghetti code are over! It uses the C# Roslyn compiler to analyze your code within a unity project and displays it as an interactive class diagram. The project is displayed as an UML-like diagram through which you can navigate by scrolling and zooming. An adjustable graph size and a list with all types (classes, structs, interfaces, ...) declared in your code help you get an overview of the project's structure.",
+  "unity": "2022.2",
+  "unityRelease": "1f1",
+  "documentationUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "changelogUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "licensesUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+ "keywords": [
+    "Code Analyzer",
+    "Class Diagram",
+    "Code Explorinator"
+  ],
+  "author": {
+    "name": "Veronika Strümper & Yannik Stamm",
+    "email": "unity@example.com",
+    "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  }
+}
+
