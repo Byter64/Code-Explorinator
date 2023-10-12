@@ -1,49 +1,3 @@
-Erledigt:
-- implemented interfaces etc.
-- improved spring embedder
-- explicit interface implementation supported
-- tested if explicit parameters work
--  => syntax für methoden unterstützt
-
-Dringend:
-- Methodenebene hinzufügen
-- Fokusklassen sollen am selben Ort bleiben
-- anordnung verbessern
-
-Wichtig:
-- Einstellungen des Nutzers abspeichern
-- Vererbung von Methoden unterstützen
-- Alle Modifier unterstützen (fixed, new, unsafe and event dont work)
-
-Extras:
-- Fokussierte Klassen/Methoden hervorheben
-- Warnung einabuen, dass Dateien mit Sonderzeichen mit der richtigen Codierung abgespeichert gemeint
-- compiler fragen, ob kompilierbar, falls nicht, evtl nur ein teilprojekt anzeigen (oder halt einfach sagen ne machen wir nicht)
-
-Für nach der Expo:
-- BUG: Zoom fokoussiert nicht perfekt auf Mauszeiger
-- Alle Klassen außer Fokusklassen am Anfang einklappen
-- Typkonvertierung unterstützen
-- Operatorenüberladung unterstützen
-- Delegate unterstützen
-- dictionaries einbauen, code umstrukturieren, symbolfinder benutzen (SymbolFinder.FindReferencesAsync/.FindOverridesAsync/.FindImplementedInterfaceMembersAsync/.FindImplementationsAsync)
-
-**Arbeitszeiten:**
-19.05.23:
-
-10:00-15:00 Uhr: Springalgorithmus drüber geschaut, Mehrfachauswahl für Methodenebene angefangen (Y)
-
-10:00-15:00 Uhr: interfaces/records/structs implementiert, spring algo verbessert, getestet ob explizite parameter und explizite interfaces funktionieren, modifier testen angefangen (V)
-
-26.05.23:
-
-10:00-14:00: Bug bei Merfachauswahl gefixt, weiter an Methodenebene gearbeitet (Y)
-10:00-15:00: Testing, angefangen override und implement von Methoden zu implementieren, einen Modifier implementiert (V)
-
-`Please edit this README to fit your project and keep it up-to-date with your concept.`
-
-`All final deliverables (code, executable game, report, trailer and poster) have to be committed, tagged as final and pushed to your GitLab repository.`
-
 # GameLab Project Repository
 
 |  General Info  | |
@@ -55,6 +9,17 @@ Für nach der Expo:
 | Start Date | 21.10.2019 |
 | Study Program | Games Engineering B.Sc.|
 | Engine Version | Unity 2021.3.11f1 or Unreal 5.0.3 |
+
+# Structur notes
+## Communication between backend and frontend
+1. Frontend asks backend for specific class via a unique class identifier, that has already been given by backend.
+
+2. Interface between backend and frontend
+2.1 General idea
+   The frontend gives the backend a class and a radius. The backend then returns the resulting graph in form of dictionaries.
+2.1 Datatstructure
+   2.1.1 INamedTypeSymbol (von Roslyn)
+2.2 
 
 ### Abstract
 
@@ -85,46 +50,3 @@ RepositoryRoot/
     ├── report/             // PDF
     └── trailer/            // .mp4 (final trailer, no raw material)
 ```
-
-### Project and Source Control
-
-Read more about Git in the [Atlassian Git Tutorials](https://de.atlassian.com/git).
-
-#### Avoiding Clutter with .gitignore
-Gitignore files allow to exclude certain patterns from being versioned.
-This is necessary to avoid unnecessary (and possibly harmful) cluttering of your repository.
-Especially the automatically generated project and cache files of VisualStudio, Unity, or Unreal projects should be ignored.
-
-You can find [a selection of *.gitignore* files publicly available on GitHub](https://github.com/github/gitignore).
-
-##### Quick Check if .gitignore is working
-
-Your *.gitignore* is not correctly set up, if
-* your repository contains Folders such as `Library`, `DerivedDataCache` or `Saved`
-* `cache` files, `visual studio` project files etc. are `shown as modified` before commiting with your git client
-
-In this case, check your setup.
-Be aware that *.gitignore* is the actual, required filename!
-
-#### Versioning Binary Assets with Git LFS and .gitattributes
-Gitattribute files define file types to be handled through the Git Large File Storage (Git LFS) System.
-This system does not handle binary files, such as assets, images, meshes, etc. well.
-Even minimal changes add the whole file to the projects history.
-Git LFS identifies iterations of binary files using a hash in the repository, but stores the actual binary data transparently in a seperate data silo.
-
-To let Git LFS track a certain file (e.g. recursively all *.jpg*), execute this command:
-
-	> git lfs track *.jpg
-
-This command creates the following entry in the *.gitattributes* file:
-
-	*.jpg filter=lfs diff=lfs merge=lfs -text
-
-Git LFS is installed on all Workstations in E37 and the GameLabs.
-For your private computer, you can [download Git LFS here](https://git-lfs.github.com/).
-
-#### Further Reading: 
-* [Epic on Git for Unreal](https://wiki.unrealengine.com/Git_source_control_(Tutorial)#Workarounds_for_dealing_with_binary_files_on_your_Git_repository)
-* [GitLFS](https://www.git-lfs.com)
-* [Git](https://www.git-scm.com)
-
