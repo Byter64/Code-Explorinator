@@ -1,5 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using Microsoft.CodeAnalysis;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,24 +10,27 @@ namespace CodeExplorinator
 {
     public class BackendProgram
     {
-        /*
+        static ImmutableHashSet<INamedTypeSymbol> classSymbols;
+        
+        
         public BackendProgram()
         {
-            FileScanner.ScanAllFiles();
+            
         }
-        */
+        
 
         [MenuItem("Window/Code Explorinator")]
         public static void Init()
         {
-            FileScanner.ScanAllFiles();
+            classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
+            ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
         }
         
         
         
-        public void GetAllPlaceholderNames()
+        public void GimmeTheGraph(INamedTypeSymbol focusedClassSymbol, int radius)
         {
-            
+            ClassAnalyzer.AnalyzeConnectionsOfClass(focusedClassSymbol,classSymbols);
         }
         
         public State state

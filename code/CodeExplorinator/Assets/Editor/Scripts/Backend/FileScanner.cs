@@ -11,8 +11,11 @@ namespace CodeExplorinator
 {
     public static class FileScanner
     {
-        public static void ScanAllFiles()
+        //todo: maybe integrate fileanalyzer in this class as a method or something
+        public static List<INamedTypeSymbol> ScanAllFilesForClasses()
         {
+            
+            
             string[] allCSharpScripts = Directory.GetFiles(Application.dataPath, "*.cs", SearchOption.AllDirectories);
 
             
@@ -30,16 +33,18 @@ namespace CodeExplorinator
                 compilation = compilation.AddSyntaxTrees(syntaxTree);
             }
 
+            List<INamedTypeSymbol> classSymbols = new List<INamedTypeSymbol>();
+            
             foreach (SyntaxTree tree in compilation.SyntaxTrees)
             {
                 SemanticModel semanticModel = compilation.GetSemanticModel(tree);
 
                 CompilationUnitSyntax root = tree.GetCompilationUnitRoot();
-                FileAnalyzer.GenerateAllClassInfo(root, semanticModel);
+                classSymbols.AddRange(FileAnalyzer.GenerateAllClassInfo(root, semanticModel));
                 //classDatas.AddRange(ClassAnalyzer.GenerateAllClassInfo(root, semanticModel));
             }
 
-            
+            return classSymbols;
             /*
             TODO: we need for that: Microsoft.CodeAnalysis.Workspaces.MSBuild
 
@@ -50,7 +55,7 @@ namespace CodeExplorinator
 
             Roslyn.Services.Workspace.LoadSolution
             */
-            
+
         }
         
     }
