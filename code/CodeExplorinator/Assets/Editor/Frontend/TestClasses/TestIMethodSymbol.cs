@@ -207,7 +207,7 @@ public class TestIMethodSymbol : IMethodSymbol
 
     public string ToDisplayString(SymbolDisplayFormat format = null)
     {
-        return "public" + ReturnType.ToDisplayString() + name + "()";
+        return "public " + ReturnType.ToDisplayString()  + " "+ name + "()";
     }
 
     public ImmutableArray<SymbolDisplayPart> ToMinimalDisplayParts(SemanticModel semanticModel, int position, SymbolDisplayFormat format = null)

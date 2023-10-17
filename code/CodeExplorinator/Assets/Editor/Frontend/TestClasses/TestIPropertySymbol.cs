@@ -139,7 +139,7 @@ public class TestIPropertySymbol : IPropertySymbol
 
     public string ToDisplayString(SymbolDisplayFormat format = null)
     {
-        return "public" + Type.ToDisplayString() + name;
+        return "public " + Type.ToDisplayString() + " " + name;
     }
 
     public ImmutableArray<SymbolDisplayPart> ToMinimalDisplayParts(SemanticModel semanticModel, int position, SymbolDisplayFormat format = null)
