@@ -2,9 +2,9 @@ using Microsoft.CodeAnalysis;
 
 namespace CodeExplorinator
 {
-    public interface IClassData
+    public record IClassData
     {
-        
+        public INamedTypeSymbol typeData;
     }
 
 }

@@ -1,19 +1,20 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using CodeExplorinator;
 using Microsoft.CodeAnalysis;
 using UnityEngine;
 
 public static class ClassAnalyzer
 {
 
-    public static HashSet<INamedTypeSymbol> AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<INamedTypeSymbol> allClasses)
+    public static HashSet<IClassData> AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<INamedTypeSymbol> allClasses)
     {
         ImmutableArray<ISymbol> members = focussedClassSymbol.GetMembers();
         Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
 
-        HashSet<INamedTypeSymbol> connectedClasses = new HashSet<INamedTypeSymbol>();
+        HashSet<IClassData> connectedClasses = new HashSet<IClassData>();
                 
         foreach (ISymbol member  in members)
         {
@@ -31,8 +32,8 @@ public static class ClassAnalyzer
                     {
                         if (SymbolEqualityComparer.Default.Equals(fieldSymbol.Type, classSymbol))
                         {
-                            connectedClasses.Add(classSymbol);
-                            //add class to dictionary
+                            //this creates new classdata each time, so there will be multiple classdatas with the same content
+                            connectedClasses.Add(new ClassData(classSymbol));
                             break;
                         }
                     }
@@ -44,8 +45,7 @@ public static class ClassAnalyzer
                     {
                         if (SymbolEqualityComparer.Default.Equals(propertySymbol.Type, classSymbol))
                         {
-                            connectedClasses.Add(classSymbol);
-                            //add to dictionary
+                            connectedClasses.Add(new ClassData(classSymbol));
                             break;
                         }
                     }

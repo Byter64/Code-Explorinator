@@ -1,52 +1,68 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using CodeExplorinator;
 using Microsoft.CodeAnalysis;
 using UnityEngine;
 
 public static class DephtsSearch
 {
 
-    public static Dictionary<INamedTypeSymbol, HashSet<INamedTypeSymbol>> Start(INamedTypeSymbol focusClass, int radius, ImmutableHashSet<INamedTypeSymbol> allClasses)
+    public static Dictionary<IClassData, ImmutableHashSet<IClassData>> Start(IClassData focusClass, int radius, ImmutableHashSet<INamedTypeSymbol> allClasses)
     {
-        Dictionary<INamedTypeSymbol, HashSet<INamedTypeSymbol>> connections =
-            new Dictionary<INamedTypeSymbol, HashSet<INamedTypeSymbol>>();
+        Dictionary<IClassData, ImmutableHashSet<IClassData>> connectionsDictionary =
+            new Dictionary<IClassData, ImmutableHashSet<IClassData>>();
+
+        List<IClassData> incompleteClasses = new List<IClassData>();
         
         DepthSearch(focusClass, radius - 1);
-        
-        return connections;
-        
-        void DepthSearch(INamedTypeSymbol focusClass, int radius)
+
+        //check where placeholders are needed
+        foreach (var incompleteClass in incompleteClasses)
         {
-            //todo: continue here with a temporary dictionary and utilize the class analyzer class to get the connections of the classes
+            HashSet<IClassData> connectedClasses = ClassAnalyzer.AnalyzeConnectionsOfClass(incompleteClass.typeData, allClasses);
+            HashSet<IClassData> connectedClassesWithPlaceholders = new HashSet<IClassData>();
+            
+            foreach (var connectedClass in connectedClasses)
+            {
+                //if the dictionary does not contain the connected class, it becomes a placeholder
+                if (connectionsDictionary.ContainsKey(connectedClass))
+                {
+                    connectedClassesWithPlaceholders.Add(connectedClass);
+                }
+                else
+                {
+                    connectedClassesWithPlaceholders.Add(connectedClass as PlaceholderClassData);
+                }
+            }
+            
+            connectionsDictionary.Add(incompleteClass, connectedClassesWithPlaceholders.ToImmutableHashSet());
+        }
+        
+        return connectionsDictionary;
+        
+        void DepthSearch(IClassData focusClass, int radius)
+        {
         
             if (radius < 0) return;
-            if (connections.ContainsKey(focusClass)) return;
-
-            HashSet<INamedTypeSymbol> connectedClasses = ClassAnalyzer.AnalyzeConnectionsOfClass(focusClass, allClasses);
+            if (connectionsDictionary.ContainsKey(focusClass)) return;
             
             if (radius - 1 < 0)
             {
-                foreach (var VARIABLE in allClasses)
-                {
-                    
-                }
-                //idk careful cuz incomplete class
+                incompleteClasses.Add(focusClass);
+                return;
             }
-
-
             
-            connections.Add(focusClass,connectedClasses);
-        
+            //will this work for every type of classdata?
+            ImmutableHashSet<IClassData> connectedClasses = ClassAnalyzer.AnalyzeConnectionsOfClass(focusClass.typeData, allClasses).ToImmutableHashSet();
+            connectionsDictionary.Add(focusClass,connectedClasses);
 
             foreach (var connectedClass in connectedClasses)
             {
                 DepthSearch(connectedClass, radius - 1);
             }
-        
+            
         }
         
     }
-    
-
 }

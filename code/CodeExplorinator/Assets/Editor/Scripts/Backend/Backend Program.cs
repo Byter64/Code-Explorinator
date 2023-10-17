@@ -10,6 +10,7 @@ namespace CodeExplorinator
 {
     public class BackendProgram
     {
+        //todo: maybe cast to IClassData cuz thats what ill get the first time interacting with frontend
         static ImmutableHashSet<INamedTypeSymbol> classSymbols;
         
         
@@ -24,7 +25,7 @@ namespace CodeExplorinator
         {
             classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
             ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
-            DephtsSearch.Start(classSymbols.First(),2,classSymbols);
+            //DephtsSearch.Start(classSymbols.First(),2,classSymbols);
         }
         
         

@@ -2,12 +2,9 @@ using Microsoft.CodeAnalysis;
 
 namespace CodeExplorinator
 {
-    public abstract record ClassData : IClassData
+    public record ClassData : IClassData
     {
-        public INamedTypeSymbol typeData;
-
-
-        ClassData(INamedTypeSymbol typeData)
+        public ClassData(INamedTypeSymbol typeData)
         {
             this.typeData = typeData;
         }
