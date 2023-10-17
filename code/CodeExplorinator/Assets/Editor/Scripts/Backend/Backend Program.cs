@@ -24,6 +24,7 @@ namespace CodeExplorinator
         {
             classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
             ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
+            DephtsSearch.Start(classSymbols.First(),2,classSymbols);
         }
         
         
