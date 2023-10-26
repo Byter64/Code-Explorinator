@@ -60,65 +60,6 @@ namespace CodeExplorinator
             return newState;
         }
 
-        private ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> RequestNewGraph()
-        {
-            TestINamedTypeInterface baseType = new TestINamedTypeInterface("Base");
-            TestINamedTypeInterface class1 = new TestINamedTypeInterface("Auto");
-            TestINamedTypeInterface class2 = new TestINamedTypeInterface("Reifen");
-
-            HashSet<IFieldSymbol> fields = new()
-            {
-                new TestIFieldSymbol("seriennummer", baseType),
-                new TestIFieldSymbol("reifen", class2),
-            };
-            HashSet<IPropertySymbol> properties = new()
-            {
-                new TestIPropertySymbol("volumen", baseType),
-                new TestIPropertySymbol("VerrückteMongo", baseType)
-            };
-            HashSet<IMethodSymbol> methods = new()
-            {
-                new TestIMethodSymbol("Explodieren", baseType),
-                new TestIMethodSymbol("GetReifen", class2)
-            };
-
-            HashSet<IPropertySymbol> propertiesReifen = new()
-            {
-                new TestIPropertySymbol("form", baseType)
-            };
-
-            class1.fields.AddRange(fields);
-            class1.properties.AddRange(properties);
-            class1.methods.AddRange(methods);
-            class2.properties.AddRange(propertiesReifen);
-
-            HashSet<INamedTypeSymbol> classes = new() { class1, class2, baseType };
-            
-            //Schauen, ob die Verbindungen alle richtgi egstzt sind
-            var connections = CreateConnections(classes);
-
-            Dictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph = new();
-
-            foreach(INamedTypeSymbol @class in classes)
-            {
-                INamedTypeSymbol[] references = new INamedTypeSymbol[0];
-
-                graph.Add(@class, references);
-            }
-
-            foreach ((INamedTypeSymbol class1, INamedTypeSymbol class2) connection in connections)
-            {
-                INamedTypeSymbol[] references = graph[connection.class1];
-                graph.Remove(connection.class1);
-
-                Array.Resize(ref references, references.Length + 1);
-                references[references.Length - 1] = connection.class2;
-                graph.Add(connection.class1, references);
-            }
-
-            return graph.ToImmutableDictionary();
-        }
-
         class Data { public string type; }
 
         private void UpdateVisualRepresentation()
@@ -145,7 +86,7 @@ namespace CodeExplorinator
 
             ImmutableDictionary<INamedTypeSymbol, VisualElement> nodes = CreateVisualElements(graph.Keys);
             int i = 0;
-            float radius = 300;
+            float radius = 300 + nodes.Values.Count() * 10;
             foreach (VisualElement node in nodes.Values)
             {
                 nodeRoot.Add(node);
@@ -367,6 +308,69 @@ namespace CodeExplorinator
 
                 return line;
             }
+        }
+
+        private ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> RequestNewGraph()
+        {
+            Dictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph = new();
+            HashSet<INamedTypeSymbol> classes = GenerateTestGraph();
+            var connections = CreateConnections(classes);
+
+            foreach (INamedTypeSymbol @class in classes)
+            {
+                INamedTypeSymbol[] references = new INamedTypeSymbol[0];
+
+                graph.Add(@class, references);
+            }
+
+            foreach ((INamedTypeSymbol class1, INamedTypeSymbol class2) connection in connections)
+            {
+                INamedTypeSymbol[] references = graph[connection.class1];
+                graph.Remove(connection.class1);
+
+                Array.Resize(ref references, references.Length + 1);
+                references[references.Length - 1] = connection.class2;
+                graph.Add(connection.class1, references);
+            }
+
+            return graph.ToImmutableDictionary();
+        }
+
+        [Pure]
+        private HashSet<INamedTypeSymbol> GenerateTestGraph()
+        {
+            TestINamedTypeInterface baseType = new TestINamedTypeInterface("Base");
+            TestINamedTypeInterface class1 = new TestINamedTypeInterface("Auto");
+            TestINamedTypeInterface class2 = new TestINamedTypeInterface("Reifen");
+
+            HashSet<IFieldSymbol> fields = new()
+            {
+                new TestIFieldSymbol("seriennummer", baseType),
+                new TestIFieldSymbol("reifen", class2),
+            };
+            HashSet<IPropertySymbol> properties = new()
+            {
+                new TestIPropertySymbol("volumen", baseType),
+                new TestIPropertySymbol("VerrückteMongo", baseType)
+            };
+            HashSet<IMethodSymbol> methods = new()
+            {
+                new TestIMethodSymbol("Explodieren", baseType),
+                new TestIMethodSymbol("GetReifen", class2)
+            };
+
+            HashSet<IPropertySymbol> propertiesReifen = new()
+            {
+                new TestIPropertySymbol("form", baseType)
+            };
+
+            class1.fields.AddRange(fields);
+            class1.properties.AddRange(properties);
+            class1.methods.AddRange(methods);
+            class2.properties.AddRange(propertiesReifen);
+
+            return new() { class1, class2, baseType };
+
         }
 
         public record State(
