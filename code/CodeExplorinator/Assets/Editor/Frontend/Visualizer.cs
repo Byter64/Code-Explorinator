@@ -86,7 +86,7 @@ namespace CodeExplorinator
 
             ImmutableDictionary<IClassData, VisualElement> nodes = CreateVisualElements(graph.Keys);
             int i = 0;
-            float radius = 300 + nodes.Values.Count() * 10;
+            float radius = 400;
             foreach (VisualElement node in nodes.Values)
             {
                 nodeRoot.Add(node);
@@ -313,7 +313,7 @@ namespace CodeExplorinator
         private ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> RequestNewGraph()
         {
             ImmutableHashSet<ClassData> classes = BackendProgram.GetSetOfAllClasses();
-            return BackendProgram.GenerateGraph(classes.First(), 10);
+            return BackendProgram.GenerateGraph(classes.Where(x => x.typeData.ToDisplayString().ToLower().Contains("atestclass")).First(), 10);
         }
 
         [Pure]
