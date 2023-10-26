@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using UnityEditor;
 using UnityEditor.VersionControl;
 using System.Linq;
+using UnityEngine.UI;
 
 namespace CodeExplorinator
 {
@@ -98,6 +99,7 @@ namespace CodeExplorinator
 
             HashSet<INamedTypeSymbol> classes = new() { class1, class2, baseType };
             
+            //Schauen, ob die Verbindungen alle richtgi egstzt sind
             var connections = CreateConnections(classes);
 
             Dictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph = new();
@@ -111,12 +113,12 @@ namespace CodeExplorinator
 
             foreach ((INamedTypeSymbol class1, INamedTypeSymbol class2) connection in connections)
             {
-                INamedTypeSymbol[] references = graph[class1];
-                graph.Remove(class1);
+                INamedTypeSymbol[] references = graph[connection.class1];
+                graph.Remove(connection.class1);
 
                 Array.Resize(ref references, references.Length + 1);
-                references[references.Length - 1] = class2;
-                graph.Add(class1, references);
+                references[references.Length - 1] = connection.class2;
+                graph.Add(connection.class1, references);
             }
 
             return graph.ToImmutableDictionary();
@@ -142,12 +144,11 @@ namespace CodeExplorinator
             VisualElement root = new VisualElement();
             root.name = "Graph Root";
 
-            ImmutableDictionary<INamedTypeSymbol, VisualElement> nodes = CreateVisualElements(graph.Keys);
-
             VisualElement nodeRoot = new VisualElement();
             nodeRoot.name = "Node Root";
             root.Add(nodeRoot);
 
+            ImmutableDictionary<INamedTypeSymbol, VisualElement> nodes = CreateVisualElements(graph.Keys);
             int x = 0;
             int y = 0;
             foreach (VisualElement node in nodes.Values)
@@ -326,24 +327,14 @@ namespace CodeExplorinator
         }
 
         [Pure]
-        private ImmutableDictionary<(INamedTypeSymbol, INamedTypeSymbol), VisualElement> CreateVisualElementsForConnections
-            (IEnumerable<(INamedTypeSymbol, INamedTypeSymbol)> connections, 
-            IImmutableDictionary<INamedTypeSymbol, VisualElement> nodeVisualElements)
-        {
-            Dictionary<(INamedTypeSymbol, INamedTypeSymbol), VisualElement> visualElementConnections = new();
-
-            foreach (var connection in connections)
-            {
-                VisualElement visualElementConnection = CreateVisualElement(nodeVisualElements[connection.Item1], nodeVisualElements[connection.Item2]);
-                visualElementConnections.Add(connection, visualElementConnection);
-            }
-
-            return visualElementConnections.ToImmutableDictionary();
-        }
-
-        [Pure]
         private VisualElement CreateVisualElement(VisualElement class1, VisualElement class2)
         {
+            Rect rect1 = new Rect(class1.resolvedStyle.translate,
+                                  new Vector2(class1.resolvedStyle.width, class1.resolvedStyle.height));
+            Rect rect2 = new Rect(class2.resolvedStyle.translate,
+                                  new Vector2(class2.resolvedStyle.width, class2.resolvedStyle.height));
+            var lineAttributes = CalculateShortestLine(rect1, rect2);
+
             VisualElement line = new VisualElement();
             VisualElement arrowhead = new VisualElement();
             Sprite lineBackground = AssetDatabase.LoadAssetAtPath<Sprite>(graphicsFolder + "ArrowBody.png");
@@ -352,16 +343,35 @@ namespace CodeExplorinator
             line.style.backgroundImage = new StyleBackground(lineBackground);
             line.style.transformOrigin = new TransformOrigin(new Length(0, LengthUnit.Percent), new Length(50, LengthUnit.Percent));
             line.style.width = new StyleLength(StyleKeyword.Null);
-            line.style.width = class2.resolvedStyle.translate.x - class1.resolvedStyle.translate.x;
-            line.style.height = lineBackground.bounds.size.y;
+            line.style.width = lineAttributes.length;
+            line.style.height = lineBackground.texture.height;
+            line.style.translate = new Translate(lineAttributes.origin.x, lineAttributes.origin.y);
+            line.style.rotate = new Rotate(lineAttributes.rotation);
 
             line.Add(arrowhead);
             arrowhead.style.position = Position.Absolute;
             arrowhead.style.backgroundImage = new StyleBackground(arrowHeadBackground);
-            arrowhead.style.width = arrowHeadBackground.bounds.size.x;
-            arrowhead.style.height = arrowHeadBackground.bounds.size.y;
-            arrowhead.style.translate = new Translate(new Length(100, LengthUnit.Percent), 0);
+            arrowhead.style.width = arrowHeadBackground.texture.width;
+            arrowhead.style.height = arrowHeadBackground.texture.height;
+            arrowhead.style.translate = new Translate(line.style.width.value, 0);
             return line;
+
+            (Vector2 origin , float rotation, float length) CalculateShortestLine(Rect rect1, Rect rect2)
+            {
+                Bounds bounds1 = new Bounds(rect1.position + rect1.size * 0.5f, rect1.size);
+                Bounds bounds2 = new Bounds(rect2.position + rect2.size * 0.5f, rect2.size);
+
+                Vector2 point1 = bounds1.ClosestPoint(bounds2.center);
+                Vector2 point2 = bounds2.ClosestPoint(point1);
+                Vector2 direction1To2 = point2 - point1;
+
+                (Vector2 origin, float rotation, float length) line;
+                line.origin = point1;
+                line.rotation = Mathf.Atan2(direction1To2.y, direction1To2.x) * Mathf.Rad2Deg;
+                line.length = direction1To2.magnitude;
+
+                return line;
+            }
         }
 
         public record State(
