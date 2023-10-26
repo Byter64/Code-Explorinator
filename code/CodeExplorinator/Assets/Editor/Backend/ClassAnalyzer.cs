@@ -8,7 +8,7 @@ using UnityEngine;
 public static class ClassAnalyzer
 {
 
-    public static HashSet<IClassData>  AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<INamedTypeSymbol> allClasses)
+    public static HashSet<IClassData> AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<ClassData> allClasses)
     {
         ImmutableArray<ISymbol> members = focussedClassSymbol.GetMembers();
         //Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
@@ -32,10 +32,10 @@ public static class ClassAnalyzer
                     //Debug.Log("fieldSymbol contains: " + fieldSymbol.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                     foreach (var classSymbol in allClasses)
                     {
-                        if (SymbolEqualityComparer.Default.Equals(fieldSymbol.Type, classSymbol))
+                        if (SymbolEqualityComparer.Default.Equals(fieldSymbol.Type, classSymbol.typeData))
                         {
                             //this creates new classdata each time, so there will be multiple classdatas with the same content
-                            connectedClasses.Add(new ClassData(classSymbol));
+                            connectedClasses.Add(classSymbol);
                             break;
                         }
                     }
@@ -45,9 +45,9 @@ public static class ClassAnalyzer
                     //Debug.Log("propertySymbol: " + propertySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                     foreach (var classSymbol in allClasses)
                     {
-                        if (SymbolEqualityComparer.Default.Equals(propertySymbol.Type, classSymbol))
+                        if (SymbolEqualityComparer.Default.Equals(propertySymbol.Type, classSymbol.typeData))
                         {
-                            connectedClasses.Add(new ClassData(classSymbol));
+                            connectedClasses.Add(classSymbol);
                             break;
                         }
                     }

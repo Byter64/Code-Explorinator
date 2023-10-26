@@ -9,9 +9,10 @@ using UnityEngine;
 
 namespace CodeExplorinator
 {
+    //DELETEME
     public static class FileAnalyzer
     {
-        //
+        
         
         public static List<INamedTypeSymbol> GenerateAllClassInfo(CompilationUnitSyntax root, SemanticModel model)
         {
