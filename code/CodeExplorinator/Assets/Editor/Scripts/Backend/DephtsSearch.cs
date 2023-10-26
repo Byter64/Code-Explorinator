@@ -7,6 +7,8 @@ using UnityEngine;
 
 public static class DephtsSearch
 {
+    //todo: i need references for both ways, otherwise this does not generate a good graph
+    //but for both ways i would need to check every exsisting class if it contains the class were looking at
 
     public static Dictionary<IClassData, ImmutableHashSet<IClassData>> Start(IClassData focusClass, int radius, ImmutableHashSet<INamedTypeSymbol> allClasses)
     {

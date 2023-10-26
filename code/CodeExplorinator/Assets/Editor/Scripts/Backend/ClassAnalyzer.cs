@@ -8,7 +8,7 @@ using UnityEngine;
 public static class ClassAnalyzer
 {
 
-    public static HashSet<IClassData> AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<INamedTypeSymbol> allClasses)
+    public static HashSet<IClassData>  AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<INamedTypeSymbol> allClasses)
     {
         ImmutableArray<ISymbol> members = focussedClassSymbol.GetMembers();
         Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
@@ -21,9 +21,11 @@ public static class ClassAnalyzer
                         
             switch (member)
             {
+                /*
                 case IMethodSymbol method:
                     Debug.Log("methodSymbol: " + method.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                     break;
+                */
                 
                 case IFieldSymbol fieldSymbol:
                     Debug.Log("fieldSymbol: " + fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
@@ -49,9 +51,6 @@ public static class ClassAnalyzer
                             break;
                         }
                     }
-                    break;
-                
-                default:
                     break;
             }
                         

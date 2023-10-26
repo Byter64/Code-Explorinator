@@ -24,8 +24,29 @@ namespace CodeExplorinator
         public static void Init()
         {
             classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
-            ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
-            //DephtsSearch.Start(classSymbols.First(),2,classSymbols);
+            //ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
+            INamedTypeSymbol mytestclass = null;
+            foreach (var classSymbol in classSymbols)
+            {
+                if (classSymbol.Name == "ATestClass")
+                {
+                    mytestclass = classSymbol;
+                }
+            }
+            var dictionary =DephtsSearch.Start(new ClassData(mytestclass),2,classSymbols);
+
+            Debug.Log("FINISHED; NOW PRINTING");
+            foreach (var key in dictionary.Keys)
+            {
+                
+                Debug.Log(key.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                Debug.Log("AND ITS COMPONENTS:");
+                foreach (var classData in dictionary[key])
+                {
+                    
+                    Debug.Log(classData.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                }
+            }
         }
         
         
