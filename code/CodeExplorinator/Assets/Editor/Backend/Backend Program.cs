@@ -49,7 +49,7 @@ namespace CodeExplorinator
             }
         }
 
-        public static ImmutableHashSet<INamedTypeSymbol> GetListOfAllClasses()
+        public static ImmutableHashSet<INamedTypeSymbol> GetSetOfAllClasses()
         {
             return classSymbols;
         }
