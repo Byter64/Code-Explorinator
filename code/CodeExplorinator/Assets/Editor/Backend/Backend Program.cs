@@ -49,12 +49,12 @@ namespace CodeExplorinator
             }
         }
 
-        public ImmutableHashSet<INamedTypeSymbol> GetListOfAllClasses()
+        public static ImmutableHashSet<INamedTypeSymbol> GetListOfAllClasses()
         {
             return classSymbols;
         }
         
-        public Dictionary<IClassData, ImmutableHashSet<IClassData>> GenerateGraph(ClassData focusedClass, int radius)
+        public static Dictionary<IClassData, ImmutableHashSet<IClassData>> GenerateGraph(ClassData focusedClass, int radius)
         {
             classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
             return DephtsSearch.Start(focusedClass, radius, classSymbols);
