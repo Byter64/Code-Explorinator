@@ -312,32 +312,11 @@ namespace CodeExplorinator
 
         private ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> RequestNewGraph()
         {
-            Dictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph = new();
-            HashSet<INamedTypeSymbol> classes = GenerateTestGraph();
-            var connections = CreateConnections(classes);
-
-            foreach (INamedTypeSymbol @class in classes)
-            {
-                INamedTypeSymbol[] references = new INamedTypeSymbol[0];
-
-                graph.Add(@class, references);
-            }
-
-            foreach ((INamedTypeSymbol class1, INamedTypeSymbol class2) connection in connections)
-            {
-                INamedTypeSymbol[] references = graph[connection.class1];
-                graph.Remove(connection.class1);
-
-                Array.Resize(ref references, references.Length + 1);
-                references[references.Length - 1] = connection.class2;
-                graph.Add(connection.class1, references);
-            }
-
-            return graph.ToImmutableDictionary();
+            
         }
 
         [Pure]
-        private HashSet<INamedTypeSymbol> GenerateTestGraph()
+        private ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> GenerateTestGraph()
         {
             TestINamedTypeInterface baseType = new TestINamedTypeInterface("Base");
             TestINamedTypeInterface class1 = new TestINamedTypeInterface("Auto");
@@ -369,7 +348,29 @@ namespace CodeExplorinator
             class1.methods.AddRange(methods);
             class2.properties.AddRange(propertiesReifen);
 
-            return new() { class1, class2, baseType };
+
+            HashSet<INamedTypeSymbol> classes =  new() { class1, class2, baseType };
+            Dictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph = new();
+            var connections = CreateConnections(classes);
+
+            foreach (INamedTypeSymbol @class in classes)
+            {
+                INamedTypeSymbol[] references = new INamedTypeSymbol[0];
+
+                graph.Add(@class, references);
+            }
+
+            foreach ((INamedTypeSymbol class1, INamedTypeSymbol class2) connection in connections)
+            {
+                INamedTypeSymbol[] references = graph[connection.class1];
+                graph.Remove(connection.class1);
+
+                Array.Resize(ref references, references.Length + 1);
+                references[references.Length - 1] = connection.class2;
+                graph.Add(connection.class1, references);
+            }
+
+            return graph.ToImmutableDictionary();
 
         }
 
