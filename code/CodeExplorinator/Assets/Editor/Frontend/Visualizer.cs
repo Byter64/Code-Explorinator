@@ -27,11 +27,6 @@ namespace CodeExplorinator
             editorWindow.titleContent = new GUIContent("Code Explorinator");
         }
 
-
-        //Für nächsts mal:
-        //connections werden noch nicht angezeigt, weil deren Breite null ist
-
-
         private void CreateGUI()
         {
             sceneRoot = rootVisualElement;
@@ -149,16 +144,16 @@ namespace CodeExplorinator
             root.Add(nodeRoot);
 
             ImmutableDictionary<INamedTypeSymbol, VisualElement> nodes = CreateVisualElements(graph.Keys);
-            int x = 0;
-            int y = 0;
+            int i = 0;
+            float radius = 300;
             foreach (VisualElement node in nodes.Values)
             {
                 nodeRoot.Add(node);
-                node.name = x + " " + y;
+                node.name = "" + i;
                 node.style.position = Position.Absolute;
-                node.style.translate = new StyleTranslate(new Translate(x, y));
-                x += 300;
-                y += 100;
+                float radians = Mathf.PI * 2 * (i / (float)nodes.Values.Count());
+                node.style.translate = new StyleTranslate(new Translate(radius * Mathf.Cos(radians) + radius, radius * Mathf.Sin(radians) + radius));
+                i++;
             }
             
             AddAndCreateVisualConnections(graph, nodes, root);
