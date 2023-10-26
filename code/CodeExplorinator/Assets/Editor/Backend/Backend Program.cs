@@ -11,7 +11,7 @@ namespace CodeExplorinator
     public class BackendProgram
     {
         //todo: maybe cast to IClassData cuz thats what ill get the first time interacting with frontend
-        static ImmutableHashSet<ClassData> classSymbols;
+        private static ImmutableHashSet<ClassData> classSymbols;
         
         
         public BackendProgram()
@@ -51,6 +51,7 @@ namespace CodeExplorinator
 
         public static ImmutableHashSet<ClassData> GetSetOfAllClasses()
         {
+            classSymbols = FileScanner.ScanAllFilesForClasses();
             return classSymbols;
         }
         
