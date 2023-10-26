@@ -48,6 +48,35 @@ namespace CodeExplorinator
                 }
             }
         }
+        
+        [MenuItem("Window/Backend Test 2")]
+        public static void BackendTest2()
+        {
+            classSymbols = FileScanner.ScanAllFilesForClasses();
+            //ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
+            INamedTypeSymbol mytestclass = null;
+            foreach (var classSymbol in classSymbols)
+            {
+                if (classSymbol.typeData.Name == "ATestClass")
+                {
+                    mytestclass = classSymbol.typeData;
+                }
+            }
+            var dictionary = GenerateGraph(new ClassData(mytestclass), 10);
+
+            Debug.Log("FINISHED; NOW PRINTING");
+            foreach (var key in dictionary.Keys)
+            {
+                
+                Debug.Log(key.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                Debug.Log("AND ITS COMPONENTS:");
+                foreach (var classData in dictionary[key])
+                {
+                    
+                    Debug.Log(classData.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                }
+            }
+        }
 
         public static ImmutableHashSet<ClassData> GetSetOfAllClasses()
         {
@@ -57,7 +86,6 @@ namespace CodeExplorinator
         
         public static ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> GenerateGraph(ClassData focusedClass, int radius)
         {
-            classSymbols = FileScanner.ScanAllFilesForClasses();
             return DephtsSearch.Start(focusedClass, radius, classSymbols).ToImmutableDictionary();
         }
         /*
