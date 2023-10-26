@@ -20,7 +20,7 @@ namespace CodeExplorinator
         }
         
 
-        [MenuItem("Window/Code Explorinator")]
+        [MenuItem("Window/Backend Test")]
         public static void Init()
         {
             classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
@@ -33,7 +33,7 @@ namespace CodeExplorinator
                     mytestclass = classSymbol;
                 }
             }
-            var dictionary =DephtsSearch.Start(new ClassData(mytestclass),2,classSymbols);
+            var dictionary = DephtsSearch.Start(new ClassData(mytestclass),2,classSymbols);
 
             Debug.Log("FINISHED; NOW PRINTING");
             foreach (var key in dictionary.Keys)
@@ -48,13 +48,18 @@ namespace CodeExplorinator
                 }
             }
         }
-        
-        
-        
-        public void GimmeTheGraph(INamedTypeSymbol focusedClassSymbol, int radius)
+
+        public ImmutableHashSet<INamedTypeSymbol> GetListOfAllClasses()
         {
-            ClassAnalyzer.AnalyzeConnectionsOfClass(focusedClassSymbol,classSymbols);
+            return classSymbols;
         }
+        
+        public Dictionary<IClassData, ImmutableHashSet<IClassData>> GenerateGraph(ClassData focusedClass, int radius)
+        {
+            classSymbols = FileScanner.ScanAllFilesForClasses().ToImmutableHashSet();
+            return DephtsSearch.Start(focusedClass, radius, classSymbols);
+        }
+        /*
         
         public State state
         {
@@ -74,6 +79,7 @@ namespace CodeExplorinator
             //oder fokusklassen
 
         }
+        */
     }
 }
 

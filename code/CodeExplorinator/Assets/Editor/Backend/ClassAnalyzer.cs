@@ -11,7 +11,7 @@ public static class ClassAnalyzer
     public static HashSet<IClassData>  AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<INamedTypeSymbol> allClasses)
     {
         ImmutableArray<ISymbol> members = focussedClassSymbol.GetMembers();
-        Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+        //Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
 
         HashSet<IClassData> connectedClasses = new HashSet<IClassData>();
@@ -28,8 +28,8 @@ public static class ClassAnalyzer
                 */
                 
                 case IFieldSymbol fieldSymbol:
-                    Debug.Log("fieldSymbol: " + fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                    Debug.Log("fieldSymbol contains: " + fieldSymbol.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    //Debug.Log("fieldSymbol: " + fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    //Debug.Log("fieldSymbol contains: " + fieldSymbol.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                     foreach (var classSymbol in allClasses)
                     {
                         if (SymbolEqualityComparer.Default.Equals(fieldSymbol.Type, classSymbol))
@@ -42,7 +42,7 @@ public static class ClassAnalyzer
                     break;
                 
                 case IPropertySymbol propertySymbol:
-                    Debug.Log("propertySymbol: " + propertySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                    //Debug.Log("propertySymbol: " + propertySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                     foreach (var classSymbol in allClasses)
                     {
                         if (SymbolEqualityComparer.Default.Equals(propertySymbol.Type, classSymbol))
