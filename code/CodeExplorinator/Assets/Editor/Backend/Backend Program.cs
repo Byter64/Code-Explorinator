@@ -39,7 +39,7 @@ namespace CodeExplorinator
             foreach (var key in dictionary.Keys)
             {
                 
-                Debug.Log(key.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                Debug.Log("FOUND: " + key.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                 Debug.Log("AND ITS COMPONENTS:");
                 foreach (var classData in dictionary[key])
                 {
@@ -68,7 +68,7 @@ namespace CodeExplorinator
             foreach (var key in dictionary.Keys)
             {
                 
-                Debug.Log(key.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                Debug.Log("FOUND: " + key.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
                 Debug.Log("AND ITS COMPONENTS:");
                 foreach (var classData in dictionary[key])
                 {
