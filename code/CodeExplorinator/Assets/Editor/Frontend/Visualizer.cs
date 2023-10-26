@@ -60,8 +60,6 @@ namespace CodeExplorinator
             return newState;
         }
 
-        class Data { public string type; }
-
         private void UpdateVisualRepresentation()
         {
             if (graphRoot != null)
@@ -213,12 +211,11 @@ namespace CodeExplorinator
                     case IPropertySymbol propertySymbol:
                         attributes.Add(new Label(propertySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)));
                         break;
-
                     case null:
                         throw new ArgumentNullException("A member was null");
 
                     default:
-                        throw new NotImplementedException("This type of ISymbol was not considered");
+                        throw new NotImplementedException($"Unhandled type: {member.GetType()} of member {member.ToDisplayString()} is not supported");
                 }
             }
 
@@ -313,7 +310,12 @@ namespace CodeExplorinator
         private ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> RequestNewGraph()
         {
             ImmutableHashSet<ClassData> classes = BackendProgram.GetSetOfAllClasses();
-            return BackendProgram.GenerateGraph(classes.Where(x => x.typeData.ToDisplayString().ToLower().Contains("atestclass")).First(), 10);
+
+            foreach(ClassData classData in classes)
+            {
+                Debug.Log(classData.typeData.ToDisplayString());
+            }
+            return BackendProgram.GenerateGraph(classes.Where(x => x.typeData.Name == "Visualizer").First(), 10);
         }
 
         [Pure]
