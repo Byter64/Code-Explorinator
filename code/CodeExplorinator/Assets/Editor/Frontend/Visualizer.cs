@@ -75,7 +75,7 @@ namespace CodeExplorinator
         }
 
         [Pure]
-        private VisualElement CreateVisualRepresentation(ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph)
+        private VisualElement CreateVisualRepresentation(ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> graph)
         {
             VisualElement root = new VisualElement();
             root.name = "Graph Root";
@@ -84,7 +84,7 @@ namespace CodeExplorinator
             nodeRoot.name = "Node Root";
             root.Add(nodeRoot);
 
-            ImmutableDictionary<INamedTypeSymbol, VisualElement> nodes = CreateVisualElements(graph.Keys);
+            ImmutableDictionary<IClassData, VisualElement> nodes = CreateVisualElements(graph.Keys);
             int i = 0;
             float radius = 300 + nodes.Values.Count() * 10;
             foreach (VisualElement node in nodes.Values)
@@ -110,8 +110,8 @@ namespace CodeExplorinator
         /// <param name="graphRoot"></param>
         private void AddAndCreateVisualConnections
         (
-            ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]>  graph, 
-            ImmutableDictionary<INamedTypeSymbol, VisualElement> nodes, 
+            ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>>  graph, 
+            ImmutableDictionary<IClassData, VisualElement> nodes, 
             VisualElement graphRoot)
         {
             EditorApplication.update += AddVisualElements;
@@ -140,17 +140,17 @@ namespace CodeExplorinator
             }
 
 
-            Dictionary<INamedTypeSymbol, VisualElement[]> CreateVisualElements()
+            Dictionary<IClassData, VisualElement[]> CreateVisualElements()
             {
-                Dictionary<INamedTypeSymbol, VisualElement[]> connections = new();
+                Dictionary<IClassData, VisualElement[]> connections = new();
 
-                foreach(INamedTypeSymbol class1 in graph.Keys)
+                foreach(IClassData class1 in graph.Keys)
                 {
                     VisualElement node1 = nodes[class1];
-                    VisualElement[] vs_connections = new VisualElement[graph[class1].Length];
-                    for(int i = 0; i < graph[class1].Length; i++)
+                    VisualElement[] vs_connections = new VisualElement[graph[class1].Count];
+                    int i = 0;
+                    foreach (IClassData class2 in graph[class1])
                     {
-                        INamedTypeSymbol class2 = graph[class1][i];
                         VisualElement node2 = nodes[class2];
                         VisualElement connection = CreateVisualElement(node1, node2);
                         vs_connections[i] = connection;
@@ -164,11 +164,11 @@ namespace CodeExplorinator
         }
 
         [Pure]
-        private ImmutableDictionary<INamedTypeSymbol, VisualElement> CreateVisualElements(IEnumerable<INamedTypeSymbol> classes)
+        private ImmutableDictionary<IClassData, VisualElement> CreateVisualElements(IEnumerable<IClassData> classes)
         {
-            Dictionary<INamedTypeSymbol, VisualElement> visualElementNodes = new();
+            Dictionary<IClassData, VisualElement> visualElementNodes = new();
 
-            foreach (INamedTypeSymbol @class in classes)
+            foreach (IClassData @class in classes)
             {
                 VisualElement visualElement = CreateVisualElement(@class);
                 visualElementNodes.Add(@class, visualElement);
@@ -178,7 +178,7 @@ namespace CodeExplorinator
         }
 
         [Pure]
-        private VisualElement CreateVisualElement(INamedTypeSymbol @class)
+        private VisualElement CreateVisualElement(IClassData @class)
         {
             VisualElement root = new VisualElement();
             Sprite classBackground = AssetDatabase.LoadAssetAtPath<Sprite>(graphicsFolder + "Rectangle_Blue.png");
@@ -190,7 +190,7 @@ namespace CodeExplorinator
             //Header
             Label header = new Label();
             root.Add(header);
-            header.text = @class.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            header.text = @class.typeData.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
             //Fields, Properties and methods
             VisualElement attributes = new VisualElement();
@@ -198,7 +198,7 @@ namespace CodeExplorinator
             root.Add(attributes);
             root.Add(methods);
 
-            foreach(ISymbol member in @class.GetMembers())
+            foreach(ISymbol member in @class.typeData.GetMembers())
             {
                 switch(member)
                 {
@@ -226,13 +226,13 @@ namespace CodeExplorinator
         }
 
         [Pure]
-        private IEnumerable<(INamedTypeSymbol, INamedTypeSymbol)> CreateConnections(IEnumerable<INamedTypeSymbol> classes)
+        private IEnumerable<(IClassData, IClassData)> CreateConnections(IEnumerable<IClassData> classes)
         {
-            List<(INamedTypeSymbol, INamedTypeSymbol)> connections = new();
+            List<(IClassData, IClassData)> connections = new();
 
-            foreach (INamedTypeSymbol class1 in classes)
+            foreach (IClassData class1 in classes)
             {
-                foreach (ISymbol member in class1.GetMembers())
+                foreach (ISymbol member in class1.typeData.GetMembers())
                 {
                     ITypeSymbol namedTypeMember;
                     switch(member)
@@ -248,7 +248,7 @@ namespace CodeExplorinator
 
                     }
                     
-                    foreach (INamedTypeSymbol class2 in classes)
+                    foreach (IClassData class2 in classes)
                     {
                         if(namedTypeMember == class2 && !connections.Contains((class1, class2)))
                         {
@@ -310,13 +310,14 @@ namespace CodeExplorinator
             }
         }
 
-        private ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> RequestNewGraph()
+        private ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> RequestNewGraph()
         {
-            
+            ImmutableHashSet<ClassData> classes = BackendProgram.GetSetOfAllClasses();
+            return BackendProgram.GenerateGraph(classes.First(), 10);
         }
 
         [Pure]
-        private ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> GenerateTestGraph()
+        private ImmutableDictionary<IClassData, IClassData[]> GenerateTestGraph()
         {
             TestINamedTypeInterface baseType = new TestINamedTypeInterface("Base");
             TestINamedTypeInterface class1 = new TestINamedTypeInterface("Auto");
@@ -349,20 +350,20 @@ namespace CodeExplorinator
             class2.properties.AddRange(propertiesReifen);
 
 
-            HashSet<INamedTypeSymbol> classes =  new() { class1, class2, baseType };
-            Dictionary<INamedTypeSymbol, INamedTypeSymbol[]> graph = new();
+            HashSet<IClassData> classes =  new() { new ClassData(class1), new ClassData(class2), new ClassData(baseType) };
+            Dictionary<IClassData, IClassData[]> graph = new();
             var connections = CreateConnections(classes);
 
-            foreach (INamedTypeSymbol @class in classes)
+            foreach (IClassData @class in classes)
             {
-                INamedTypeSymbol[] references = new INamedTypeSymbol[0];
+                IClassData[] references = new IClassData[0];
 
                 graph.Add(@class, references);
             }
 
-            foreach ((INamedTypeSymbol class1, INamedTypeSymbol class2) connection in connections)
+            foreach ((IClassData class1, IClassData class2) connection in connections)
             {
-                INamedTypeSymbol[] references = graph[connection.class1];
+                IClassData[] references = graph[connection.class1];
                 graph.Remove(connection.class1);
 
                 Array.Resize(ref references, references.Length + 1);
@@ -376,9 +377,9 @@ namespace CodeExplorinator
 
         public record State(
             int ReferenceDepth,
-            ImmutableDictionary<INamedTypeSymbol, INamedTypeSymbol[]> Graph,
-            ImmutableDictionary<INamedTypeSymbol, VisualElement> NodeVisualElements,
-            ImmutableDictionary<(INamedTypeSymbol, INamedTypeSymbol), VisualElement> ConnectionVisualElements);
+            ImmutableDictionary<IClassData, IClassData[]> Graph,
+            ImmutableDictionary<IClassData, VisualElement> NodeVisualElements,
+            ImmutableDictionary<(IClassData, IClassData), VisualElement> ConnectionVisualElements);
 
         public interface IInput { }
 
