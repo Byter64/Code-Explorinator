@@ -315,7 +315,7 @@ namespace CodeExplorinator
             {
                 Debug.Log(classData.typeData.ToDisplayString());
             }
-            return BackendProgram.GenerateGraph(classes.Where(x => x.typeData.Name == "Visualizer").First(), 10);
+            return BackendProgram.GenerateGraph(classes.Where(x => x.typeData.Name == "Visualizer").First(), 10, classes);
         }
 
         [Pure]
@@ -333,7 +333,7 @@ namespace CodeExplorinator
             HashSet<IPropertySymbol> properties = new()
             {
                 new TestIPropertySymbol("volumen", baseType),
-                new TestIPropertySymbol("VerrückteMongo", baseType)
+                new TestIPropertySymbol("Verrï¿½ckteMongo", baseType)
             };
             HashSet<IMethodSymbol> methods = new()
             {

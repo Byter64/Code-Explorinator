@@ -10,20 +10,10 @@ namespace CodeExplorinator
 {
     public class BackendProgram
     {
-        //todo: maybe cast to IClassData cuz thats what ill get the first time interacting with frontend
-        private static ImmutableHashSet<ClassData> classSymbols;
-        
-        
-        public BackendProgram()
-        {
-            
-        }
-        
-
         [MenuItem("Window/Backend Test")]
         public static void Init()
         {
-            classSymbols = FileScanner.ScanAllFilesForClasses();
+            var classSymbols = FileScanner.ScanAllFilesForClasses();
             //ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
             INamedTypeSymbol mytestclass = null;
             foreach (var classSymbol in classSymbols)
@@ -31,7 +21,9 @@ namespace CodeExplorinator
                 if (classSymbol.typeData.Name == "ATestClass")
                 {
                     mytestclass = classSymbol.typeData;
+                    break;
                 }
+                
             }
             var dictionary = DephtsSearch.Start(new ClassData(mytestclass),2,classSymbols);
 
@@ -52,7 +44,7 @@ namespace CodeExplorinator
         [MenuItem("Window/Backend Test 2")]
         public static void BackendTest2()
         {
-            classSymbols = FileScanner.ScanAllFilesForClasses();
+            var classSymbols = FileScanner.ScanAllFilesForClasses();
             //ClassAnalyzer.AnalyzeConnectionsOfClass(classSymbols.First(),classSymbols);
             INamedTypeSymbol mytestclass = null;
             foreach (var classSymbol in classSymbols)
@@ -60,9 +52,10 @@ namespace CodeExplorinator
                 if (classSymbol.typeData.Name == "ATestClass")
                 {
                     mytestclass = classSymbol.typeData;
+                    break;
                 }
             }
-            var dictionary = GenerateGraph(new ClassData(mytestclass), 10);
+            var dictionary = GenerateGraph(new ClassData(mytestclass), 10, classSymbols);
 
             Debug.Log("FINISHED; NOW PRINTING");
             foreach (var key in dictionary.Keys)
@@ -80,11 +73,11 @@ namespace CodeExplorinator
 
         public static ImmutableHashSet<ClassData> GetSetOfAllClasses()
         {
-            classSymbols = FileScanner.ScanAllFilesForClasses();
+            var classSymbols = FileScanner.ScanAllFilesForClasses();
             return classSymbols;
         }
         
-        public static ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> GenerateGraph(ClassData focusedClass, int radius)
+        public static ImmutableDictionary<IClassData, ImmutableHashSet<IClassData>> GenerateGraph(ClassData focusedClass, int radius, ImmutableHashSet<ClassData> classSymbols)
         {
             return DephtsSearch.Start(focusedClass, radius, classSymbols).ToImmutableDictionary();
         }

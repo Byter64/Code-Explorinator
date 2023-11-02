@@ -5,58 +5,66 @@ using CodeExplorinator;
 using Microsoft.CodeAnalysis;
 using UnityEngine;
 
-public static class ClassAnalyzer
+
+namespace CodeExplorinator
 {
 
-    public static HashSet<IClassData> AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol, ImmutableHashSet<ClassData> allClasses)
+    public static class ClassAnalyzer
     {
-        ImmutableArray<ISymbol> members = focussedClassSymbol.GetMembers();
-        //Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
 
-
-        HashSet<IClassData> connectedClasses = new HashSet<IClassData>();
-                
-        foreach (ISymbol member  in members)
+        public static HashSet<IClassData> AnalyzeConnectionsOfClass(INamedTypeSymbol focussedClassSymbol,
+            ImmutableHashSet<ClassData> allClasses)
         {
-                        
-            switch (member)
+            ImmutableArray<ISymbol> members = focussedClassSymbol.GetMembers();
+            //Debug.Log(focussedClassSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+
+
+            HashSet<IClassData> connectedClasses = new HashSet<IClassData>();
+
+            foreach (ISymbol member in members)
             {
-                /*
-                case IMethodSymbol method:
-                    Debug.Log("methodSymbol: " + method.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                    break;
-                */
-                
-                case IFieldSymbol fieldSymbol:
-                    //Debug.Log("fieldSymbol: " + fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                    //Debug.Log("fieldSymbol contains: " + fieldSymbol.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                    foreach (var classSymbol in allClasses)
-                    {
-                        if (SymbolEqualityComparer.Default.Equals(fieldSymbol.Type, classSymbol.typeData))
+
+                switch (member)
+                {
+                    /*
+                    case IMethodSymbol method:
+                        Debug.Log("methodSymbol: " + method.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                        break;
+                    */
+
+                    case IFieldSymbol fieldSymbol:
+                        //Debug.Log("fieldSymbol: " + fieldSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                        //Debug.Log("fieldSymbol contains: " + fieldSymbol.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                        foreach (var classSymbol in allClasses)
                         {
-                            //this creates new classdata each time, so there will be multiple classdatas with the same content
-                            connectedClasses.Add(classSymbol);
-                            break;
+                            if (SymbolEqualityComparer.Default.Equals(fieldSymbol.Type, classSymbol.typeData))
+                            {
+                                //this creates new classdata each time, so there will be multiple classdatas with the same content
+                                connectedClasses.Add(classSymbol);
+                                break;
+                            }
                         }
-                    }
-                    break;
-                
-                case IPropertySymbol propertySymbol:
-                    //Debug.Log("propertySymbol: " + propertySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
-                    foreach (var classSymbol in allClasses)
-                    {
-                        if (SymbolEqualityComparer.Default.Equals(propertySymbol.Type, classSymbol.typeData))
+
+                        break;
+
+                    case IPropertySymbol propertySymbol:
+                        //Debug.Log("propertySymbol: " + propertySymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat));
+                        foreach (var classSymbol in allClasses)
                         {
-                            connectedClasses.Add(classSymbol);
-                            break;
+                            if (SymbolEqualityComparer.Default.Equals(propertySymbol.Type, classSymbol.typeData))
+                            {
+                                connectedClasses.Add(classSymbol);
+                                break;
+                            }
                         }
-                    }
-                    break;
+
+                        break;
+                }
+
             }
-                        
+
+            return connectedClasses;
         }
 
-        return connectedClasses;
     }
-    
 }
