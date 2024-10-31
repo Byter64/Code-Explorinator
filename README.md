@@ -10,7 +10,7 @@
 | Study Program | Games Engineering B.Sc.|
 | Engine Version | Unity 2022.2.1f1|
 
-#Start
+# Start
 The Quick Start Guide can be found in the wiki
 
 ## Abstract
